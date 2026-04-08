@@ -1,0 +1,124 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ViolationController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SubjectLoadController;
+
+use App\Http\Controllers\ProfilingController;
+
+use App\Http\Controllers\FacultyScheduleController;
+use App\Http\Controllers\StudentProfileController;
+
+use App\Http\Controllers\CurriculumController;
+
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ArchiveController;
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/setup-password', [AuthController::class, 'setupPassword']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user()->load($request->user()->role === 'student' ? 'student' : ($request->user()->isFacultyMember() ? 'faculty' : []));
+    });
+
+    // Profiling Query Engine (Dean, Chair, Secretary)
+    Route::get('/profiling/report', [ProfilingController::class, 'report'])->middleware('role:dean,department_chair,secretary');
+
+    // Faculty Routes
+    Route::middleware('role:faculty')->group(function () {
+        Route::get('/faculty/schedule', [FacultyScheduleController::class, 'index']);
+        Route::get('/faculty/sections/{section_id}/students', [FacultyScheduleController::class, 'getSectionStudents']);
+        Route::get('/faculty/students', [FacultyController::class, 'myStudents']);
+        Route::get('/faculty/violations', [FacultyController::class, 'myViolations']);
+        Route::post('/faculty/violations', [FacultyController::class, 'storeViolation']);
+        Route::get('/analytics/faculty', [AnalyticsController::class, 'facultySummary']);
+    });
+
+    // Student Routes
+    Route::middleware('role:student')->group(function () {
+        Route::get('/student/profile', [StudentProfileController::class, 'show']);
+        Route::post('/student/profile', [StudentController::class, 'updateProfile']);
+        Route::post('/student/guardian', [StudentProfileController::class, 'updateGuardian']);
+        Route::post('/student/skills', [StudentProfileController::class, 'addSkill']);
+        Route::delete('/student/skills/{id}', [StudentProfileController::class, 'removeSkill']);
+        Route::get('/student/organizations', [StudentProfileController::class, 'getOrganizations']);
+        Route::post('/student/affiliations', [StudentProfileController::class, 'addAffiliation']);
+        Route::delete('/student/affiliations/{id}', [StudentProfileController::class, 'removeAffiliation']);
+        Route::post('/student/activities', [StudentProfileController::class, 'addActivity']);
+        Route::get('/student/violations', [StudentProfileController::class, 'getViolations']);
+    });
+
+    // Curriculum Shared Routes (Dean and Secretary)
+    Route::middleware('role:dean,secretary')->group(function () {
+        Route::get('/dean/curriculum', [CurriculumController::class, 'index']);
+        Route::post('/dean/curriculum', [CurriculumController::class, 'store']);
+        Route::post('/dean/curriculum/bulk', [CurriculumController::class, 'bulkStore']);
+        Route::post('/dean/curriculum/import', [CurriculumController::class, 'import']);
+        Route::delete('/dean/curriculum/{id}', [CurriculumController::class, 'destroy']);
+    });
+
+    // Dean Specific
+    Route::middleware('role:dean')->group(function () {
+        Route::get('/archive', [ArchiveController::class, 'index']);
+        Route::post('/archive/{id}/restore', [ArchiveController::class, 'restore']);
+    });
+
+    // Secretary Specific
+    Route::middleware('role:secretary')->group(function () {
+        Route::post('/secretary/students', [StudentController::class, 'store']);
+        Route::post('/secretary/students/import', [StudentController::class, 'import']);
+        Route::post('/secretary/faculty', [FacultyController::class, 'store']);
+        Route::put('/secretary/faculty/{id}', [FacultyController::class, 'update']);
+        Route::post('/secretary/faculty/import', [FacultyController::class, 'import']);
+    });
+
+    // Student edit (Secretary + Department Chair)
+    Route::middleware('role:secretary,department_chair')->group(function () {
+        Route::put('/secretary/students/{id}', [StudentController::class, 'update']);
+    });
+
+    // Shared routes for Dean, Chair, Secretary
+    Route::middleware('role:dean,department_chair,secretary')->group(function () {
+        Route::get('/programs', [ProfilingController::class, 'getPrograms']);
+        Route::get('/students', [StudentController::class, 'index']);
+        Route::get('/students/{id}', [StudentProfileController::class, 'getById']);
+        Route::get('/faculty', [FacultyController::class, 'index']);
+        
+        // Archiving (Shared)
+        Route::delete('/secretary/students/{id}', [StudentController::class, 'destroy']);
+        Route::delete('/secretary/faculty/{id}', [FacultyController::class, 'destroy']);
+        
+        // Courses
+        Route::get('/courses', [CourseController::class, 'index']);
+        Route::post('/courses', [CourseController::class, 'store']);
+        Route::put('/courses/{id}', [CourseController::class, 'update']);
+        Route::delete('/courses/{id}', [CourseController::class, 'destroy']);
+
+        // Schedules
+        Route::get('/schedules', [ScheduleController::class, 'index']);
+        Route::post('/schedules', [ScheduleController::class, 'store']);
+        Route::post('/schedules/import', [ScheduleController::class, 'import']);
+        Route::post('/schedules/auto-generate', [ScheduleController::class, 'autoGenerate']);
+        Route::post('/schedules/{id}/assign-faculty', [ScheduleController::class, 'assignFaculty']);
+        Route::get('/curriculum-courses', [ScheduleController::class, 'getCurriculumCourses']);
+        Route::delete('/schedules/bulk-delete', [ScheduleController::class, 'bulkDelete']);
+        Route::delete('/schedules/{id}', [ScheduleController::class, 'destroy']);
+
+        Route::get('/analytics/summary', [AnalyticsController::class, 'deanSummary']);
+        Route::get('/analytics/performance', [AnalyticsController::class, 'academicPerformance']);
+        Route::get('/violations', [ViolationController::class, 'index']);
+        Route::put('/violations/{id}', [ViolationController::class, 'update']);
+        Route::get('/sections', [SectionController::class, 'index']);
+    });
+});

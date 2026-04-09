@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Program;
 use Illuminate\Http\Request;
@@ -128,3 +129,4 @@ class ProfilingController extends Controller
         return response()->json($report->values());
     }
 }
+

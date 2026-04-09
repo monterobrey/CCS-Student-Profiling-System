@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\Section;
 use Illuminate\Http\Request;
 
@@ -19,3 +20,4 @@ class SectionController extends Controller
         return Section::with(['program', 'department'])->get();
     }
 }
+

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\Curriculum;
 use App\Models\Program;
 use App\Models\Course;
@@ -253,3 +254,4 @@ class CurriculumController extends Controller
         return response()->json(['message' => 'Curriculum entry removed.']);
     }
 }
+

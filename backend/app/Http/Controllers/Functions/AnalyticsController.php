@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Faculty;
@@ -255,3 +256,4 @@ class AnalyticsController extends Controller
         ]);
     }
 }
+

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\StudentViolation;
 use Illuminate\Http\Request;
 
@@ -61,3 +62,4 @@ class ViolationController extends Controller
         ]);
     }
 }
+

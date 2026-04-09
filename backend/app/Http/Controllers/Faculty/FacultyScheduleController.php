@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Faculty;
 
+use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -47,3 +48,4 @@ class FacultyScheduleController extends Controller
             ->get();
     }
 }
+

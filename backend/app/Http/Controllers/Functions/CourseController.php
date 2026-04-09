@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Department;
 use App\Models\Program;
@@ -124,3 +125,4 @@ class CourseController extends Controller
         return response()->json(['message' => 'Course deleted successfully.']);
     }
 }
+

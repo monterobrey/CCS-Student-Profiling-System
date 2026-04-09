@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Student;
 
+use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Section;
@@ -13,7 +14,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Notifications\SetupPasswordNotification;
-
 use App\Models\Program;
 use App\Models\StudentSkill;
 use App\Models\Guardian;
@@ -345,3 +345,4 @@ class StudentController extends Controller
         return Student::with(['user', 'section', 'program', 'guardian', 'skills', 'organizations.organization'])->get();
     }
 }
+

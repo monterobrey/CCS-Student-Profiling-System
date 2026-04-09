@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Functions;
 
+use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Curriculum;
 use App\Models\Section;
@@ -295,3 +296,4 @@ class ScheduleController extends Controller
         return response()->json(['message' => 'Schedule removed.']);
     }
 }
+

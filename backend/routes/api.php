@@ -3,24 +3,19 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\FacultyController;
-use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\ViolationController;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\SectionController;
-use App\Http\Controllers\SubjectLoadController;
-
-use App\Http\Controllers\ProfilingController;
-
-use App\Http\Controllers\FacultyScheduleController;
-use App\Http\Controllers\StudentProfileController;
-
-use App\Http\Controllers\CurriculumController;
-
-use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Student\StudentProfileController;
+use App\Http\Controllers\Faculty\FacultyController;
+use App\Http\Controllers\Faculty\FacultyScheduleController;
+use App\Http\Controllers\Functions\AnalyticsController;
+use App\Http\Controllers\Functions\ViolationController;
+use App\Http\Controllers\Functions\CourseController;
+use App\Http\Controllers\Functions\SectionController;
+use App\Http\Controllers\Functions\ProfilingController;
+use App\Http\Controllers\Functions\CurriculumController;
+use App\Http\Controllers\Functions\ScheduleController;
+use App\Http\Controllers\Functions\ArchiveController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);

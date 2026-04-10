@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { DEAN_DASHBOARD_CONFIG } from "../constants/DeanDashboard";
 import { analyticsService } from "../services";
+import { fetchWithCache } from "../utils/apiCache";
 
 export function useDeanAnalytics() {
   const { user, role, getRoleBasePath } = useAuth();
@@ -36,8 +37,14 @@ export function useDeanAnalytics() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await analyticsService.getDeanSummary();
-        const data = response?.data || {};
+        const data = await fetchWithCache(
+          "analytics:summary",
+          async () => {
+            const response = await analyticsService.getDeanSummary();
+            return response?.data || {};
+          },
+          { staleTimeMs: 2 * 60 * 1000 }
+        );
 
         if (data.chart_data) setChartData(data.chart_data);
         setTopStudents(data.top_students || []);

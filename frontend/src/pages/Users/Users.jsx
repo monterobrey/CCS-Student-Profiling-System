@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService, facultyService } from "../../services";
+import { fetchWithCache } from "../../utils/apiCache";
 import "./Users.css";
 
 export default function Users() {
@@ -17,28 +18,36 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const [studentsRes, facultyRes] = await Promise.all([
-        studentService.getAll(),
-        facultyService.getAll(),
-      ]);
+      const mergedUsers = await fetchWithCache(
+        "users:merged",
+        async () => {
+          const [studentsRes, facultyRes] = await Promise.all([
+            studentService.getAll(),
+            facultyService.getAll(),
+          ]);
 
-      const students = (studentsRes?.data || []).map((item) => ({
-        id: item.id,
-        type: "student",
-        name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
-        email: item.user?.email || "",
-        role: "student",
-      }));
+          const students = (studentsRes?.data || []).map((item) => ({
+            id: item.id,
+            type: "student",
+            name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+            email: item.user?.email || "",
+            role: "student",
+          }));
 
-      const faculty = (facultyRes?.data || []).map((item) => ({
-        id: item.id,
-        type: "faculty",
-        name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
-        email: item.user?.email || "",
-        role: "faculty",
-      }));
+          const faculty = (facultyRes?.data || []).map((item) => ({
+            id: item.id,
+            type: "faculty",
+            name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+            email: item.user?.email || "",
+            role: "faculty",
+          }));
 
-      setUsers([...students, ...faculty]);
+          return [...students, ...faculty];
+        },
+        { staleTimeMs: 2 * 60 * 1000 }
+      );
+
+      setUsers(mergedUsers);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch users:", err);

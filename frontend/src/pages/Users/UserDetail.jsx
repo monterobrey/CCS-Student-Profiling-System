@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { studentService, facultyService } from "../../services";
+import { fetchWithCache } from "../../utils/apiCache";
 import "./UserDetail.css";
 
 export default function UserDetail() {
@@ -19,8 +20,14 @@ export default function UserDetail() {
         let response;
 
         if (type === "student") {
-          response = await studentService.getById(id);
-          const payload = response?.data || {};
+          const payload = await fetchWithCache(
+            `student:detail:${id}`,
+            async () => {
+              response = await studentService.getById(id);
+              return response?.data || {};
+            },
+            { staleTimeMs: 2 * 60 * 1000 }
+          );
           setUser({
             id: payload.id,
             name: `${payload.first_name || ""} ${payload.last_name || ""}`.trim(),
@@ -29,8 +36,16 @@ export default function UserDetail() {
             created_at: payload.created_at,
           });
         } else if (type === "faculty") {
-          const allFaculty = await facultyService.getAll();
-          const payload = (allFaculty?.data || []).find((f) => String(f.id) === String(id));
+          const facultyList = await fetchWithCache(
+            "faculty:list",
+            async () => {
+              const allFaculty = await facultyService.getAll();
+              return allFaculty?.data || [];
+            },
+            { staleTimeMs: 2 * 60 * 1000 }
+          );
+
+          const payload = facultyList.find((f) => String(f.id) === String(id));
           if (!payload) {
             throw new Error("Faculty record not found");
           }

@@ -62,10 +62,11 @@ class StudentSeeder extends Seeder
                     $firstName = $firstNames[array_rand($firstNames)];
                     $lastName = $lastNames[array_rand($lastNames)];
                     $studentNumber = "2026-" . Str::padLeft(rand(0, 99999), 5, '0');
-                    $email = strtolower($firstName . "." . Str::slug($lastName) . rand(1, 99) . "@pnc.edu.ph");
+                    $email = strtolower($firstName . "." . Str::slug($lastName) . rand(1, 99) . "@gmail.com");
 
-                    $user = User::create([
+                    $user = User::firstOrCreate([
                         'email' => $email,
+                    ], [
                         'student_number' => $studentNumber,
                         'password' => Hash::make('password'),
                         'role' => 'student',
@@ -73,8 +74,9 @@ class StudentSeeder extends Seeder
                         'password_set_at' => now(),
                     ]);
 
-                    Student::create([
+                    Student::updateOrCreate([
                         'user_id' => $user->id,
+                    ], [
                         'program_id' => $program->id,
                         'section_id' => $section->id,
                         'year_level' => $year,

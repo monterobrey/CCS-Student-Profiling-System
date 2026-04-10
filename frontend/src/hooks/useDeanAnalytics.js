@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { DEAN_DASHBOARD_CONFIG, API_ENDPOINTS } from "../constants/DeanDashboard";
+import { DEAN_DASHBOARD_CONFIG } from "../constants/DeanDashboard";
+import { analyticsService } from "../services";
 
 export function useDeanAnalytics() {
-  const { user } = useAuth();
+  const { user, role, getRoleBasePath } = useAuth();
+  const basePath = getRoleBasePath(role);
 
   const [chartData, setChartData] = useState([]);
   const [topStudents, setTopStudents] = useState([]);
@@ -35,13 +36,13 @@ export function useDeanAnalytics() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(API_ENDPOINTS.ANALYTICS_SUMMARY);
-        const data = response.data || {};
+        const response = await analyticsService.getDeanSummary();
+        const data = response?.data || {};
 
         if (data.chart_data) setChartData(data.chart_data);
         setTopStudents(data.top_students || []);
         setDeanViolations(data.recent_violations || []);
-        setPendingApprovalsCount(data.pending_approvals || 0);
+        setPendingApprovalsCount(data.pending_verifications || 0);
         setActiveViolationsCount(data.active_violations || 0);
 
         const totalStudents = data.total_students || 0;
@@ -59,7 +60,7 @@ export function useDeanAnalytics() {
             fill: "100%",
             iconBg: "#ecfeff",
             iconColor: "#0d9488",
-            route: "/students",
+            route: `${basePath}/users`,
             iconPath: '<path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
           },
           {
@@ -70,7 +71,7 @@ export function useDeanAnalytics() {
             fill: "100%",
             iconBg: "#eff6ff",
             iconColor: "#0891b2",
-            route: "/faculty",
+            route: `${basePath}/users`,
             iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1M6 13v-3a1 1 0 011-1h4a1 1 0 011-1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
           },
           {
@@ -117,7 +118,7 @@ export function useDeanAnalytics() {
     };
 
     fetchAnalytics();
-  }, []);
+  }, [basePath]);
 
   return {
     greeting,

@@ -111,8 +111,14 @@ class AuthService
     {
         if (!$role) return true;
 
+        $exactRoles = ['faculty', 'dean', 'department_chair', 'secretary'];
+
         if ($role === 'student') {
             return $user->role === 'student';
+        }
+
+        if (in_array($role, $exactRoles, true)) {
+            return $user->role === $role;
         }
 
         if ($role === 'faculty_portal') {
@@ -121,10 +127,10 @@ class AuthService
                 'dean',
                 'department_chair',
                 'secretary'
-            ]);
+            ], true);
         }
 
-        return true;
+        return false;
     }
 
     // Check if user must setup password first

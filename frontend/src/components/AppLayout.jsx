@@ -11,7 +11,7 @@ export default function AppLayout() {
     <div className="app-layout">
       <Sidebar />
       <main className="app-main">
-        <Header user={user} />
+        <Header user={user} role={role} />
         <div className="app-content">
           <Outlet />
         </div>

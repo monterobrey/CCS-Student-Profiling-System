@@ -3,25 +3,25 @@
 namespace App\Http\Controllers\Functions;
 
 use App\Http\Controllers\Controller;
-use App\Services\CourseService;
+use App\Models\Course;
+use App\Models\Program;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    protected $courseService;
-
-    public function __construct(CourseService $courseService)
-    {
-        $this->courseService = $courseService;
-    }
-
     /**
      * Get all courses.
      */
     public function index(Request $request)
     {
-        $courses = $this->courseService->getAllCourses($request->input('program_id'));
+        $query = Course::with(['program', 'department']);
+
+        if ($request->filled('program_id')) {
+            $query->where('program_id', $request->input('program_id'));
+        }
+
+        $courses = $query->get();
         return ApiResponse::success($courses);
     }
 
@@ -43,7 +43,22 @@ class CourseController extends Controller
             'prerequisites' => 'nullable|string',
         ]);
 
-        $course = $this->courseService->createCourse($data);
+        $program = Program::findOrFail($data['program_id']);
+
+        $course = Course::create([
+            'course_code' => $data['course_code'],
+            'course_name' => $data['course_name'],
+            'program_id' => $data['program_id'],
+            'department_id' => $program->department_id,
+            'year_level' => $data['year_level'],
+            'semester' => $data['semester'],
+            'type' => $data['type'],
+            'lec_units' => $data['lec_units'] ?? 0,
+            'lab_units' => $data['lab_units'] ?? 0,
+            'units' => $data['units'],
+            'prerequisites' => $data['prerequisites'] ?? null,
+        ])->load(['program', 'department']);
+
         return ApiResponse::success($course, 'Course created successfully.', 201);
     }
 
@@ -65,7 +80,24 @@ class CourseController extends Controller
             'prerequisites' => 'nullable|string',
         ]);
 
-        $course = $this->courseService->updateCourse($id, $data);
+        $course = Course::findOrFail($id);
+        $program = Program::findOrFail($data['program_id']);
+
+        $course->update([
+            'course_code' => $data['course_code'],
+            'course_name' => $data['course_name'],
+            'program_id' => $data['program_id'],
+            'department_id' => $program->department_id,
+            'year_level' => $data['year_level'],
+            'semester' => $data['semester'],
+            'type' => $data['type'],
+            'lec_units' => $data['lec_units'] ?? 0,
+            'lab_units' => $data['lab_units'] ?? 0,
+            'units' => $data['units'],
+            'prerequisites' => $data['prerequisites'] ?? null,
+        ]);
+
+        $course->load(['program', 'department']);
         return ApiResponse::success($course, 'Course updated successfully.');
     }
 
@@ -74,7 +106,7 @@ class CourseController extends Controller
      */
     public function destroy($id)
     {
-        $this->courseService->deleteCourse($id);
+        Course::destroy($id);
         return ApiResponse::success(null, 'Course deleted successfully.');
     }
 }

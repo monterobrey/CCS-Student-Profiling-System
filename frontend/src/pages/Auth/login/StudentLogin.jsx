@@ -1,7 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { authService } from "../../../services";
 import "../../../styles/StudentLogin.css";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login, getDefaultRouteForRole } = useAuth();
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -12,7 +17,7 @@ const Login = () => {
   const [idFocused, setIdFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -27,11 +32,21 @@ const Login = () => {
     }
 
     setLoading(true);
+    try {
+      const result = await authService.login(studentId, password, "student");
 
-    setTimeout(() => {
+      if (!result?.ok || !result?.token || !result?.user) {
+        setError(result?.message || "Invalid credentials");
+        return;
+      }
+
+      login(result.user, result.token);
+      navigate(getDefaultRouteForRole(result.user.role), { replace: true });
+    } catch (err) {
+      setError("Login failed. Please try again.");
+    } finally {
       setLoading(false);
-      alert("Login successful (frontend only)");
-    }, 1200);
+    }
   };
 
   return (
@@ -105,7 +120,7 @@ const Login = () => {
                   </button>
                 </div>
                 <div className="field-footer">
-                  <a href="#" className="forgot">Forgot password?</a>
+                  <button type="button" className="forgot">Forgot password?</button>
                 </div>
               </div>
 

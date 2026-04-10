@@ -198,4 +198,21 @@ class ScheduleService
             'errors' => $errors,
         ];
     }
+
+    /**
+     * Delete one schedule entry.
+     */
+    public function deleteSchedule($scheduleId): bool
+    {
+        $schedule = Schedule::findOrFail($scheduleId);
+        return (bool) $schedule->delete();
+    }
+
+    /**
+     * Bulk delete schedule entries by ids.
+     */
+    public function bulkDeleteSchedules(array $scheduleIds): int
+    {
+        return Schedule::whereIn('id', $scheduleIds)->delete();
+    }
 }

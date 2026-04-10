@@ -30,9 +30,8 @@ class AuthController extends Controller
         ]);
 
         // Pass request to service layer (business logic)
-        return response()->json(
-            $this->authService->login($request)
-        );
+        $result = $this->authService->login($request);
+        return response()->json($result, $result['status'] ?? 200);
     }
 
     // =========================
@@ -46,9 +45,8 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        return response()->json(
-            $this->authService->setupPassword($request)
-        );
+        $result = $this->authService->setupPassword($request);
+        return response()->json($result, $result['status'] ?? 200);
     }
 
     // =========================
@@ -56,8 +54,7 @@ class AuthController extends Controller
     // =========================
     public function logout(Request $request)
     {
-        return response()->json(
-            $this->authService->logout($request)
-        );
+        $result = $this->authService->logout($request);
+        return response()->json($result, $result['status'] ?? 200);
     }
 }

@@ -2,21 +2,21 @@ import { useLocation } from "react-router-dom";
 import "./Header.css";
 
 const PAGE_TITLES = {
-  "/dean": "Dashboard",
-  "/dean/students": "Students",
-  "/dean/faculty": "Faculty",
-  "/dean/violations": "Violations",
-  "/dean/awards": "Awards",
-  "/dean/reports": "Reports",
-  "/faculty": "Dashboard",
-  "/faculty/students": "Students",
-  "/faculty/grades": "Grades",
-  "/faculty/violations": "Violations",
+  dashboard: "Dashboard",
+  users: "Users",
+  reports: "Reports",
 };
 
 export default function Header({ user, role = "dean" }) {
   const location = useLocation();
-  const pageTitle = PAGE_TITLES[location.pathname] || "Dashboard";
+  let pageTitle = PAGE_TITLES.dashboard;
+  if (location.pathname.includes("/users/")) {
+    pageTitle = "User Detail";
+  } else if (location.pathname.endsWith("/users")) {
+    pageTitle = PAGE_TITLES.users;
+  } else if (location.pathname.endsWith("/reports")) {
+    pageTitle = PAGE_TITLES.reports;
+  }
 
   return (
     <header className="app-header">
@@ -39,7 +39,7 @@ export default function Header({ user, role = "dean" }) {
         </button>
         <div className="user-info">
           <span className="user-name">{user?.name || "User"}</span>
-          <span className="user-role">{role === "dean" ? "Dean" : "Faculty"}</span>
+          <span className="user-role">{role ? role.replace("_", " ") : "User"}</span>
         </div>
         <div className="user-avatar">
           {user?.name?.charAt(0) || "U"}

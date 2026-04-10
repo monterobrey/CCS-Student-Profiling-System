@@ -1,31 +1,63 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+import { studentService, facultyService } from "../../services";
 import "./UserDetail.css";
 
 export default function UserDetail() {
-  const { id } = useParams();
+  const { role, getRoleBasePath } = useAuth();
+  const basePath = getRoleBasePath(role);
+  const { id, type } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchUser();
-  }, [id]);
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        let response;
 
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`/api/users/${id}`);
-      setUser(response.data.data || response.data);
-      setError(null);
-    } catch (err) {
-      console.error("Failed to fetch user:", err);
-      setError("Failed to load user details");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (type === "student") {
+          response = await studentService.getById(id);
+          const payload = response?.data || {};
+          setUser({
+            id: payload.id,
+            name: `${payload.first_name || ""} ${payload.last_name || ""}`.trim(),
+            email: payload.user?.email || "",
+            role: "student",
+            created_at: payload.created_at,
+          });
+        } else if (type === "faculty") {
+          const allFaculty = await facultyService.getAll();
+          const payload = (allFaculty?.data || []).find((f) => String(f.id) === String(id));
+          if (!payload) {
+            throw new Error("Faculty record not found");
+          }
+
+          setUser({
+            id: payload.id,
+            name: `${payload.first_name || ""} ${payload.last_name || ""}`.trim(),
+            email: payload.user?.email || "",
+            role: "faculty",
+            department: payload.department?.department_name,
+            created_at: payload.created_at,
+          });
+        } else {
+          throw new Error("Unsupported user type");
+        }
+
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        setError("Failed to load user details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id, type]);
 
   if (loading) {
     return (
@@ -43,7 +75,7 @@ export default function UserDetail() {
       <div className="user-detail-page">
         <div className="error-container">
           <p>{error || "User not found"}</p>
-          <Link to="/users" className="back-link">Back to Users</Link>
+          <Link to={`${basePath}/users`} className="back-link">Back to Users</Link>
         </div>
       </div>
     );
@@ -61,7 +93,7 @@ export default function UserDetail() {
   return (
     <div className="user-detail-page">
       <div className="detail-header">
-        <Link to="/users" className="back-link">
+        <Link to={`${basePath}/users`} className="back-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15,18 9,12 15,6" />
           </svg>

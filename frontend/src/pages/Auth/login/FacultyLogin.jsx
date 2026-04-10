@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { authService } from "../../../services";
 import "../../../styles/FacultyLogin.css";
 
 export default function FacultyLogin() {
+  const navigate = useNavigate();
+  const { login, getDefaultRouteForRole } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,10 +20,21 @@ export default function FacultyLogin() {
     setLoading(true);
     setError("");
 
-    setTimeout(() => {
+    try {
+      const result = await authService.login(email, password, "faculty_portal");
+
+      if (!result?.ok || !result?.token || !result?.user) {
+        setError(result?.message || "Invalid credentials");
+        return;
+      }
+
+      login(result.user, result.token);
+      navigate(getDefaultRouteForRole(result.user.role), { replace: true });
+    } catch (err) {
+      setError("Login failed. Please try again.");
+    } finally {
       setLoading(false);
-      alert("Faculty login (frontend only)");
-    }, 1200);
+    }
   };
 
   return (
@@ -104,7 +120,7 @@ export default function FacultyLogin() {
                   </button>
                 </div>
                 <div className="field-footer">
-                  <a href="#" className="forgot">Forgot password?</a>
+                  <button type="button" className="forgot">Forgot password?</button>
                 </div>
               </div>
 

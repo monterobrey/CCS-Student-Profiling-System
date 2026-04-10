@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
-import { API_ENDPOINTS } from "../../constants/DeanDashboard";
+import { useAuth } from "../../context/AuthContext";
+import { analyticsService } from "../../services";
 import "./Reports.css";
 
 export default function Reports() {
@@ -17,8 +16,8 @@ export default function Reports() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(API_ENDPOINTS.REPORTS);
-      const data = response.data?.data || response.data;
+      const response = await analyticsService.getAcademicPerformance();
+      const data = response?.data || {};
       
       setReports([
         {

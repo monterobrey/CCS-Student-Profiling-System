@@ -1,16 +1,1 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import StudentLogin from "./pages/Auth/login/StudentLogin";
-import FacultyLogin from "./pages/Auth/login/FacultyLogin";
-
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/students/login" element={<StudentLogin />} />
-        <Route path="/faculty/login" element={<FacultyLogin />} />
-      </Routes>
-    </Router>
-  );
-}
-
-export default App;
+export { default } from "./App.jsx";

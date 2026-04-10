@@ -4,13 +4,10 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
-use App\Models\Program;
-use App\Models\Section;
-use App\Models\Department;
 use App\Services\StudentService;
+use App\Services\StudentImportService;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Student management controller.
@@ -19,10 +16,12 @@ use Illuminate\Support\Facades\DB;
 class StudentController extends Controller
 {
     protected $studentService;
+    protected $studentImportService;
 
-    public function __construct(StudentService $studentService)
+    public function __construct(StudentService $studentService, StudentImportService $studentImportService)
     {
         $this->studentService = $studentService;
+        $this->studentImportService = $studentImportService;
     }
 
     /**
@@ -123,90 +122,12 @@ class StudentController extends Controller
     {
         $request->validate(['file' => 'required|file|mimes:csv,txt']);
 
-        $file = $request->file('file');
-        ini_set('auto_detect_line_endings', true);
-        $handle = fopen($file->getRealPath(), 'r');
-        fgetcsv($handle); // Skip header
-
-        $imported = 0;
-        $errors = [];
-        $row = 2;
-        $department = Department::firstOrCreate(['department_name' => 'College of Computing Studies']);
-
-        while (($data = fgetcsv($handle)) !== FALSE) {
-            if (empty($data) || (count($data) === 1 && empty($data[0]))) continue;
-
-            try {
-                if (count($data) < 8) {
-                    throw new \Exception("Expected 8 columns");
-                }
-
-                $studentNumber = trim($data[0]);
-                $firstName = trim($data[1]);
-                $lastName = trim($data[2]);
-                $middleName = trim($data[3]) ?: null;
-                $email = trim($data[4]);
-                $programCode = trim($data[5]);
-                $year = (int)trim($data[6]);
-                $sectionChar = trim($data[7]);
-
-                if (empty($studentNumber) || empty($firstName) || empty($lastName) || empty($email)) {
-                    throw new \Exception("Missing required fields");
-                }
-
-                if ($year < 1 || $year > 4) {
-                    throw new \Exception("Year level must be 1-4");
-                }
-
-                // Get or create program
-                $program = Program::firstOrCreate(
-                    ['program_code' => $programCode, 'department_id' => $department->id],
-                    ['program_name' => $this->getProgramName($programCode)]
-                );
-
-                // Get or create section
-                $sectionName = "$programCode $year-$sectionChar";
-                $section = Section::firstOrCreate(
-                    ['section_name' => $sectionName, 'program_id' => $program->id, 'department_id' => $department->id],
-                    ['year_level' => $year, 'school_year' => '2026-2027']
-                );
-
-                // Create student
-                $this->studentService->createStudent([
-                    'student_number' => $studentNumber,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'middle_name' => $middleName,
-                    'email' => $email,
-                    'program_id' => $program->id,
-                    'section_id' => $section->id,
-                    'year_level' => $year,
-                ]);
-
-                $imported++;
-            } catch (\Exception $e) {
-                $errors[] = "Row $row: " . $e->getMessage();
-            }
-            $row++;
-        }
-        fclose($handle);
+        $result = $this->studentImportService->importFromFile($request->file('file')->getRealPath());
 
         return ApiResponse::success(
-            ['imported' => $imported, 'errors' => $errors],
-            "$imported students imported"
+            ['imported' => $result['imported_count'], 'errors' => $result['errors']],
+            "{$result['imported_count']} students imported"
         );
-    }
-
-    /**
-     * Helper to map program code to full name.
-     */
-    private function getProgramName($code)
-    {
-        return [
-            'BSIT' => 'Bachelor of Science in Information Technology',
-            'BSCS' => 'Bachelor of Science in Computer Science',
-            'BSDED' => 'Bachelor of Science in Data Engineering and Design',
-        ][$code] ?? $code;
     }
 }
 

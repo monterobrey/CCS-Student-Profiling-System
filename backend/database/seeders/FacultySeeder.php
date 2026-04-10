@@ -30,16 +30,18 @@ class FacultySeeder extends Seeder
         ];
 
         foreach ($instructors as $ins) {
-            $user = User::create([
+            $user = User::firstOrCreate([
                 'email' => $ins['email'],
+            ], [
                 'password' => Hash::make('password'),
                 'role' => 'faculty',
                 'status' => 'active',
                 'password_set_at' => now(),
             ]);
 
-            Faculty::create([
+            Faculty::updateOrCreate([
                 'user_id' => $user->id,
+            ], [
                 'department_id' => $department->id,
                 'first_name' => $ins['first'],
                 'last_name' => $ins['last'],

@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faculty;
-use App\Models\Department;
 use App\Services\FacultyService;
+use App\Services\FacultyImportService;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Faculty management controller.
@@ -17,10 +16,12 @@ use Illuminate\Support\Facades\DB;
 class FacultyController extends Controller
 {
     protected $facultyService;
+    protected $facultyImportService;
 
-    public function __construct(FacultyService $facultyService)
+    public function __construct(FacultyService $facultyService, FacultyImportService $facultyImportService)
     {
         $this->facultyService = $facultyService;
+        $this->facultyImportService = $facultyImportService;
     }
 
     /**
@@ -136,44 +137,11 @@ class FacultyController extends Controller
     {
         $request->validate(['file' => 'required|file|mimes:csv,txt']);
 
-        $file = $request->file('file');
-        ini_set('auto_detect_line_endings', true);
-        $handle = fopen($file->getRealPath(), 'r');
-        fgetcsv($handle); // Skip header
-
-        $imported = 0;
-        $errors = [];
-        $row = 2;
-        $department = Department::firstOrCreate(['department_name' => 'College of Computing Studies']);
-
-        while (($data = fgetcsv($handle)) !== FALSE) {
-            if (empty($data) || (count($data) === 1 && empty($data[0]))) continue;
-
-            try {
-                if (count($data) < 5) {
-                    throw new \Exception("Expected 5 columns: first_name, last_name, middle_name, email, position");
-                }
-
-                $this->facultyService->createFaculty([
-                    'first_name' => trim($data[0]),
-                    'last_name' => trim($data[1]),
-                    'middle_name' => trim($data[2]) ?: null,
-                    'email' => trim($data[3]),
-                    'position' => trim($data[4]),
-                    'department_id' => $department->id,
-                ]);
-
-                $imported++;
-            } catch (\Exception $e) {
-                $errors[] = "Row $row: " . $e->getMessage();
-            }
-            $row++;
-        }
-        fclose($handle);
+        $result = $this->facultyImportService->importFromFile($request->file('file')->getRealPath());
 
         return ApiResponse::success(
-            ['imported' => $imported, 'errors' => $errors],
-            "$imported faculty members imported"
+            ['imported' => $result['imported_count'], 'errors' => $result['errors']],
+            "{$result['imported_count']} faculty members imported"
         );
     }
 }

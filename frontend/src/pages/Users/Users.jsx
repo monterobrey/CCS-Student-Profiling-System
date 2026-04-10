@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { studentService, facultyService } from "../../services";
 import "./Users.css";
 
 export default function Users() {
@@ -16,8 +17,28 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/users");
-      setUsers(response.data.data || response.data);
+      const [studentsRes, facultyRes] = await Promise.all([
+        studentService.getAll(),
+        facultyService.getAll(),
+      ]);
+
+      const students = (studentsRes?.data || []).map((item) => ({
+        id: item.id,
+        type: "student",
+        name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+        email: item.user?.email || "",
+        role: "student",
+      }));
+
+      const faculty = (facultyRes?.data || []).map((item) => ({
+        id: item.id,
+        type: "faculty",
+        name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+        email: item.user?.email || "",
+        role: "faculty",
+      }));
+
+      setUsers([...students, ...faculty]);
       setError(null);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -108,7 +129,7 @@ export default function Users() {
         </div>
         <div className="stat-badge">
           <span className="stat-number">
-            {users.filter((u) => u.role === "admin").length}
+            {users.filter((u) => u.role === "dean" || u.role === "secretary" || u.role === "department_chair").length}
           </span>
           <span className="stat-label">Admins</span>
         </div>
@@ -143,7 +164,7 @@ export default function Users() {
       ) : (
         <div className="users-grid">
           {filteredUsers.map((user) => (
-            <UserCard key={user.id} user={user} />
+            <UserCard key={`${user.type}-${user.id}`} user={user} />
           ))}
         </div>
       )}
@@ -152,6 +173,8 @@ export default function Users() {
 }
 
 function UserCard({ user }) {
+  const { role, getRoleBasePath } = useAuth();
+  const basePath = getRoleBasePath(role);
   const roleColors = {
     admin: "#0d9488",
     dean: "#0891b2",
@@ -162,7 +185,7 @@ function UserCard({ user }) {
   const roleColor = roleColors[user.role] || "#64748b";
 
   return (
-    <Link to={`/users/${user.id}`} className="user-card">
+    <Link to={`${basePath}/users/${user.type}/${user.id}`} className="user-card">
       <div className="user-avatar" style={{ background: roleColor }}>
         {user.name?.charAt(0).toUpperCase() || "U"}
       </div>

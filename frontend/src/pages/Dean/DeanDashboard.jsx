@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useDeanAnalytics } from "../../hooks/useDeanAnalytics";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/DeanDashboard.css";
 
 export default function DeanDashboard() {
   const navigate = useNavigate();
+  const { role, getRoleBasePath } = useAuth();
+  const basePath = getRoleBasePath(role);
   const {
     greeting,
     academicYear,
@@ -224,7 +227,7 @@ export default function DeanDashboard() {
                 />
               </svg>
               <span>{activeViolationsCount - 2} more cases need review</span>
-              <button onClick={() => navigate("/violations")}>
+              <button onClick={() => navigate(`${basePath}/reports`)}>
                 Review Now →
               </button>
             </div>

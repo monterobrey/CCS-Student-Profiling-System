@@ -1,10 +1,11 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 
 const AuthContext = createContext(null);
 
 export const ROLES = {
-  ADMIN: "admin",
   DEAN: "dean",
+  CHAIR: "department_chair",
+  SECRETARY: "secretary",
   FACULTY: "faculty",
   STUDENT: "student",
 };
@@ -26,19 +27,36 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token = null) => {
     const userWithDefaults = {
       ...userData,
       role: userData.role || ROLES.DEAN,
     };
     setUser(userWithDefaults);
     localStorage.setItem("user", JSON.stringify(userWithDefaults));
+    if (token) {
+      localStorage.setItem("auth_token", token);
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("auth_token");
   };
+
+  const getRoleBasePath = useCallback((userRole) => {
+    if (userRole === ROLES.DEAN) return "/dean";
+    if (userRole === ROLES.CHAIR) return "/department-chair";
+    if (userRole === ROLES.SECRETARY) return "/secretary";
+    if (userRole === ROLES.FACULTY) return "/faculty";
+    if (userRole === ROLES.STUDENT) return "/student";
+    return "/faculty";
+  }, []);
+
+  const getDefaultRouteForRole = useCallback((userRole) => {
+    return `${getRoleBasePath(userRole)}/dashboard`;
+  }, [getRoleBasePath]);
 
   const value = useMemo(
     () => ({
@@ -48,17 +66,20 @@ export function AuthProvider({ children }) {
       role: user?.role || null,
       login,
       logout,
-      isAdmin: user?.role === ROLES.ADMIN,
       isDean: user?.role === ROLES.DEAN,
+      isChair: user?.role === ROLES.CHAIR,
+      isSecretary: user?.role === ROLES.SECRETARY,
       isFaculty: user?.role === ROLES.FACULTY,
       isStudent: user?.role === ROLES.STUDENT,
+      getRoleBasePath,
+      getDefaultRouteForRole,
       hasRole: (roles) => {
         if (!user?.role) return false;
         if (Array.isArray(roles)) return roles.includes(user.role);
         return user.role === roles;
       },
     }),
-    [user, loading]
+    [user, loading, getRoleBasePath, getDefaultRouteForRole]
   );
 
   return (
@@ -82,6 +103,6 @@ export function useUser() {
 }
 
 export function useRole() {
-  const { role, isAdmin, isDean, isFaculty, isStudent, hasRole } = useAuth();
-  return { role, isAdmin, isDean, isFaculty, isStudent, hasRole };
+  const { role, isDean, isChair, isSecretary, isFaculty, isStudent, hasRole } = useAuth();
+  return { role, isDean, isChair, isSecretary, isFaculty, isStudent, hasRole };
 }

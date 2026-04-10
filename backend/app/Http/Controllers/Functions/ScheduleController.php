@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Functions;
 
 use App\Http\Controllers\Controller;
 use App\Services\ScheduleService;
+use App\Services\AutoScheduleService;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
     protected $scheduleService;
+    protected $autoScheduleService;
 
-    public function __construct(ScheduleService $scheduleService)
+    public function __construct(ScheduleService $scheduleService, AutoScheduleService $autoScheduleService)
     {
         $this->scheduleService = $scheduleService;
+        $this->autoScheduleService = $autoScheduleService;
     }
 
     /**
@@ -87,6 +90,57 @@ class ScheduleController extends Controller
         } catch (\Exception $e) {
             return ApiResponse::error('Import failed: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Auto-generate schedules based on curriculum and section load.
+     */
+    public function autoGenerate(Request $request)
+    {
+        $data = $request->validate([
+            'program_id' => 'required|exists:programs,id',
+            'year_level' => 'required|integer|between:1,4',
+            'semester' => 'required|string|in:1st,2nd,Summer',
+        ]);
+
+        try {
+            $result = $this->autoScheduleService->generate(
+                (int) $data['program_id'],
+                (string) $data['year_level'],
+                $data['semester']
+            );
+
+            if (!($result['success'] ?? false)) {
+                return ApiResponse::error('Auto-generation failed due to scheduling conflicts.', 422, $result['conflicts'] ?? []);
+            }
+
+            return ApiResponse::success($result, 'Schedules auto-generated successfully.');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Auto-generation failed: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Bulk delete schedules.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:schedules,id',
+        ]);
+
+        $deletedCount = $this->scheduleService->bulkDeleteSchedules($data['ids']);
+        return ApiResponse::success(['deleted' => $deletedCount], 'Schedules deleted successfully.');
+    }
+
+    /**
+     * Delete one schedule entry.
+     */
+    public function destroy($id)
+    {
+        $this->scheduleService->deleteSchedule($id);
+        return ApiResponse::success(null, 'Schedule deleted successfully.');
     }
 }
 

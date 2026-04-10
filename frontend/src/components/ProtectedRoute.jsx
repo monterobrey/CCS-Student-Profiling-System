@@ -15,10 +15,20 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/faculty/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
+    const roleBasePath = role === ROLES.DEAN
+      ? "/dean"
+      : role === ROLES.CHAIR
+        ? "/department-chair"
+        : role === ROLES.SECRETARY
+          ? "/secretary"
+          : role === ROLES.FACULTY
+            ? "/faculty"
+            : "/student";
+
     return (
       <div className="access-denied">
         <div className="access-denied-content">
@@ -29,7 +39,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
           <h2>Access Denied</h2>
           <p>You do not have permission to access this page.</p>
           <p className="hint">Required role: {allowedRoles.join(" or ")}</p>
-          <a href="/dashboard" className="back-btn">Go to Dashboard</a>
+          <a href={`${roleBasePath}/dashboard`} className="back-btn">Go to Dashboard</a>
         </div>
       </div>
     );
@@ -38,17 +48,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   return children;
 }
 
-export function AdminRoute({ children }) {
-  return (
-    <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-      {children}
-    </ProtectedRoute>
-  );
-}
-
 export function DeanRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.DEAN]}>
+    <ProtectedRoute allowedRoles={[ROLES.DEAN, ROLES.CHAIR, ROLES.SECRETARY]}>
       {children}
     </ProtectedRoute>
   );
@@ -56,7 +58,7 @@ export function DeanRoute({ children }) {
 
 export function FacultyRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.DEAN, ROLES.FACULTY]}>
+    <ProtectedRoute allowedRoles={[ROLES.DEAN, ROLES.CHAIR, ROLES.SECRETARY, ROLES.FACULTY]}>
       {children}
     </ProtectedRoute>
   );

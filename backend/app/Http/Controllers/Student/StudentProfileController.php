@@ -9,7 +9,9 @@ use App\Models\StudentSkill;
 use App\Models\StudentOrganization;
 use App\Models\AcademicActivity;
 use App\Models\NonAcademicActivity;
+use App\Models\StudentViolation;
 use App\Models\UniversityOrganization;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,12 +24,6 @@ class StudentProfileController extends Controller
     {
         $user = $request->user();
         
-        // Ensure we're dealing with a student
-        if (!$user->role === 'student') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        // Get the student record for the current user with all required relationships
         $student = Student::with([
             'user', 
             'guardian', 
@@ -39,13 +35,9 @@ class StudentProfileController extends Controller
             'program'
         ])
         ->where('user_id', $user->id)
-        ->first();
+        ->firstOrFail();
 
-        if (!$student) {
-            return response()->json(['message' => 'Student profile not found'], 404);
-        }
-
-        return response()->json($student);
+        return ApiResponse::success($student);
     }
 
     /**
@@ -55,9 +47,8 @@ class StudentProfileController extends Controller
     {
         $user = $request->user();
         
-        // Ensure the user is not a student (unless they are viewing their own, but that's handled by show())
         if ($user->role === 'student' && $user->student->id != $id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return ApiResponse::unauthorized('Cannot view another student\'s profile.');
         }
 
         $student = Student::with([
@@ -70,13 +61,9 @@ class StudentProfileController extends Controller
             'section', 
             'program'
         ])
-        ->find($id);
+        ->findOrFail($id);
 
-        if (!$student) {
-            return response()->json(['message' => 'Student profile not found'], 404);
-        }
-
-        return response()->json($student);
+        return ApiResponse::success($student);
     }
 
     /**
@@ -84,9 +71,6 @@ class StudentProfileController extends Controller
      */
     public function updateGuardian(Request $request)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
         $validated = $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',
@@ -95,11 +79,11 @@ class StudentProfileController extends Controller
         ]);
 
         $guardian = Guardian::updateOrCreate(
-            ['student_id' => $user->student->id],
+            ['student_id' => $request->user()->student->id],
             $validated
         );
 
-        return response()->json(['message' => 'Guardian information updated', 'guardian' => $guardian]);
+        return ApiResponse::success($guardian, 'Guardian information updated.');
     }
 
     /**
@@ -107,21 +91,18 @@ class StudentProfileController extends Controller
      */
     public function addSkill(Request $request)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
         $validated = $request->validate([
             'skillName' => 'required|string',
             'skill_category' => 'required|string',
         ]);
 
         $skill = StudentSkill::create([
-            'student_id' => $user->student->id,
+            'student_id' => $request->user()->student->id,
             'skillName' => $validated['skillName'],
             'skill_category' => $validated['skill_category'],
         ]);
 
-        return response()->json(['message' => 'Skill added', 'skill' => $skill]);
+        return ApiResponse::success($skill, 'Skill added.', 201);
     }
 
     /**
@@ -129,13 +110,10 @@ class StudentProfileController extends Controller
      */
     public function removeSkill(Request $request, $id)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
-        $skill = StudentSkill::where('id', $id)->where('student_id', $user->student->id)->firstOrFail();
+        $skill = StudentSkill::where('id', $id)->where('student_id', $request->user()->student->id)->firstOrFail();
         $skill->delete();
 
-        return response()->json(['message' => 'Skill removed']);
+        return ApiResponse::success(null, 'Skill removed.');
     }
 
     /**
@@ -143,9 +121,6 @@ class StudentProfileController extends Controller
      */
     public function addAffiliation(Request $request)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
         $validated = $request->validate([
             'org_id' => 'required|exists:university_organizations,id',
             'role' => 'required|string',
@@ -153,13 +128,13 @@ class StudentProfileController extends Controller
         ]);
 
         $affiliation = StudentOrganization::create([
-            'student_id' => $user->student->id,
+            'student_id' => $request->user()->student->id,
             'org_id' => $validated['org_id'],
             'role' => $validated['role'],
             'dateJoined' => $validated['dateJoined'],
         ]);
 
-        return response()->json(['message' => 'Affiliation added', 'affiliation' => $affiliation->load('organization')]);
+        return ApiResponse::success($affiliation->load('organization'), 'Affiliation added.', 201);
     }
 
     /**
@@ -167,13 +142,10 @@ class StudentProfileController extends Controller
      */
     public function removeAffiliation(Request $request, $id)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
-        $affiliation = StudentOrganization::where('id', $id)->where('student_id', $user->student->id)->firstOrFail();
+        $affiliation = StudentOrganization::where('id', $id)->where('student_id', $request->user()->student->id)->firstOrFail();
         $affiliation->delete();
 
-        return response()->json(['message' => 'Affiliation removed']);
+        return ApiResponse::success(null, 'Affiliation removed.');
     }
 
     /**
@@ -181,9 +153,6 @@ class StudentProfileController extends Controller
      */
     public function addActivity(Request $request)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
         $validated = $request->validate([
             'type' => 'required|in:academic,non-academic',
             'activity_name' => 'required|string',
@@ -194,7 +163,7 @@ class StudentProfileController extends Controller
 
         if ($validated['type'] === 'academic') {
             $activity = AcademicActivity::create([
-                'student_id' => $user->student->id,
+                'student_id' => $request->user()->student->id,
                 'activity_name' => $validated['activity_name'],
                 'description' => $validated['description'],
                 'date' => $validated['date'],
@@ -203,7 +172,7 @@ class StudentProfileController extends Controller
             ]);
         } else {
             $activity = NonAcademicActivity::create([
-                'student_id' => $user->student->id,
+                'student_id' => $request->user()->student->id,
                 'activity_name' => $validated['activity_name'],
                 'description' => $validated['description'],
                 'date' => $validated['date'],
@@ -212,7 +181,7 @@ class StudentProfileController extends Controller
             ]);
         }
 
-        return response()->json(['message' => 'Activity added and pending verification', 'activity' => $activity]);
+        return ApiResponse::success($activity, 'Activity added and pending verification.', 201);
     }
 
     /**
@@ -220,7 +189,7 @@ class StudentProfileController extends Controller
      */
     public function getOrganizations()
     {
-        return UniversityOrganization::all();
+        return ApiResponse::success(UniversityOrganization::all());
     }
 
     /**
@@ -228,15 +197,11 @@ class StudentProfileController extends Controller
      */
     public function getViolations(Request $request)
     {
-        $user = $request->user();
-        if (!$user->isStudent()) return response()->json(['message' => 'Unauthorized'], 403);
-
-        $violations = \App\Models\StudentViolation::where('student_id', $user->student->id)
+        $violations = StudentViolation::where('student_id', $request->user()->student->id)
             ->with(['faculty', 'course'])
-            ->latest()
             ->get();
 
-        return response()->json($violations);
+        return ApiResponse::success($violations);
     }
 }
 

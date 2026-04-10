@@ -4,64 +4,40 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Services\AuthService;
 
 class AuthController extends Controller
 {
+    // Service instance (injected by Laravel)
+    protected $authService;
+
+    // Laravel automatically injects AuthService here
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
+    // =========================
+    // LOGIN ENDPOINT
+    // =========================
     public function login(Request $request)
     {
+        // Validate incoming request data
         $request->validate([
             'email' => 'required|string',
             'password' => 'required',
             'role' => 'nullable|string|in:student,faculty,dean,department_chair,secretary,faculty_portal',
         ]);
 
-        $query = User::query();
-
-        if ($request->role === 'student') {
-            $query->where('student_number', $request->email);
-        } else {
-            $query->where(function($q) use ($request) {
-                $q->where('email', $request->email)
-                  ->orWhere('student_number', $request->email);
-            });
-        }
-
-        $user = $query->first();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-
-        // Enforce role restriction if provided
-        if ($request->filled('role')) {
-            if ($request->role === 'student') {
-                if ($user->role !== 'student') {
-                    return response()->json(['message' => 'Invalid credentials'], 401);
-                }
-            } elseif ($request->role === 'faculty_portal') {
-                // Allow faculty, dean, department_chair, and secretary for the faculty portal
-                $allowedFacultyRoles = ['faculty', 'dean', 'department_chair', 'secretary'];
-                if (!in_array($user->role, $allowedFacultyRoles)) {
-                    return response()->json(['message' => 'Invalid credentials'], 401);
-                }
-            }
-        }
-
-        // Check if student/faculty has set their password (if required by the setup flow)
-        if (in_array($user->role, ['student', 'faculty']) && is_null($user->password_set_at) && $user->password_setup_token) {
-            return response()->json(['message' => 'Account setup required'], 403);
-        }
-
-        return response()->json([
-            'token' => $user->createToken('auth_token')->plainTextToken,
-            'user' => $user->load($user->role === 'student' ? 'student' : ($user->isFacultyMember() ? 'faculty' : [])),
-        ]);
+        // Pass request to service layer (business logic)
+        return response()->json(
+            $this->authService->login($request)
+        );
     }
 
+    // =========================
+    // SETUP PASSWORD (first-time login)
+    // =========================
     public function setupPassword(Request $request)
     {
         $request->validate([
@@ -70,31 +46,18 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::where('email', $request->email)
-            ->where('password_setup_token', $request->token)
-            ->first();
-
-        if (!$user) {
-            return response()->json(['message' => 'Invalid setup link'], 400);
-        }
-
-        DB::transaction(function () use ($request, $user) {
-            $user->update([
-                'password' => Hash::make($request->password),
-                'password_set_at' => now(),
-                'password_setup_token' => null,
-                'status' => 'active',
-            ]);
-        });
-
-        return response()->json(['message' => 'Account setup successful']);
+        return response()->json(
+            $this->authService->setupPassword($request)
+        );
     }
 
+    // =========================
+    // LOGOUT USER
+    // =========================
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(
+            $this->authService->logout($request)
+        );
     }
 }
-

@@ -3,21 +3,26 @@
 namespace App\Http\Controllers\Functions;
 
 use App\Http\Controllers\Controller;
-use App\Models\Section;
+use App\Services\SectionService;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
+    protected $sectionService;
+
+    public function __construct(SectionService $sectionService)
+    {
+        $this->sectionService = $sectionService;
+    }
+
     /**
      * Get all sections.
      */
     public function index(Request $request)
     {
-        if (!$request->user()->isDean() && !$request->user()->isDepartmentChair() && !$request->user()->isSecretary() && !$request->user()->isFaculty()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        return Section::with(['program', 'department'])->get();
+        $sections = $this->sectionService->getAllSections();
+        return ApiResponse::success($sections);
     }
 }
 

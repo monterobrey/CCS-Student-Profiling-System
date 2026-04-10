@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { API_ENDPOINTS } from "../../constants/DeanDashboard";
 import "./Reports.css";
 
 export default function Reports() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchReports();
@@ -15,11 +17,43 @@ export default function Reports() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/reports");
-      setReports(response.data.data || response.data);
+      const response = await axios.get(API_ENDPOINTS.REPORTS);
+      const data = response.data?.data || response.data;
+      
+      setReports([
+        {
+          id: "users",
+          title: "User Statistics",
+          description: "Total users, by role breakdown",
+          icon: { bg: "#ecfeff", color: "#0891b2", path: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 110-8 4 4 0 010 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" },
+          data: data?.summary || null,
+        },
+        {
+          id: "students",
+          title: "Student Performance",
+          description: "Academic statistics and GWA trends",
+          icon: { bg: "#f0fdf4", color: "#16a34a", path: "M22 12h-4l-3 9L9 3l-3 9H2" },
+          data: data?.avg_gwa_by_year || null,
+        },
+        {
+          id: "violations",
+          title: "Violation Summary",
+          description: "Student violations by type",
+          icon: { bg: "#fef2f2", color: "#dc2626", path: "M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" },
+          data: data?.violations_by_type || null,
+        },
+        {
+          id: "awards",
+          title: "Awards & Recognition",
+          description: "Student awards and achievements",
+          icon: { bg: "#fffbeb", color: "#d97706", path: "M12 15l-2 5 2-1 2 1-2-5zM19 9l-6 6-3-3" },
+          data: data?.recent_violations || null,
+        },
+      ]);
+      setError(null);
     } catch (err) {
       console.error("Failed to fetch reports:", err);
-      setReports([]);
+      setError("Failed to load reports");
     } finally {
       setLoading(false);
     }
@@ -62,83 +96,35 @@ export default function Reports() {
         </div>
       </div>
 
+      {error && (
+        <div className="error-banner">
+          <p>{error}</p>
+          <button onClick={fetchReports}>Retry</button>
+        </div>
+      )}
+
       <div className="reports-grid">
-        <div className="report-card">
-          <div className="report-icon" style={{ background: "#ecfeff", color: "#0891b2" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-            </svg>
+        {reports.map((report) => (
+          <div key={report.id} className="report-card">
+            <div className="report-icon" style={{ background: report.icon.bg, color: report.icon.color }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d={report.icon.path} />
+              </svg>
+            </div>
+            <div className="report-content">
+              <h3>{report.title}</h3>
+              <p>{report.description}</p>
+              {report.data && (
+                <span className="report-date">Data available</span>
+              )}
+            </div>
+            <button className="report-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9,18 15,12 9,6" />
+              </svg>
+            </button>
           </div>
-          <div className="report-content">
-            <h3>User Statistics</h3>
-            <p>Total users, by role breakdown</p>
-            <span className="report-date">Updated: Today</span>
-          </div>
-          <button className="report-action">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="report-card">
-          <div className="report-icon" style={{ background: "#f0fdf4", color: "#16a34a" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </div>
-          <div className="report-content">
-            <h3>Academic Performance</h3>
-            <p>GWA trends and analytics</p>
-            <span className="report-date">Updated: Today</span>
-          </div>
-          <button className="report-action">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="report-card">
-          <div className="report-icon" style={{ background: "#fef2f2", color: "#dc2626" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          </div>
-          <div className="report-content">
-            <h3>Violation Summary</h3>
-            <p>Student violations by type</p>
-            <span className="report-date">Updated: Today</span>
-          </div>
-          <button className="report-action">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="report-card">
-          <div className="report-icon" style={{ background: "#fffbeb", color: "#d97706" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="8" r="7" />
-              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-            </svg>
-          </div>
-          <div className="report-content">
-            <h3>Awards & Recognition</h3>
-            <p>Student awards and achievements</p>
-            <span className="report-date">Updated: Today</span>
-          </div>
-          <button className="report-action">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          </button>
-        </div>
+        ))}
       </div>
 
       <div className="admin-info">

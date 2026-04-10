@@ -1,0 +1,25 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.app-main {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.15s;
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px 32px;
+}
+
+@media (max-width: 900px) {
+  .app-main {
+    margin-left: 70px;
+  }
+}

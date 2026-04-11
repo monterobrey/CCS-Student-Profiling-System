@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, ROLES } from '../../context/AuthContext';
 import { studentService } from '../../services';
 import { httpClient } from '../../services/httpClient';
@@ -20,15 +21,39 @@ export default function StudentManagement() {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const queryClient = useQueryClient();
+
   const isSecretary   = role === ROLES.SECRETARY;
   const isDeanOrChair = role === ROLES.DEAN || role === ROLES.CHAIR;
   const isChair       = role === ROLES.CHAIR;
 
-  const [students,  setStudents]  = useState([]);
-  const [sections,  setSections]  = useState([]);
-  const [programs,  setPrograms]  = useState([]);
+  // ── Cached queries (staleTime: Infinity — never auto-refetch) ──
+  const { data: students = [], isLoading: loadingStudents } = useQuery({
+    queryKey: ['students'],
+    queryFn: async () => {
+      const res = await studentService.getAll();
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
 
-  const [loading,       setLoading]       = useState(false);
+  const { data: sections = [] } = useQuery({
+    queryKey: ['sections'],
+    queryFn: async () => {
+      const res = await httpClient.get(API_ENDPOINTS.SECTIONS.LIST);
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ['programs'],
+    queryFn: async () => {
+      const res = await httpClient.get(API_ENDPOINTS.PROGRAMS.LIST);
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
+
+  const loading = loadingStudents;
+
   const [loadingImport, setLoadingImport] = useState(false);
   const [saving,        setSaving]        = useState(false);
 
@@ -41,7 +66,6 @@ export default function StudentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 50;
 
-  const [viewingStudent,  setViewingStudent]  = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingStudent,  setEditingStudent]  = useState(null);
@@ -63,6 +87,9 @@ export default function StudentManagement() {
     return 'dean';
   };
 
+  // derived from cached students + url param
+  const viewingStudent = id ? students.find(s => s.id == id) ?? null : null;
+
   const showToast = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3500);
@@ -82,40 +109,6 @@ export default function StudentManagement() {
   };
 
   const getResendCount = (studentId) => resendCounts[studentId] || 0;
-
-  /* ===========================
-     FETCH
-  =========================== */
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [studentsRes, sectionsRes, programsRes] = await Promise.all([
-        studentService.getAll(),
-        httpClient.get(API_ENDPOINTS.SECTIONS.LIST),
-        httpClient.get(API_ENDPOINTS.PROGRAMS.LIST),
-      ]);
-
-      if (studentsRes.ok)  setStudents(studentsRes.data  ?? []);
-      if (sectionsRes.ok)  setSections(sectionsRes.data  ?? []);
-      if (programsRes.ok)  setPrograms(programsRes.data  ?? []);
-    } catch {
-      showToast('error', 'Failed to load data.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchData(); }, []);
-
-  useEffect(() => {
-    if (id) {
-      const student = students.find(s => s.id == id);
-      if (student) setViewingStudent(student);
-    } else {
-      setViewingStudent(null);
-    }
-  }, [id, students]);
 
   /* ===========================
      DERIVED DATA
@@ -201,7 +194,7 @@ export default function StudentManagement() {
   };
 
   const openEditFromView = (student) => {
-    setViewingStudent(null);
+    navigate(`/${getBasePath()}/student-accounts`);
     openEditModal(student);
   };
 
@@ -210,7 +203,6 @@ export default function StudentManagement() {
   };
 
   const closeViewModal = () => {
-    setViewingStudent(null);
     navigate(`/${getBasePath()}/student-accounts`);
   };
 
@@ -260,7 +252,14 @@ export default function StudentManagement() {
       if (res.ok) {
         showToast('success', res.message || (editingStudent ? 'Student updated.' : 'Student created.'));
         setShowCreateModal(false);
-        fetchData();
+
+        // Update cache directly — no refetch
+        queryClient.setQueryData(['students'], (old = []) => {
+          if (editingStudent) {
+            return old.map(s => s.id === res.data.id ? res.data : s);
+          }
+          return [...old, res.data];
+        });
       } else {
         const firstError = res.errors ? Object.values(res.errors)[0]?.[0] : null;
         showToast('error', firstError || res.message || 'Failed to save student.');
@@ -283,8 +282,10 @@ export default function StudentManagement() {
       if (res.ok) {
         showToast('success', 'Student archived successfully.');
         setShowDeleteModal(false);
-        setViewingStudent(null);
-        fetchData();
+        // Remove from cache directly — no refetch
+        queryClient.setQueryData(['students'], (old = []) =>
+          old.filter(s => s.id !== deletingStudent.id)
+        );
       } else {
         showToast('error', res.message || 'Failed to archive student.');
       }
@@ -313,9 +314,9 @@ export default function StudentManagement() {
     }
   };
 
-  /* ===========================
-     CSV IMPORT
-  =========================== */
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['students'] });
+  };
 
   const handleCSV = async (e) => {
     const file = e.target.files[0];
@@ -325,7 +326,8 @@ export default function StudentManagement() {
       const res = await studentService.importFromCSV(file);
       if (res.success) {
         showToast('success', `${res.data?.imported ?? 0} students imported.`);
-        fetchData();
+        // Full refetch needed here — we don't know what was imported
+        queryClient.invalidateQueries({ queryKey: ['students'] });
       } else {
         showToast('error', res.message || 'Import failed.');
       }
@@ -355,6 +357,10 @@ export default function StudentManagement() {
         </div>
         {isSecretary && (
           <div className="header-actions">
+            <button className="ghost-btn" onClick={handleRefresh} title="Refresh data">
+              <svg viewBox="0 0 18 18" fill="none" width="16" height="16"><path d="M1 4v5h5M17 14v-5h-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M15.66 7A7 7 0 103.34 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              Refresh
+            </button>
             <button className="ghost-btn" onClick={() => document.getElementById('csvInput')?.click()} disabled={loadingImport}>
               {loadingImport
                 ? <svg className="spinner-sm" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="5"/></svg>

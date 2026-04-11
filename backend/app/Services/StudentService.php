@@ -201,6 +201,11 @@ class StudentService
 
         return true;
     }
+
+    /**
+     * Archive a student account.
+     */
+    public function archiveStudent($studentId, $archivedByUserId)
     {
         return DB::transaction(function () use ($studentId, $archivedByUserId) {
             $student = Student::findOrFail($studentId);

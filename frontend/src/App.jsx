@@ -8,6 +8,10 @@ import Users from "./pages/Users/Users";
 import UserDetail from "./pages/Users/UserDetail";
 import Reports from "./pages/Reports/Reports";
 import DeanDashboard from "./pages/Dean/DeanDashboard";
+import ProfilingReport from "./pages/Dean/ProfilingReport";
+import CurriculumManagement from "./pages/Dean/CurriculumManagement";
+import CourseManagement from "./pages/Dean/CourseManagement";
+import PerformanceOverview from "./pages/Dean/PerformanceOverview";
 
 function App() {
   return (
@@ -28,6 +32,38 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
                   <DeanDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/reports"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <ProfilingReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/curriculum"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <CurriculumManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/courses"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <CourseManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/performance"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <PerformanceOverview />
                 </ProtectedRoute>
               }
             />

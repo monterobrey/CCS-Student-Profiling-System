@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useDeanAnalytics } from "../../hooks/useDeanAnalytics";
 import { useAuth } from "../../context/AuthContext";
-import "../../styles/DeanDashboard.css";
+import "../../styles/Dean/DeanDashboard.css";
 
 export default function DeanDashboard() {
   const navigate = useNavigate();

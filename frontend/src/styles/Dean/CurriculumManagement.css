@@ -1,0 +1,86 @@
+.curriculum-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: #9a8070;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.search-input,
+select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.year-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.year-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.semester-card {
+  margin-top: 10px;
+}
+
+.sem-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sem-table th,
+.sem-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.primary-btn {
+  background: #ff6b1a;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.outline-btn {
+  border: 1px solid #ccc;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.delete-btn-sm {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+}

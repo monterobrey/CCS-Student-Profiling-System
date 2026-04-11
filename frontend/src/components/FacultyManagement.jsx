@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth, ROLES } from '../../context/AuthContext';
-import '../../styles/Dean/FacultyManagement.css';
+import { useAuth, ROLES } from '../context/AuthContext';
+import './FacultyManagement.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 const POSITIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Instructor'];
@@ -113,7 +113,7 @@ export default function FacultyManagement() {
   const getResendCount = (facultyId) => resendCounts[facultyId] || 0;
 
   const miniStats = useMemo(() => [
-    { label: 'TOTAL FACULTY', value: faculty.length, color: '#3b82f6', icon: 'users', iconBg: '#eff6ff', iconColor: '#3b82f6' },
+    { label: 'TOTAL STUDENTS', value: faculty.length, color: '#3b82f6', icon: 'users', iconBg: '#eff6ff', iconColor: '#3b82f6' },
     { label: 'ACTIVE', value: faculty.filter(f => f.status === 'active').length, color: '#16a34a', icon: 'check', iconBg: '#f0fdf4', iconColor: '#16a34a' },
     { label: 'PENDING SETUP', value: faculty.filter(f => f.status === 'pending').length, color: '#6b7280', icon: 'clock', iconBg: '#f3f4f6', iconColor: '#f97316' },
     { label: 'BSCS', value: faculty.filter(f => f.department_name?.includes('Computing')).length, color: '#8b5cf6', icon: 'users', iconBg: '#fef2f2', iconColor: '#f97316' },
@@ -324,7 +324,10 @@ export default function FacultyManagement() {
               <div className="mini-stat-icon" style={{ background: s.iconBg }}>
                 <svg viewBox="0 0 24 24" fill="none" style={{ color: s.iconColor }}>
                   {s.icon === 'users' && (
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <>
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </>
                   )}
                   {s.icon === 'check' && (
                     <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

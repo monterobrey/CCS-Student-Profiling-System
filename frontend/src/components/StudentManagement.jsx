@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth, ROLES } from '../../context/AuthContext';
-import '../../styles/Dean/StudentManagement.css';
+import { useAuth, ROLES } from '../context/AuthContext';
+import './StudentManagement.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 const PROGRAMS = ['BSCS', 'BSIT', 'BSIS'];
@@ -107,11 +107,11 @@ export default function StudentManagement() {
   const getResendCount = (studentId) => resendCounts[studentId] || 0;
 
   const miniStats = useMemo(() => [
-    { label: 'Total Students', value: students.length, color: '#FF6B1A' },
+    { label: 'Total Students', value: students.length, color: '#3b82f6' },
     { label: 'Active', value: students.filter(s => s.status === 'active').length, color: '#16a34a' },
-    { label: 'Pending Setup', value: students.filter(s => s.status === 'pending').length, color: '#f59e0b' },
-    { label: 'BSCS', value: students.filter(s => s.course === 'BSCS').length, color: '#8b5cf6' },
-    { label: 'BSIT', value: students.filter(s => s.course === 'BSIT').length, color: '#3b82f6' }
+    { label: 'Pending Setup', value: students.filter(s => s.status === 'pending').length, color: '#8b5cf6' },
+    { label: 'BSCS', value: students.filter(s => s.course === 'BSCS').length, color: '#FF6B1A' },
+    { label: 'BSIT', value: students.filter(s => s.course === 'BSIT').length, color: '#16a34a' }
   ], [students]);
 
   const availableSections = useMemo(() => {

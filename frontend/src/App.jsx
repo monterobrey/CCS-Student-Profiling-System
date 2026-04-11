@@ -12,9 +12,9 @@ import ProfilingReport from "./pages/Dean/ProfilingReport";
 import CurriculumManagement from "./pages/Dean/CurriculumManagement";
 import CourseManagement from "./pages/Dean/CourseManagement";
 import PerformanceOverview from "./pages/Dean/PerformanceOverview";
-import FacultyManagement from "./pages/Dean/FacultyManagement";
+import FacultyManagement from "./components/FacultyManagement";
 import ViolationsList from "./pages/Dean/ViolationsList";
-import StudentManagement from "./pages/Dean/StudentManagement";
+import StudentManagement from "./components/StudentManagement";
 import Settings from "./components/Settings";
 
 function App() {

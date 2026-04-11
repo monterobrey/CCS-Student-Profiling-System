@@ -60,6 +60,10 @@ export const API_ENDPOINTS = {
   SECTIONS: {
     LIST: "/sections",
   },
+  VIOLATIONS: {
+    LIST: "/violations",
+    UPDATE: (id) => `/violations/${id}`,
+  },
 };
 
 export default API_ENDPOINTS;

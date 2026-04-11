@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/secretary/students/${id}`,
     DELETE: (id) => `/secretary/students/${id}`,
     IMPORT: "/secretary/students/import",
+    RESEND_SETUP: (id) => `/secretary/students/${id}/resend-setup`,
     ADD_SKILL: "/student/skills",
     REMOVE_SKILL: (id) => `/student/skills/${id}`,
     VIOLATIONS: "/student/violations",

@@ -301,10 +301,13 @@ export default function StudentManagement() {
     const count = getResendCount(student.id);
     if (count >= 3) return;
     try {
-      // endpoint: POST /secretary/students/{id}/resend-setup (if available)
-      // for now increment count and notify
-      setResendCounts(prev => ({ ...prev, [student.id]: count + 1 }));
-      showToast('success', `Setup email resent to ${student.user?.email}. (${count + 1}/3)`);
+      const res = await studentService.resendSetup(student.id);
+      if (res.ok) {
+        setResendCounts(prev => ({ ...prev, [student.id]: count + 1 }));
+        showToast('success', `Setup email resent to ${student.user?.email}. (${count + 1}/3)`);
+      } else {
+        showToast('error', res.message || 'Failed to resend setup email.');
+      }
     } catch {
       showToast('error', 'Failed to resend setup email.');
     }

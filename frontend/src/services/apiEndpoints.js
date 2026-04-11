@@ -32,9 +32,13 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/secretary/faculty/${id}`,
     DELETE: (id) => `/secretary/faculty/${id}`,
     IMPORT: "/secretary/faculty/import",
+    RESEND_SETUP: (id) => `/secretary/faculty/${id}/resend-setup`,
     MY_STUDENTS: "/faculty/students",
     MY_VIOLATIONS: "/faculty/violations",
     REPORT_VIOLATION: "/faculty/violations",
+  },
+  DEPARTMENTS: {
+    LIST: "/departments",
   },
   COURSE: {
     LIST: "/courses",

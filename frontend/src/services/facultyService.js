@@ -82,6 +82,13 @@ export const facultyService = {
   },
 
   /**
+   * Resend setup email to a pending faculty member
+   */
+  resendSetup: async (id) => {
+    return httpClient.post(API_ENDPOINTS.FACULTY.RESEND_SETUP(id), {});
+  },
+
+  /**
    * Import faculty from CSV
    * @param {File} csvFile
    * @returns {Promise<Object>}

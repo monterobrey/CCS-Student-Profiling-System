@@ -16,3 +16,4 @@ export { studentService } from './studentService';
 export { facultyService } from './facultyService';
 export { courseService } from './courseService';
 export { analyticsService } from './analyticsService';
+export { curriculumService } from './curriculumService';

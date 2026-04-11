@@ -42,6 +42,16 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/courses/${id}`,
     DELETE: (id) => `/courses/${id}`,
   },
+  CURRICULUM: {
+    LIST: "/dean/curriculum",
+    STORE: "/dean/curriculum",
+    BULK: "/dean/curriculum/bulk",
+    IMPORT: "/dean/curriculum/import",
+    DELETE: (id) => `/dean/curriculum/${id}`,
+  },
+  PROGRAMS: {
+    LIST: "/programs",
+  },
 };
 
 export default API_ENDPOINTS;

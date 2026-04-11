@@ -12,6 +12,10 @@ import ProfilingReport from "./pages/Dean/ProfilingReport";
 import CurriculumManagement from "./pages/Dean/CurriculumManagement";
 import CourseManagement from "./pages/Dean/CourseManagement";
 import PerformanceOverview from "./pages/Dean/PerformanceOverview";
+import FacultyManagement from "./pages/Dean/FacultyManagement";
+import ViolationsList from "./pages/Dean/ViolationsList";
+import StudentManagement from "./pages/Dean/StudentManagement";
+import Settings from "./components/Settings";
 
 function App() {
   return (
@@ -68,6 +72,54 @@ function App() {
               }
             />
             <Route
+              path="/dean/violations"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <ViolationsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/violations/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <ViolationsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/faculty-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/faculty-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/student-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/student-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/department-chair/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
@@ -76,10 +128,90 @@ function App() {
               }
             />
             <Route
+              path="/department-chair/faculty-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/faculty-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/violations"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <ViolationsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/violations/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <ViolationsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/student-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/student-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/secretary/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <DeanDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/faculty-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/faculty-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <FacultyManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/student-accounts"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/student-accounts/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <StudentManagement />
                 </ProtectedRoute>
               }
             />
@@ -99,9 +231,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
             <Route
-              path="/dean/users"
+              path="/student/settings"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/settings"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
                   <Users />
@@ -171,6 +310,38 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/settings"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/settings"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/settings"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty/settings"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

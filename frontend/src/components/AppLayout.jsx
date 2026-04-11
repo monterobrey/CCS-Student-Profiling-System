@@ -21,7 +21,8 @@ const PATH_SECTIONS = {
   performance: "Academic",
   violations: "Academic",
   'academic-performance': "Academic",
-  'violations': "Academic",
+  'dean/violations': "Academic",
+  'department-chair/violations': "Academic",
   'student-accounts': "Accounts",
   'faculty-accounts': "Accounts",
   'dean/users': "Accounts",
@@ -31,6 +32,12 @@ const PATH_SECTIONS = {
   'secretary/faculty-schedule': "Monitoring",
   archive: "Management",
   'dean/archive': "Management",
+  settings: "Settings",
+  'dean/settings': "Settings",
+  'department-chair/settings': "Settings",
+  'secretary/settings': "Settings",
+  'faculty/settings': "Settings",
+  'student/settings': "Settings",
 };
 
 export default function AppLayout() {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth, ROLES } from '../context/AuthContext';
-import './FacultyManagement.css';
+import { useAuth, ROLES } from '../../context/AuthContext';
+import '../../styles/Shared/FacultyManagement.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 const POSITIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Instructor'];

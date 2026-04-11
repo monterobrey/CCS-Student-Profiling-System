@@ -52,6 +52,9 @@ export const API_ENDPOINTS = {
   PROGRAMS: {
     LIST: "/programs",
   },
+  SECTIONS: {
+    LIST: "/sections",
+  },
 };
 
 export default API_ENDPOINTS;

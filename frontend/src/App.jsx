@@ -5,6 +5,8 @@ import ProtectedRoute, { DeanRoute } from "./components/ProtectedRoute";
 
 import StudentLogin from "./pages/Auth/login/StudentLogin";
 import FacultyLogin from "./pages/Auth/login/FacultyLogin";
+import SetupPassword from "./pages/Auth/setup/SetupPassword";
+import SetupPasswordFaculty from "./pages/Auth/setup/SetupPasswordFaculty";
 
 import Users from "./pages/Users/Users";
 import UserDetail from "./pages/Users/UserDetail";
@@ -35,6 +37,8 @@ function App() {
           <Route path="/students/login" element={<StudentLogin />} />
           <Route path="/faculty/login" element={<FacultyLogin />} />
           <Route path="/login" element={<Navigate to="/faculty/login" replace />} />
+          <Route path="/setup-password" element={<SetupPassword />} />
+          <Route path="/setup-password-faculty" element={<SetupPasswordFaculty />} />
           
           <Route element={
             <ProtectedRoute>

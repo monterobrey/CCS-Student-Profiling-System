@@ -15,7 +15,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/faculty/login" state={{ from: location }} replace />;
+    const isStudentPath = location.pathname.startsWith('/student');
+    const loginPath = isStudentPath ? "/students/login" : "/faculty/login";
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {

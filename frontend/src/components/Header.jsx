@@ -23,9 +23,8 @@ export default function Header({ user, role, portalLabel }) {
     return names[0][0];
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  const handleLogout = () => {
+    logout();
   };
 
 const handleSettings = () => {

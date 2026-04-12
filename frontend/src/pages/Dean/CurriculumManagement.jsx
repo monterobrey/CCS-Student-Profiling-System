@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { curriculumService, courseService } from "../../services";
 import { httpClient } from "../../services/httpClient";
@@ -31,13 +31,15 @@ export default function CurriculumManagement() {
     queryKey: ["programs"],
     queryFn: async () => {
       const res = await httpClient.get(API_ENDPOINTS.PROGRAMS.LIST);
-      if (res.ok && !filterProgram) {
-        const bsit = (res.data ?? []).find(p => p.program_code === "BSIT");
-        if (bsit) setFilterProgram(String(bsit.id));
-      }
       return res.ok ? (res.data ?? []) : [];
     },
   });
+
+  useEffect(() => {
+    if (filterProgram || !programs.length) return;
+    const bsit = programs.find((p) => p.program_code === "BSIT");
+    if (bsit) setFilterProgram(String(bsit.id));
+  }, [programs, filterProgram]);
 
   // Courses — shared cache key
   const { data: courses = [] } = useQuery({

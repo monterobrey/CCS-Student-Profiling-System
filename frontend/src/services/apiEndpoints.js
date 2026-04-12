@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
     LIST: "/students",
     DETAIL: (id) => `/students/${id}`,
     PROFILE: "/student/profile",
+    GUARDIAN: "/student/guardian",
     CREATE: "/secretary/students",
     UPDATE: (id) => `/secretary/students/${id}`,
     DELETE: (id) => `/secretary/students/${id}`,

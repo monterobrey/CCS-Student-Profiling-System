@@ -66,6 +66,13 @@ export const studentService = {
   },
 
   /**
+   * Update logged-in student's guardian
+   */
+  updateGuardian: async (guardianData) => {
+    return httpClient.post(API_ENDPOINTS.STUDENT.GUARDIAN, guardianData);
+  },
+
+  /**
    * Delete student
    * @param {number} id - Student ID
    * @returns {Promise<Object>}
@@ -105,17 +112,16 @@ export const studentService = {
    * @param {Object} skillData - Skill data
    * @returns {Promise<Object>}
    */
-  addSkill: async (studentId, skillData) => {
+  addSkill: async (skillData) => {
     return httpClient.post(API_ENDPOINTS.STUDENT.ADD_SKILL, skillData);
   },
 
   /**
-   * Remove skill from student
-   * @param {number} studentId - Student ID
+   * Remove skill from current student's profile
    * @param {number} skillId - Skill ID
    * @returns {Promise<Object>}
    */
-  removeSkill: async (studentId, skillId) => {
+  removeSkill: async (skillId) => {
     return httpClient.delete(API_ENDPOINTS.STUDENT.REMOVE_SKILL(skillId));
   },
 

@@ -1,0 +1,329 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+
+.sc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ── Header ── */
+.sc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.sc-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a0a00;
+}
+
+.sc-sub {
+  font-size: 13px;
+  color: #b89f90;
+  margin-top: 4px;
+}
+
+/* ── Mini Stats ── */
+.sc-mini-stats {
+  display: flex;
+  gap: 14px;
+}
+
+.sc-mini-stat {
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.sc-ms-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.sc-ms-label {
+  font-size: 11px;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Filters ── */
+.sc-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.sc-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sc-search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #b89f90;
+  pointer-events: none;
+}
+
+.sc-search {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border: 1.5px solid #f0e8e0;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+  color: #1a0a00;
+  background: #faf8f6;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sc-search:focus {
+  border-color: #FF6B1A;
+  background: #fff;
+}
+
+.sc-search::placeholder {
+  color: #c4b8b0;
+}
+
+.sc-filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sc-filter-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #f0e8e0;
+  border-radius: 8px;
+  background: #faf8f6;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a8070;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+
+.sc-filter-btn:hover:not(.active) {
+  border-color: #FF6B1A;
+  color: #FF6B1A;
+  background: #fff;
+}
+
+.sc-filter-btn.active {
+  background: #1a0a00;
+  color: #fff;
+  border-color: #1a0a00;
+}
+
+/* ── Loading ── */
+.sc-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 12px;
+  color: #b89f90;
+  font-size: 14px;
+}
+
+.sc-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 107, 26, 0.1);
+  border-top-color: #FF6B1A;
+  border-radius: 50%;
+  animation: sc-spin 0.8s linear infinite;
+}
+
+@keyframes sc-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Empty ── */
+.sc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 12px;
+  color: #b89f90;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 16px;
+}
+
+/* ── Content ── */
+.sc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Year Block ── */
+.sc-year-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sc-year-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a0a00;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #FF6B1A;
+  width: fit-content;
+}
+
+/* ── Semester Block ── */
+.sc-sem-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-sem-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ── Table ── */
+.sc-table-wrap {
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sc-table thead tr {
+  background: #faf8f6;
+  border-bottom: 1px solid #f0e8e0;
+}
+
+.sc-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.sc-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #faf8f6;
+  color: #1a0a00;
+}
+
+.sc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sc-table tbody tr:hover td {
+  background: #fffaf8;
+}
+
+.sc-code {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FF6B1A;
+  background: #fff5ef;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.sc-subj-name {
+  font-weight: 500;
+  color: #1a0a00;
+}
+
+.sc-units {
+  font-weight: 700;
+  color: #1a0a00;
+  text-align: center;
+}
+
+.sc-prereq {
+  font-size: 12px;
+  color: #9a8070;
+}
+
+/* ── Status Badge ── */
+.sc-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.sc-status-passed   { background: #f0fdf4; color: #16a34a; }
+.sc-status-enrolled { background: #eff6ff; color: #3b82f6; }
+.sc-status-pending  { background: #faf8f6; color: #9a8070; }
+
+/* ── Table Footer (totals) ── */
+.sc-table tfoot tr {
+  background: #faf8f6;
+  border-top: 1px solid #f0e8e0;
+}
+
+.sc-total-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sc-total-units {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #FF6B1A;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sc-mini-stats { flex-wrap: wrap; }
+  .sc-mini-stat  { min-width: calc(50% - 7px); }
+
+  .sc-table th:nth-child(4),
+  .sc-table td:nth-child(4) { display: none; }
+}

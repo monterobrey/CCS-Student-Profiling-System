@@ -6,20 +6,38 @@ import Header from "./Header";
 import "./AppLayout.css";
 
 const PATH_SECTIONS = {
+  // existing routes...
   dashboard: "Overview",
   'dean/dashboard': "Overview",
   'department-chair/dashboard': "Overview",
   'secretary/dashboard': "Overview",
   'faculty/dashboard': "Overview",
   'student/dashboard': "Overview",
+
+  // ── Student specific ──────────────────────
+  profile:      "My Academic",
+  violations:   "My Academic",
+  curriculum:   "My Academic",
+  schedule:     "Academics",
+  awards:       "My Activities",
+  achievements: "My Activities",
+
+  // ── Secretary specific ────────────────────
+  'secretary/achievements':    "Management",
+  'secretary/faculty-workload': "Monitoring",
+  'secretary/reports':         "Reports",
+  'secretary/dashboard':       "Overview",
+  'secretary/student-accounts': "Accounts",
+  'secretary/faculty-accounts': "Accounts",
+  'secretary/settings':        "Settings",
+  // ──────────────────────────────────────────
+
   reports: "Profiling",
-  curriculum: "Profiling",
   courses: "Profiling",
   'dean/reports': "Profiling",
   'dean/curriculum': "Profiling",
   'dean/courses': "Profiling",
   performance: "Academic",
-  violations: "Academic",
   'academic-performance': "Academic",
   'dean/violations': "Academic",
   'department-chair/violations': "Academic",
@@ -52,9 +70,10 @@ export default function AppLayout() {
     : role === 'student' ? 'Student Portal'
     : 'Portal';
 
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const currentPath = pathSegments[pathSegments.length - 1] || 'dashboard';
-  const section = PATH_SECTIONS[currentPath] || 'Overview';
+const pathSegments = location.pathname.split('/').filter(Boolean)
+const currentPath = pathSegments[pathSegments.length - 1] || 'dashboard'
+const fullPath = pathSegments.join('/')
+const section = PATH_SECTIONS[fullPath] || PATH_SECTIONS[currentPath] || 'Overview'
   
   const pageName = currentPath
     .replace(/-/g, ' ')

@@ -98,7 +98,9 @@ const { role } = useAuth();
         ]},
       ],
       [ROLES.SECRETARY]: [
-        { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
+        { name: "Overview", items: [
+          { path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }
+        ]},
         { name: "Accounts", items: [
           { path: "student-accounts", meta: { title: "Student Accounts", icon: "profile" } },
           { path: "faculty-accounts", meta: { title: "Faculty Accounts", icon: "faculty" } }
@@ -107,9 +109,14 @@ const { role } = useAuth();
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
         ]},
         { name: "Management", items: [
-          { path: "archive", meta: { title: "Archive Management", icon: "archive" } }
+          { path: "achievements", meta: { title: "Achievement Verification", icon: "awards" } },  // ← add
         ]},
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
+        { name: "Reports", items: [
+          { path: "reports", meta: { title: "Generate Reports", icon: "reports" } },  // ← add
+        ]},
+        { name: "Settings", items: [
+          { path: "settings", meta: { title: "Settings", icon: "settings" } }
+        ]},
       ],
       [ROLES.STUDENT]: [
         { name: "Overview", items: [

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, ROLES } from "./context/AuthContext";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute, { DeanRoute } from "./components/ProtectedRoute";
+
 import StudentLogin from "./pages/Auth/login/StudentLogin";
 import FacultyLogin from "./pages/Auth/login/FacultyLogin";
 import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
@@ -9,6 +10,9 @@ import FacultySchedule from "./pages/Faculty/FacultySchedule";
 import FacultyManagementViolation from "./pages/Faculty/FacultyManagementViolation";
 import FacultySubject from "./pages/Faculty/FacultySubject";
 import DepartmentChairDashboard from "./pages/Chair/DepartmentChairDashboard";
+import SetupPassword from "./pages/Auth/setup/SetupPassword";
+import SetupPasswordFaculty from "./pages/Auth/setup/SetupPasswordFaculty";
+
 import Users from "./pages/Users/Users";
 import UserDetail from "./pages/Users/UserDetail";
 import Reports from "./pages/Reports/Reports";
@@ -17,10 +21,18 @@ import ProfilingReport from "./pages/Dean/ProfilingReport";
 import CurriculumManagement from "./pages/Dean/CurriculumManagement";
 import CourseManagement from "./pages/Dean/CourseManagement";
 import PerformanceOverview from "./pages/Dean/PerformanceOverview";
-import FacultyManagement from "./components/FacultyManagement";
+import FacultyManagement from "./pages/Shared/FacultyManagement";
 import ViolationsList from "./pages/Dean/ViolationsList";
-import StudentManagement from "./components/StudentManagement";
+import StudentManagement from "./pages/Shared/StudentManagement";
 import Settings from "./components/Settings";
+
+// Import Student Pages
+import StudentDashboard from "./pages/Student/StudentDashboard";
+import StudentActivities from "./pages/Student/StudentActivities";
+import StudentAwards from "./pages/Student/StudentAwards";
+import StudentProfile from "./pages/Student/StudentProfile";
+import StudentViolations from "./pages/Student/StudentViolations";
+import StudentSchedule from "./pages/Student/StudentSchedule";
 
 function App() {
   return (
@@ -30,6 +42,8 @@ function App() {
           <Route path="/students/login" element={<StudentLogin />} />
           <Route path="/faculty/login" element={<FacultyLogin />} />
           <Route path="/login" element={<Navigate to="/faculty/login" replace />} />
+          <Route path="/setup-password" element={<SetupPassword />} />
+          <Route path="/setup-password-faculty" element={<SetupPasswordFaculty />} />
           
           <Route element={
             <ProtectedRoute>
@@ -232,7 +246,55 @@ function App() {
               path="/student/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
-                  <DeanDashboard />
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/activities"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentActivities/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentAwards/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/profile"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentProfile/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/violations"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentViolations/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/schedule"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentSchedule/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/curriculum"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentSchedule/>
                 </ProtectedRoute>
               }
             />

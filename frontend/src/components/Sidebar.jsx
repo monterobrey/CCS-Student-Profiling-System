@@ -109,8 +109,20 @@ const { role } = useAuth();
         { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
       ],
       [ROLES.STUDENT]: [
-        { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
+        { name: "Overview", items: [
+          { path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }
+        ]},
+        { name: "My Academic", items: [
+          { path: "profile", meta: { title: "My Profile", icon: "profile" } },
+          { path: "curriculum", meta: { title: "My Curriculum", icon: "courses" } },
+          { path: "violations", meta: { title: "My Violations", icon: "violations" } },
+        ]},
+        { name: "Academics", items: [
+          { path: "schedule", meta: { title: "My Schedule", icon: "schedule" } },
+        ]},
+        { name: "My Activities", items: [
+          { path: "awards", meta: { title: "My Achievements", icon: "awards" } },
+        ]},
       ],
     };
 

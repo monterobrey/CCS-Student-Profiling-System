@@ -28,10 +28,17 @@ export default function Header({ user, role, portalLabel }) {
     navigate('/login');
   };
 
-  const handleSettings = () => {
-    navigate('/settings');
-    setShowUserMenu(false);
+const handleSettings = () => {
+  const settingsRoutes = {
+    dean: '/dean/settings',
+    department_chair: '/department-chair/settings',
+    secretary: '/secretary/settings',
+    faculty: '/faculty/settings',
+    student: '/student/settings',
   };
+  navigate(settingsRoutes[role] || '/settings');
+  setShowUserMenu(false);
+};
 
   return (
     <header className="topbar">

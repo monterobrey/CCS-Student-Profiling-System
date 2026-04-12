@@ -125,6 +125,25 @@ class FacultyService
     }
 
     /**
+     * Resend password setup email to a pending faculty member.
+     */
+    public function resendSetupEmail($facultyId)
+    {
+        $faculty = Faculty::findOrFail($facultyId);
+        $user = $faculty->user;
+
+        if (!$user || $user->status !== 'pending') {
+            throw new \Exception('Faculty account is already active or not found.');
+        }
+
+        $setupToken = Str::random(60);
+        $user->update(['password_setup_token' => $setupToken]);
+        $user->notify(new SetupPasswordNotification($setupToken, $user->email));
+
+        return true;
+    }
+
+    /**
      * Update faculty information.
      */
     public function updateFaculty($facultyId, $data)

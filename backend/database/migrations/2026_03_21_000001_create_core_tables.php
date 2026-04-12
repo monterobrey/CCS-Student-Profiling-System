@@ -118,8 +118,8 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('students')->onDelete('restrict');
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('contact_number');
-            $table->string('relationship');
+            $table->string('contact_number')->nullable();
+            $table->string('relationship')->nullable();
             $table->timestamps();
         });
 

@@ -19,6 +19,7 @@ import PerformanceOverview from "./pages/Dean/PerformanceOverview";
 import FacultyManagement from "./pages/Shared/FacultyManagement";
 import ViolationsList from "./pages/Dean/ViolationsList";
 import StudentManagement from "./pages/Shared/StudentManagement";
+import FacultyWorkloadPage from "./pages/Shared/FacultyWorkloadPage";
 import Settings from "./components/Settings";
 
 // Import Student Pages
@@ -118,6 +119,14 @@ function App() {
               }
             />
             <Route
+              path="/dean/faculty-workload"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <FacultyWorkloadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dean/student-accounts"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
@@ -190,6 +199,14 @@ function App() {
               }
             />
             <Route
+              path="/department-chair/faculty-workload"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <FacultyWorkloadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/secretary/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
@@ -226,6 +243,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <StudentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/faculty-workload"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <FacultyWorkloadPage />
                 </ProtectedRoute>
               }
             />

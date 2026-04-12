@@ -95,6 +95,9 @@ const { role } = useAuth();
           { path: "student-accounts", meta: { title: "Student Accounts", icon: "profile" } },
           { path: "faculty-accounts", meta: { title: "Faculty Accounts", icon: "faculty" } }
         ]},
+        { name: "Monitoring", items: [
+          { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
+        ]},
         { name: "Management", items: [
           { path: "archive", meta: { title: "Archive Management", icon: "archive" } }
         ]},

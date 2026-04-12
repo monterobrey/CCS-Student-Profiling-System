@@ -106,6 +106,19 @@ class StudentController extends Controller
     }
 
     /**
+     * Resend setup email to a pending student.
+     */
+    public function resendSetup($id)
+    {
+        try {
+            $this->studentService->resendSetupEmail($id);
+            return ApiResponse::success(null, 'Setup email resent successfully.');
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
+    }
+
+    /**
      * Delete/archive a student.
      */
     public function destroy(Request $request, $id)

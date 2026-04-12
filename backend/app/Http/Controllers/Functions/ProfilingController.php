@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Functions;
 
 use App\Http\Controllers\Controller;
 use App\Models\Program;
+use App\Models\Department;
 use App\Services\ProfilingService;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,14 @@ class ProfilingController extends Controller
     public function getPrograms()
     {
         return ApiResponse::success(Program::all());
+    }
+
+    /**
+     * Get all departments.
+     */
+    public function getDepartments()
+    {
+        return ApiResponse::success(Department::all());
     }
 
     /**

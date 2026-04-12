@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+
+.saw-page { display: flex; flex-direction: column; gap: 20px; font-family: 'Outfit', sans-serif; }
+.saw-page-header { display: flex; justify-content: space-between; align-items: flex-end; }
+.saw-page-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #1a0a00; }
+.saw-page-sub { font-size: 13px; color: #b89f90; margin-top: 4px; }
+
+.saw-primary-btn { background: #FF6B1A; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; font-family: 'Outfit', sans-serif; }
+.saw-primary-btn:hover:not(:disabled) { background: #e85500; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,26,0.2); }
+.saw-primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.saw-ghost-btn { display: flex; align-items: center; gap: 7px; background: #fff; color: #1a0a00; border: 1.5px solid #f0e8e0; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+.saw-pcard { background: #fff; border: 1px solid #f0e8e0; border-radius: 20px; overflow: hidden; }
+.saw-pcard-body { padding: 22px; }
+
+.saw-awards-list { display: flex; flex-direction: column; gap: 12px; }
+.saw-award-row { display: flex; align-items: center; gap: 16px; padding: 16px; border: 1px solid #f0e8e0; border-radius: 14px; transition: all 0.15s; }
+.saw-award-row:hover { border-color: #FF6B1A; background: #fffaf8; }
+.saw-award-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.saw-award-icon svg { width: 24px; height: 24px; }
+.saw-award-info { flex: 1; }
+.saw-award-title { font-size: 14px; font-weight: 600; color: #1a0a00; }
+.saw-award-meta { font-size: 12px; color: #b89f90; margin-top: 3px; }
+.saw-award-badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 7px; white-space: nowrap; }
+
+.saw-empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px; }
+.saw-empty-state p { font-size: 14px; color: #b89f90; }
+
+/* Modal */
+.saw-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.saw-modal { background: #fff; border-radius: 20px; width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: 90vh; }
+.saw-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #f0e8e0; }
+.saw-modal-header h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: #1a0a00; margin: 0; }
+.saw-modal-sub { font-size: 12px; color: #b89f90; margin-top: 3px; }
+.saw-close-btn { background: none; border: none; font-size: 24px; color: #b89f90; cursor: pointer; padding: 0; line-height: 1; }
+.saw-modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.saw-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid #f0e8e0; background: #faf8f6; }
+
+.saw-form-group { display: flex; flex-direction: column; gap: 6px; }
+.saw-form-group label { font-size: 12px; font-weight: 700; color: #1a0a00; }
+.saw-req { color: #ef4444; }
+.saw-form-group input[type="text"], .saw-form-group select, .saw-form-group textarea { padding: 12px 14px; border: 1.5px solid #f0e8e0; border-radius: 12px; font-size: 13px; font-family: 'Outfit', sans-serif; outline: none; transition: all 0.2s; background: #faf8f6; }
+.saw-form-group input:focus, .saw-form-group select:focus, .saw-form-group textarea:focus { border-color: #FF6B1A; background: #fff; box-shadow: 0 0 0 3px rgba(255,107,26,0.07); }
+
+.saw-file-upload-box { border: 2px dashed #f0e8e0; border-radius: 12px; background: #faf8f6; transition: all 0.2s; }
+.saw-file-upload-box:hover { border-color: #FF6B1A; background: #fffaf8; }
+.saw-file-input { display: none; }
+.saw-file-label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; cursor: pointer; font-size: 13px; color: #9a8070; font-weight: 500; text-align: center; }
+
+.saw-spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: saw-spin 0.8s linear infinite; }
+@keyframes saw-spin { to { transform: rotate(360deg); } }

@@ -75,8 +75,8 @@ export default function AppLayout() {
         />
         <main className="content">
           <div className="page-breadcrumb-trail">
-            <span className="breadcrumb-category">{section}</span>
-            <span className="breadcrumb-sep">&gt;</span>
+            <span className="breadcrumb-section">{section}</span>
+            <span className="breadcrumb-sep">›</span>
             <span className="breadcrumb-current">{pageName}</span>
           </div>
           <Outlet />

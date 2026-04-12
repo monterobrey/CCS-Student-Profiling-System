@@ -121,6 +121,19 @@ class FacultyController extends Controller
     }
 
     /**
+     * Resend setup email to a pending faculty member.
+     */
+    public function resendSetup($id)
+    {
+        try {
+            $this->facultyService->resendSetupEmail($id);
+            return ApiResponse::success(null, 'Setup email resent successfully.');
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
+    }
+
+    /**
      * Delete/archive a faculty member.
      */
     public function destroy(Request $request, $id)

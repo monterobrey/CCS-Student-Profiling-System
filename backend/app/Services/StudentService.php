@@ -184,6 +184,25 @@ class StudentService
     }
 
     /**
+     * Resend password setup email to a pending student.
+     */
+    public function resendSetupEmail($studentId)
+    {
+        $student = Student::findOrFail($studentId);
+        $user = $student->user;
+
+        if (!$user || $user->status !== 'pending') {
+            throw new \Exception('Student account is already active or not found.');
+        }
+
+        $setupToken = \Illuminate\Support\Str::random(60);
+        $user->update(['password_setup_token' => $setupToken]);
+        $user->notify(new SetupPasswordNotification($setupToken, $user->email));
+
+        return true;
+    }
+
+    /**
      * Archive a student account.
      */
     public function archiveStudent($studentId, $archivedByUserId)

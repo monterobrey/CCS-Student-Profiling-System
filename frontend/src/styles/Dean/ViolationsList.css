@@ -108,3 +108,25 @@
 @media (max-width: 480px) {
   .stat-card { min-width: 100%; }
 }
+
+/* ===========================
+   TOAST
+=========================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  animation: fadeInUp 0.25s ease;
+}
+.toast-success { background: #e6f9f0; color: #1a7a4a; border: 1px solid #b2e8cf; }
+.toast-error   { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6c6; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

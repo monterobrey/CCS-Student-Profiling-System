@@ -75,6 +75,13 @@ export const studentService = {
   },
 
   /**
+   * Resend setup email to a pending student
+   */
+  resendSetup: async (id) => {
+    return httpClient.post(API_ENDPOINTS.STUDENT.RESEND_SETUP(id), {});
+  },
+
+  /**
    * Import students from CSV
    * @param {File} csvFile - CSV file
    * @returns {Promise<Object>}

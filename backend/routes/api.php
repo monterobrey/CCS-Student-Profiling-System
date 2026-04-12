@@ -73,9 +73,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:secretary')->group(function () {
         Route::post('/secretary/students', [StudentController::class, 'store']);
         Route::post('/secretary/students/import', [StudentController::class, 'import']);
+        Route::post('/secretary/students/{id}/resend-setup', [StudentController::class, 'resendSetup']);
         Route::post('/secretary/faculty', [FacultyController::class, 'store']);
         Route::put('/secretary/faculty/{id}', [FacultyController::class, 'update']);
         Route::post('/secretary/faculty/import', [FacultyController::class, 'import']);
+        Route::post('/secretary/faculty/{id}/resend-setup', [FacultyController::class, 'resendSetup']);
     });
 
     // Student edit (Secretary + Department Chair)
@@ -86,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Shared routes for Dean, Chair, Secretary
     Route::middleware('role:dean,department_chair,secretary')->group(function () {
         Route::get('/programs', [ProfilingController::class, 'getPrograms']);
+        Route::get('/departments', [ProfilingController::class, 'getDepartments']);
         Route::get('/students', [StudentController::class, 'index']);
         Route::get('/students/{id}', [StudentProfileController::class, 'getById']);
         Route::get('/faculty', [FacultyController::class, 'index']);

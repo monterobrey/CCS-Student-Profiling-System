@@ -47,6 +47,15 @@ class Course extends Model
         return $this->belongsTo(Program::class);
     }
 
+    /**
+     * Programs this course appears in (via curriculum table).
+     */
+    public function curriculumPrograms(): BelongsToMany
+    {
+        return $this->belongsToMany(Program::class, 'curriculum', 'course_id', 'program_id')
+                    ->distinct();
+    }
+
     public function sectionSubjects(): HasMany
     {
         return $this->hasMany(SectionSubject::class);

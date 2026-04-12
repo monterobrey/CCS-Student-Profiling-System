@@ -1,0 +1,127 @@
+.dashboard-home {
+  padding: 20px;
+  background-color: #fcfaf8; /* Subtle off-white background */
+}
+
+.hero-banner {
+  background: #3d1500; /* Darker brown base like your image */
+  background: linear-gradient(90deg, #2b0f00 0%, #632400 100%);
+  border-radius: 16px;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.hero-body {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-greeting {
+  font-size: 32px;
+  color: #ffffff;
+  margin: 10px 0;
+}
+
+.hero-desc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.hero-right {
+  display: flex;
+  gap: 15px;
+}
+
+.hero-stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.hsc-value {
+  font-size: 36px;
+  font-weight: 800;
+  display: block;
+}
+
+/* 5 Column Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: 700;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a0a00;
+}
+
+/* Bottom 3-Column Section */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  min-height: 350px;
+}
+
+/* Pending Actions Styling */
+.pending-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  background: #fffbf9;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: 0.2s;
+}
+
+.pending-action-row:hover {
+  background: #fff5ef;
+}
+
+.pending-arrow-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arrow-icon {
+  font-size: 20px;
+  color: #ccc;
+}
+
+.pending-badge {
+  font-weight: 700;
+}

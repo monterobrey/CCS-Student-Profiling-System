@@ -84,10 +84,18 @@ const { role } = useAuth();
       [ROLES.FACULTY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
         { name: "My Classes", items: [
-          { path: "courses", meta: { title: "Courses", icon: "courses" } },
-          { path: "schedule", meta: { title: "Schedule", icon: "schedule" } }
+          { path: "schedule", meta: { title: "My Schedule", icon: "schedule" } },
+          { path: "subjects", meta: { title: "My Subjects", icon: "courses" } }
         ]},
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
+        { name: "Monitoring", items: [
+          { path: "students", meta: { title: "Student Profiles", icon: "profile" } },
+          { path: "violations", meta: { title: "Record Violation", icon: "violations" } },
+          { path: "awards", meta: { title: "Recommend Awards", icon: "awards" } }
+        ]},
+        { name: "Account Settings", items: [
+          { path: "settings", meta: { title: "My Profile", icon: "profile" } },
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        ]},
       ],
       [ROLES.SECRETARY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },

@@ -27,6 +27,12 @@ import StudentProfile from "./pages/Student/StudentProfile";
 import StudentViolations from "./pages/Student/StudentViolations";
 import StudentSchedule from "./pages/Student/StudentSchedule";
 
+// Import Admin/Secretary Pages
+import SecretaryDashboard from "./pages/Admin/SecretaryDashboard";
+import SecretaryAchievements from "./pages/Admin/SecretaryAchievements";
+import SecretaryWorkload from "./pages/Admin/SecretaryWorkLoad";
+import SecretaryReports from "./pages/Admin/SecretaryReports";
+
 function App() {
   return (
     <AuthProvider>
@@ -189,7 +195,23 @@ function App() {
               path="/secretary/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
-                  <DeanDashboard />
+                  <SecretaryDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/achievements"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <SecretaryAchievements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/faculty-workload"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <SecretaryWorkload />
                 </ProtectedRoute>
               }
             />
@@ -367,7 +389,7 @@ function App() {
               path="/secretary/reports"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
-                  <Reports />
+                  <SecretaryReports />
                 </ProtectedRoute>
               }
             />

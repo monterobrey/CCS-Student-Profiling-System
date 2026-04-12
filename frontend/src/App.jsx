@@ -32,6 +32,7 @@ import SecretaryDashboard from "./pages/Admin/SecretaryDashboard";
 import SecretaryAchievements from "./pages/Admin/SecretaryAchievements";
 import SecretaryWorkload from "./pages/Admin/SecretaryWorkLoad";
 import SecretaryReports from "./pages/Admin/SecretaryReports";
+import StudentCurriculum from "./pages/Student/StudentCurriculum";
 
 function App() {
   return (
@@ -307,7 +308,7 @@ function App() {
               path="/student/curriculum"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
-                  <StudentSchedule/>
+                  <StudentCurriculum/>
                 </ProtectedRoute>
               }
             />

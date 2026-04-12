@@ -9,7 +9,12 @@ import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultySchedule from "./pages/Faculty/FacultySchedule";
 import FacultyManagementViolation from "./pages/Faculty/FacultyManagementViolation";
 import FacultySubject from "./pages/Faculty/FacultySubject";
+import FacultyStudentsByClass from "./pages/Faculty/FacultyStudentsByClass";
+import FacultyRecommendAward from "./pages/Faculty/FacultyRecommendAward";
 import DepartmentChairDashboard from "./pages/Chair/DepartmentChairDashboard";
+import DepartmentChairPerformance from "./pages/Chair/DepartmentChairPerformance";
+import DepartmentChairAward from "./pages/Chair/DepartmentChairAward";
+import ScheduleManagement from "./pages/Chair/ScheduleManagement";
 import SetupPassword from "./pages/Auth/setup/SetupPassword";
 import SetupPasswordFaculty from "./pages/Auth/setup/SetupPasswordFaculty";
 
@@ -161,6 +166,30 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
                   <DepartmentChairDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/performance"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <DepartmentChairPerformance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <DepartmentChairAward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/schedule"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <ScheduleManagement />
                 </ProtectedRoute>
               }
             />
@@ -458,7 +487,7 @@ function App() {
               path="/faculty/students"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
-                  <FacultyDashboard />
+                  <FacultyStudentsByClass />
                 </ProtectedRoute>
               }
             />
@@ -482,7 +511,7 @@ function App() {
               path="/faculty/awards"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
-                  <FacultyDashboard />
+                  <FacultyRecommendAward />
                 </ProtectedRoute>
               }
             />

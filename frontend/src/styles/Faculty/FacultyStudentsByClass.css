@@ -1,0 +1,154 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: "Outfit", sans-serif;
+}
+
+/* HEADER */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a0a00;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: #b89f90;
+  margin-top: 4px;
+}
+
+/* FILTER */
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  background: #faf8f6;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid #f0e8e0;
+  width: fit-content;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a8070;
+  cursor: pointer;
+}
+
+.filter-tab.active {
+  background: #1a0a00;
+  color: white;
+}
+
+/* LIST */
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* CARD */
+.student-card {
+  background: white;
+  border: 1px solid #f0e8e0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: 0.2s;
+}
+
+.student-card:hover {
+  border-color: #ff6b1a;
+  background: #fffaf8;
+}
+
+/* AVATAR */
+.student-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #ff6b1a18;
+  color: #ff6b1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+/* INFO */
+.student-info {
+  flex: 1;
+}
+
+.student-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a0a00;
+}
+
+.student-meta {
+  font-size: 12px;
+  color: #9a8070;
+}
+
+.student-sub {
+  font-size: 11px;
+  color: #b89f90;
+}
+
+/* RIGHT SIDE */
+.student-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gwa-badge {
+  font-weight: 800;
+  font-size: 14px;
+  color: #1a0a00;
+}
+
+/* STATUS */
+.status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.status.good {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.status.warning {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.status.danger {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: #b89f90;
+}

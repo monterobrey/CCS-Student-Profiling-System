@@ -1,0 +1,75 @@
+.schedule-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: "Outfit", sans-serif;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: #b89f90;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.pcard {
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px;
+  background: #fffaf8;
+}
+
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.primary-btn {
+  background: #ff6b1a;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.outline-btn {
+  border: 1px solid #ddd;
+  background: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+}

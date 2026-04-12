@@ -72,6 +72,12 @@ const { role } = useAuth();
           { path: "performance", meta: { title: "Academic Performance", icon: "performance" } },
           { path: "violations", meta: { title: "Violations", icon: "violations" } }
         ]},
+        { name: "Awards", items: [
+          { path: "awards", meta: { title: "Award Approvals", icon: "awards" } }
+        ]},
+        { name: "Schedule", items: [
+          { path: "schedule", meta: { title: "Manage Schedule", icon: "schedule" } }
+        ]},
         { name: "Accounts", items: [
           { path: "student-accounts", meta: { title: "Student Accounts", icon: "profile" } },
           { path: "faculty-accounts", meta: { title: "Faculty Accounts", icon: "faculty" } }

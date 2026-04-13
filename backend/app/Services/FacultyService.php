@@ -58,15 +58,26 @@ class FacultyService
     /**
      * Get all students assigned to a faculty member.
      */
-    public function getMyStudents($facultyId)
+    public function getMyStudents($facultyId, array $filters = [])
     {
-        $schedules = Schedule::where('faculty_id', $facultyId)
+        $subjectFilter = trim((string) ($filters['subject'] ?? ''));
+        $searchFilter = trim((string) ($filters['search'] ?? ''));
+        $programFilter = trim((string) ($filters['program'] ?? ''));
+        $sectionFilter = trim((string) ($filters['section'] ?? ''));
+
+        $scheduleQuery = Schedule::where('faculty_id', $facultyId)
             ->with(['course', 'section'])
-            ->get();
+            ->whereHas('course', function ($query) use ($subjectFilter) {
+                if ($subjectFilter !== '') {
+                    $query->where('course_code', $subjectFilter);
+                }
+            });
+
+        $schedules = $scheduleQuery->get();
 
         $sectionIds = $schedules->pluck('section_id')->unique();
 
-        $subjects = $schedules->map(function($s) {
+        $subjects = $schedules->map(function ($s) {
             return [
                 'id' => $s->course->id,
                 'name' => $s->course->course_name,
@@ -74,11 +85,35 @@ class FacultyService
                 'section_id' => $s->section_id,
                 'section_name' => $s->section->section_name
             ];
+        })->unique(function ($subject) {
+            return $subject['code'] . '-' . $subject['section_id'];
         })->values();
 
-        $students = Student::whereIn('section_id', $sectionIds)
+        $studentsQuery = Student::whereIn('section_id', $sectionIds)
             ->with(['user', 'section', 'program', 'guardian', 'skills', 'organizations.organization'])
-            ->get();
+            ->whereHas('program', function ($query) use ($programFilter) {
+                if ($programFilter !== '') {
+                    $query->where('program_code', $programFilter);
+                }
+            })
+            ->whereHas('section', function ($query) use ($sectionFilter) {
+                if ($sectionFilter !== '') {
+                    $query->where('section_name', $sectionFilter);
+                }
+            })
+            ->when($searchFilter !== '', function ($query) use ($searchFilter) {
+                $query->where(function ($inner) use ($searchFilter) {
+                    $inner->where('first_name', 'like', "%{$searchFilter}%")
+                        ->orWhere('last_name', 'like', "%{$searchFilter}%")
+                        ->orWhere('middle_name', 'like', "%{$searchFilter}%")
+                        ->orWhereHas('user', function ($userQuery) use ($searchFilter) {
+                            $userQuery->where('email', 'like', "%{$searchFilter}%")
+                                ->orWhere('student_number', 'like', "%{$searchFilter}%");
+                        });
+                });
+            });
+
+        $students = $studentsQuery->get();
 
         return [
             'students' => $students,

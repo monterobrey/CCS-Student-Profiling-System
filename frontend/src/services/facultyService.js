@@ -60,8 +60,19 @@ export const facultyService = {
    * Get students taught by logged-in faculty
    * @returns {Promise<Array>}
    */
-  getMyStudents: async () => {
-    return httpClient.get(API_ENDPOINTS.FACULTY.MY_STUDENTS);
+  getMyStudents: async (filters = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.append(key, value);
+      }
+    });
+
+    const endpoint = query.toString()
+      ? `${API_ENDPOINTS.FACULTY.MY_STUDENTS}?${query.toString()}`
+      : API_ENDPOINTS.FACULTY.MY_STUDENTS;
+
+    return httpClient.get(endpoint);
   },
 
   /**

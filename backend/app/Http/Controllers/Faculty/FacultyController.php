@@ -29,7 +29,10 @@ class FacultyController extends Controller
      */
     public function myStudents(Request $request)
     {
-        $result = $this->facultyService->getMyStudents($request->user()->faculty->id);
+        $result = $this->facultyService->getMyStudents(
+            $request->user()->faculty->id,
+            $request->only(['search', 'program', 'section', 'subject'])
+        );
         return ApiResponse::success($result);
     }
 

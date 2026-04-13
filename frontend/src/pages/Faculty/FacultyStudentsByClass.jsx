@@ -1,118 +1,299 @@
-import { useEffect, useState } from "react";
-import "../../styles/Faculty/FacultyStudentsByClass.css";
-import axios from "axios";
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { facultyService } from '../../services';
+import '../../styles/Faculty/FacultyStudentsByClass.css';
+
+const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
 export default function FacultyStudentsByClass() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [search, setSearch] = useState('');
+  const [filterProgram, setFilterProgram] = useState('');
+  const [filterSection, setFilterSection] = useState('');
+  const [filterSubject, setFilterSubject] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:8000/api/faculty/students-by-class"
-        );
-        setData(res.data);
-      } catch (err) {
-        console.error("Failed to fetch students:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isLoading } = useQuery({
+    queryKey: ['faculty-my-students', search, filterProgram, filterSection, filterSubject],
+    queryFn: async () => {
+      const res = await facultyService.getMyStudents({
+        search,
+        program: filterProgram,
+        section: filterSection,
+        subject: filterSubject,
+      });
+      return res.ok ? (res.data ?? { students: [], subjects: [] }) : { students: [], subjects: [] };
+    },
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-    fetchStudents();
-  }, []);
+  const students = data?.students ?? [];
+  const subjects = data?.subjects ?? [];
 
-  // group tabs dynamically
-  const tabs = [
-    { key: "all", label: "All" },
-    ...Array.from(new Set(data.map((d) => d.course))).map((c) => ({
-      key: c,
-      label: c,
-    })),
-  ];
+  const subjectMapBySection = useMemo(() => {
+    const map = {};
+    subjects.forEach((subject) => {
+      const key = subject.section_id;
+      if (!map[key]) map[key] = [];
+      if (!map[key].includes(subject.code)) map[key].push(subject.code);
+    });
+    return map;
+  }, [subjects]);
 
-  const filtered =
-    selectedFilter === "all"
-      ? data
-      : data.filter((d) => d.course === selectedFilter);
+  const programs = useMemo(
+    () => [...new Set(students.map((student) => student.program?.program_code).filter(Boolean))].sort(),
+    [students]
+  );
 
-  if (loading) return <div className="page">Loading...</div>;
+  const sections = useMemo(
+    () => [...new Set(subjects.map((subject) => subject.section_name).filter(Boolean))].sort(),
+    [subjects]
+  );
+
+  const subjectOptions = useMemo(
+    () => [...new Set(subjects.map((subject) => subject.code).filter(Boolean))].sort(),
+    [subjects]
+  );
+
+  const miniStats = useMemo(() => [
+    { label: 'Students Handled', value: students.length, color: '#3b82f6' },
+    { label: 'Programs', value: programs.length, color: '#8b5cf6' },
+    { label: 'Sections', value: sections.length, color: '#FF6B1A' },
+    { label: 'Subjects', value: subjectOptions.length, color: '#16a34a' },
+  ], [students.length, programs.length, sections.length, subjectOptions.length]);
+
+  const getColor = (id) => COLORS[id % COLORS.length];
+  const closeStudentModal = () => setSelectedStudent(null);
+  const formatYearSection = (student) => {
+    if (!student?.year_level || !student?.section?.section_name) return 'No Section';
+    return `${student.year_level} - ${student.section.section_name}`;
+  };
 
   return (
-    <div className="page">
-      {/* HEADER */}
+    <div className="page faculty-students-page">
       <div className="page-header">
         <div>
           <h2 className="page-title">My Students</h2>
           <p className="page-sub">
-            Students grouped by course and year level under your advisory.
+            View students from sections and subjects currently assigned to you.
           </p>
         </div>
       </div>
 
-      {/* FILTER TABS */}
-      <div className="filter-tabs">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            className={`filter-tab ${
-              selectedFilter === t.key ? "active" : ""
-            }`}
-            onClick={() => setSelectedFilter(t.key)}
-          >
-            {t.label}
-          </button>
+      <div className="mini-stats">
+        {miniStats.map((stat, idx) => (
+          <div className={`mini-stat stat-${['blue', 'purple', 'orange', 'green'][idx]}`} key={stat.label}>
+            <div className="mini-stat-icon" style={{ color: stat.color }}>
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="mini-stat-info">
+              <span className="mini-stat-value" style={{ color: stat.color }}>{stat.value}</span>
+              <span className="mini-stat-label">{stat.label}</span>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* LIST */}
-      <div className="student-list">
-        {filtered.length === 0 ? (
-          <div className="empty-state">No students found.</div>
-        ) : (
-          filtered.map((s) => (
-            <div className="student-card" key={s.id}>
-              <div className="student-avatar">
-                {s.name?.charAt(0)}
+      <div className="table-toolbar">
+        <div className="search-wrap">
+          <svg viewBox="0 0 18 18" fill="none"><path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+          <input
+            type="text"
+            placeholder="Search by name, email, or student number..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="filter-group">
+          <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}>
+            <option value="">All Subjects</option>
+            {subjectOptions.map((subjectCode) => (
+              <option key={subjectCode} value={subjectCode}>{subjectCode}</option>
+            ))}
+          </select>
+          <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)}>
+            <option value="">All Sections</option>
+            {sections.map((sectionName) => (
+              <option key={sectionName} value={sectionName}>{sectionName}</option>
+            ))}
+          </select>
+          <select value={filterProgram} onChange={(e) => setFilterProgram(e.target.value)}>
+            <option value="">All Programs</option>
+            {programs.map((programCode) => (
+              <option key={programCode} value={programCode}>{programCode}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="table-card">
+        {isLoading && (
+          <div className="loading-overlay">
+            <div className="spinner-lg"></div>
+            <p>Fetching students...</p>
+          </div>
+        )}
+
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>STUDENT</th>
+                <th>STUDENT NO.</th>
+                <th>PROGRAM</th>
+                <th>SECTION</th>
+                <th>SUBJECTS</th>
+                <th>GWA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student) => {
+                const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
+                const email = student.user?.email || 'No email';
+                const studentNumber = student.user?.student_number || '—';
+                const programCode = student.program?.program_code || '—';
+                const sectionName = student.section?.section_name || '—';
+                const sectionSubjects = subjectMapBySection[student.section_id] || [];
+
+                return (
+                  <tr key={student.id} className="clickable-row" onClick={() => setSelectedStudent(student)}>
+                    <td>
+                      <div className="student-cell">
+                        <div className="s-avatar" style={{ background: getColor(student.id) }}>
+                          {(student.first_name || '?').charAt(0)}
+                        </div>
+                        <div>
+                          <p className="s-name">{fullName}</p>
+                          <p className="s-sub">{email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className={`code-badge ${programCode === 'BSIT' ? 'badge-bsit' : ''}`}>{studentNumber}</span></td>
+                    <td>{programCode}</td>
+                    <td>{sectionName}</td>
+                    <td>{sectionSubjects.length ? sectionSubjects.join(', ') : '—'}</td>
+                    <td><span className={`gwa-val ${student.gwa && student.gwa <= 1.75 ? 'gwa-good' : 'gwa-ok'}`}>{student.gwa || 'N/A'}</span></td>
+                  </tr>
+                );
+              })}
+              {!students.length && !isLoading && (
+                <tr>
+                  <td colSpan={6} className="empty-row">No students found for the selected filters.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {selectedStudent && (
+        <div className="modal-overlay" onClick={closeStudentModal}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-student-meta">
+                <div className="s-avatar lg" style={{ background: getColor(selectedStudent.id) }}>
+                  {(selectedStudent.first_name || '?').charAt(0)}
+                </div>
+                <div>
+                  <h3>
+                    {selectedStudent.last_name}, {selectedStudent.first_name} {selectedStudent.middle_name ?? ''}
+                  </h3>
+                  <p className="modal-sub">
+                    {selectedStudent.user?.student_number || '—'} · {selectedStudent.program?.program_code || '—'} · {formatYearSection(selectedStudent)}
+                  </p>
+                </div>
+              </div>
+              <button className="close-btn" onClick={closeStudentModal}>×</button>
+            </div>
+
+            <div className="modal-body profile-body">
+              <div className="profile-section">
+                <h4 className="section-title">Personal Information</h4>
+                <div className="detail-rows">
+                  <div className="detail-row">
+                    <span className="detail-key">Full Name</span>
+                    <span className="detail-val">
+                      {selectedStudent.last_name}, {selectedStudent.first_name} {selectedStudent.middle_name ?? ''}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Email Address</span>
+                    <span className="detail-val">{selectedStudent.user?.email || 'No email'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Student Number</span>
+                    <span className="detail-val">
+                      <span className="code-badge">{selectedStudent.user?.student_number || '—'}</span>
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="student-info">
-                <p className="student-name">{s.name}</p>
-                <p className="student-meta">
-                  {s.course} · {s.year_level}
-                </p>
-                <p className="student-sub">
-                  ID: {s.student_id} · GWA: {s.gwa}
-                </p>
+              <div className="profile-section">
+                <h4 className="section-title">Academic Information</h4>
+                <div className="detail-rows">
+                  <div className="detail-row">
+                    <span className="detail-key">Program</span>
+                    <span className="detail-val">{selectedStudent.program?.program_code || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Year & Section</span>
+                    <span className="detail-val">{formatYearSection(selectedStudent)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Subjects Handled</span>
+                    <span className="detail-val">
+                      {(subjectMapBySection[selectedStudent.section_id] || []).join(', ') || '—'}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">GWA</span>
+                    <span className="detail-val">{selectedStudent.gwa || 'N/A'}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="student-right">
-                <span className="gwa-badge">
-                  {s.gwa}
-                </span>
-
-                <span
-                  className={`status ${
-                    s.gwa <= 2.0
-                      ? "good"
-                      : s.gwa <= 2.5
-                      ? "warning"
-                      : "danger"
-                  }`}
-                >
-                  {s.gwa <= 2.0
-                    ? "Excellent"
-                    : s.gwa <= 2.5
-                    ? "Average"
-                    : "At Risk"}
-                </span>
+              <div className="profile-section">
+                <h4 className="section-title">Guardian Information</h4>
+                {selectedStudent.guardian ? (
+                  <div className="detail-rows">
+                    <div className="detail-row">
+                      <span className="detail-key">Guardian Name</span>
+                      <span className="detail-val">
+                        {selectedStudent.guardian.first_name} {selectedStudent.guardian.last_name}
+                      </span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-key">Relationship</span>
+                      <span className="detail-val">{selectedStudent.guardian.relationship || '—'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-key">Contact Number</span>
+                      <span className="detail-val">{selectedStudent.guardian.contact_number || '—'}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="detail-rows">
+                    <div className="detail-row">
+                      <span className="detail-val" style={{ color: '#b89f90', fontStyle: 'italic' }}>
+                        No guardian information provided.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+
+            <div className="modal-footer">
+              <button className="ghost-btn" onClick={closeStudentModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

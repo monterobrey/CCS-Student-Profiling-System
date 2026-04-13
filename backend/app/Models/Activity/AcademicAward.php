@@ -22,6 +22,7 @@ class AcademicAward extends Model
         'approved_by',
         'status',
         'approved_at',
+        'action_taken',
     ];
 
     public function student(): BelongsTo

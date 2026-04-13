@@ -35,6 +35,8 @@ export const API_ENDPOINTS = {
     IMPORT: "/secretary/faculty/import",
     RESEND_SETUP: (id) => `/secretary/faculty/${id}/resend-setup`,
     MY_STUDENTS: "/faculty/students",
+    MY_SCHEDULE: "/faculty/schedule",
+    SECTION_STUDENTS: (sectionId) => `/faculty/sections/${sectionId}/students`,
     MY_VIOLATIONS: "/faculty/violations",
     REPORT_VIOLATION: "/faculty/violations",
   },

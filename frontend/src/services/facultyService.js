@@ -65,6 +65,23 @@ export const facultyService = {
   },
 
   /**
+   * Get schedule assigned to the logged-in faculty
+   * @returns {Promise<Array>}
+   */
+  getMySchedule: async () => {
+    return httpClient.get(API_ENDPOINTS.FACULTY.MY_SCHEDULE);
+  },
+
+  /**
+   * Get students of a section taught by the faculty
+   * @param {number|string} sectionId
+   * @returns {Promise<Array>}
+   */
+  getSectionStudents: async (sectionId) => {
+    return httpClient.get(API_ENDPOINTS.FACULTY.SECTION_STUDENTS(sectionId));
+  },
+
+  /**
    * Get violations reported by logged-in faculty
    * @returns {Promise<Array>}
    */

@@ -1,28 +1,29 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { archiveService } from '../../services';
 import '../../styles/Dean/ArchiveManagement.css';
 
 const ArchiveManagement = () => {
-  const [students, setStudents] = useState([]);
-  const [faculty, setFaculty] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [restoring, setRestoring] = useState(false);
   const [activeTab, setActiveTab] = useState('students');
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const queryClient = useQueryClient();
 
-  const fetchArchived = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get('/api/archive');
-      setStudents(res.data.students || []);
-      setFaculty(res.data.faculty || []);
-    } catch (err) {
-      console.error('Failed to fetch archive:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: archivedData, isLoading: loading } = useQuery({
+    queryKey: ['archive-accounts'],
+    queryFn: async () => {
+      const res = await archiveService.getArchived();
+      return res.ok ? (res.data || { students: [], faculty: [] }) : { students: [], faculty: [] };
+    },
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
+  const students = archivedData?.students || [];
+  const faculty = archivedData?.faculty || [];
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -35,34 +36,52 @@ const ArchiveManagement = () => {
     setShowRestoreModal(true);
   };
 
+  const restoreMutation = useMutation({
+    mutationFn: ({ id, type }) => archiveService.restoreAccount(id, type),
+    onSuccess: async (res) => {
+      if (!res?.ok) throw new Error(res?.message || 'Failed to restore account.');
+      setShowRestoreModal(false);
+      setSelectedItem(null);
+      await queryClient.invalidateQueries({ queryKey: ['archive-accounts'] });
+      alert('Account restored successfully.');
+    },
+  });
+
   const restoreAccount = async () => {
     if (!selectedItem) return;
-    setRestoring(true);
     try {
-      await axios.post(`/api/archive/${selectedItem.id}/restore`, {
-        type: activeTab === 'students' ? 'student' : 'faculty'
+      await restoreMutation.mutateAsync({
+        id: selectedItem.id,
+        type: activeTab === 'students' ? 'student' : 'faculty',
       });
-      setShowRestoreModal(false);
-      fetchArchived();
-      alert('Account restored successfully.');
     } catch (err) {
-      alert('Failed to restore account.');
-    } finally {
-      setRestoring(false);
+      alert(err?.message || 'Failed to restore account.');
     }
   };
+  const currentData = useMemo(
+    () => (activeTab === 'students' ? students : faculty),
+    [activeTab, students, faculty]
+  );
 
-  useEffect(() => {
-    fetchArchived();
-  }, []);
-
-  const currentData = activeTab === 'students' ? students : faculty;
+  /* avatar background colours — cycles through a warm palette */
+  const avatarColors = [
+    ['#ffe8d6', '#c05000'],
+    ['#fde8ff', '#7c009a'],
+    ['#e8f4ff', '#0060c0'],
+    ['#e8fff0', '#006030'],
+    ['#fff8e8', '#805000'],
+  ];
+  const getAvatarStyle = (index) => {
+    const [bg, color] = avatarColors[index % avatarColors.length];
+    return { background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color };
+  };
 
   return (
     <div className="archive-page">
+
+      {/* ── HEADER ── */}
       <div className="page-header">
         <div className="header-left">
-          <div className="breadcrumb">Management</div>
           <h2 className="page-title">Archive Management</h2>
           <p className="page-sub">View and restore archived student and faculty accounts.</p>
         </div>
@@ -78,14 +97,15 @@ const ArchiveManagement = () => {
         </div>
       </div>
 
+      {/* ── TABS ── */}
       <div className="archive-tabs pcard">
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
           onClick={() => setActiveTab('students')}
         >
           Student Accounts
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'faculty' ? 'active' : ''}`}
           onClick={() => setActiveTab('faculty')}
         >
@@ -93,31 +113,32 @@ const ArchiveManagement = () => {
         </button>
       </div>
 
+      {/* ── TABLE ── */}
       <div className="archive-list pcard">
         {loading ? (
           <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Loading archived accounts...</p>
+            <div className="spinner" />
+            <p>Loading archived accounts…</p>
           </div>
         ) : (
           <div className="table-container">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>NAME</th>
-                  <th>{activeTab === 'students' ? 'STUDENT NO.' : 'DEPARTMENT'}</th>
-                  <th>{activeTab === 'students' ? 'PROGRAM' : 'POSITION'}</th>
-                  <th>ARCHIVED BY</th>
-                  <th>ARCHIVED AT</th>
-                  <th className="text-right">ACTIONS</th>
+                  <th>Name</th>
+                  <th>{activeTab === 'students' ? 'Student No.' : 'Department'}</th>
+                  <th>{activeTab === 'students' ? 'Program' : 'Position'}</th>
+                  <th>Archived By</th>
+                  <th>Archived At</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {currentData.map((item) => (
+                {currentData.map((item, idx) => (
                   <tr key={item.id}>
                     <td>
                       <div className="user-cell">
-                        <div className="u-avatar">
+                        <div className="u-avatar" style={getAvatarStyle(idx)}>
                           {(item.first_name?.[0] || '?').toUpperCase()}
                         </div>
                         <div>
@@ -127,14 +148,14 @@ const ArchiveManagement = () => {
                       </div>
                     </td>
                     <td>
-                      {activeTab === 'students' 
-                        ? (item.student_number || 'N/A') 
+                      {activeTab === 'students'
+                        ? (item.student_number || 'N/A')
                         : (item.department?.department_name || 'N/A')}
                     </td>
                     <td>
                       <span className="type-badge">
-                        {activeTab === 'students' 
-                          ? (item.program?.program_code || 'N/A') 
+                        {activeTab === 'students'
+                          ? (item.program?.program_code || 'N/A')
                           : (item.position || 'N/A')}
                       </span>
                     </td>
@@ -142,9 +163,7 @@ const ArchiveManagement = () => {
                       {item.archiver ? (
                         <div className="archiver-info">
                           <span className="archiver-name">
-                            {item.archiver.role === 'secretary' 
-                              ? 'Secretary' 
-                              : (item.archiver.role === 'dean' ? 'Dean' : 'Chair')}
+                            {item.archiver.name || item.archiver.email}
                           </span>
                           <span className="archiver-email">{item.archiver.email}</span>
                         </div>
@@ -154,17 +173,17 @@ const ArchiveManagement = () => {
                     </td>
                     <td>{formatDate(item.deleted_at)}</td>
                     <td className="actions-cell">
-                      <button 
-                        className="restore-btn" 
-                        onClick={() => confirmRestore(item)} 
+                      <button
+                        className="restore-btn"
+                        onClick={() => confirmRestore(item)}
                         title="Restore Account"
                       >
-                        <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
-                          <path 
-                            d="M10 2v4M10 2a8 8 0 108 8M10 2l-3 3m3-3l3 3" 
-                            stroke="currentColor" 
-                            strokeWidth="1.5" 
-                            strokeLinecap="round" 
+                        <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                          <path
+                            d="M10 2v4M10 2a8 8 0 108 8M10 2l-3 3m3-3l3 3"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                         </svg>
@@ -186,11 +205,12 @@ const ArchiveManagement = () => {
         )}
       </div>
 
-      {/* RESTORE MODAL */}
+      {/* ── RESTORE MODAL ── */}
       {showRestoreModal && (
-        <div className="modal-overlay" onClick={(e) => {
-          if (e.target === e.currentTarget) setShowRestoreModal(false);
-        }}>
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRestoreModal(false); }}
+        >
           <div className="modal modal-sm">
             <div className="modal-header">
               <h3>Restore Account</h3>
@@ -209,8 +229,8 @@ const ArchiveManagement = () => {
               <button className="ghost-btn" onClick={() => setShowRestoreModal(false)}>
                 Cancel
               </button>
-              <button className="primary-btn" onClick={restoreAccount} disabled={restoring}>
-                {restoring ? 'Restoring...' : 'Restore Account'}
+              <button className="primary-btn" onClick={restoreAccount} disabled={restoreMutation.isPending}>
+                {restoreMutation.isPending ? 'Restoring…' : 'Restore Account'}
               </button>
             </div>
           </div>

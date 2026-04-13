@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AuthService
 {
@@ -15,6 +16,11 @@ class AuthService
     {
         // Step 1: Find user in database
         $user = $this->findUser($request);
+
+        // Block archived users explicitly.
+        if ($user && method_exists($user, 'trashed') && $user->trashed()) {
+            return ['message' => 'Invalid Credentials', 'status' => 403];
+        }
 
         // Step 2: Check password
         if (! $this->validateCredentials($user, $request)) {
@@ -84,7 +90,7 @@ class AuthService
     // Find user depending on login type
     private function findUser($request)
     {
-        $query = User::query();
+        $query = User::withTrashed();
 
         // Students log in using student_number
         if ($request->role === 'student') {
@@ -97,7 +103,13 @@ class AuthService
             });
         }
 
-        return $query->first();
+        $identifier = trim((string) $request->email);
+        $isLikelyEmail = Str::contains($identifier, '@');
+        if ($isLikelyEmail) {
+            return $query->orderByRaw('LOWER(email) = ? desc', [strtolower($identifier)])->first();
+        }
+
+        return $query->orderByRaw('student_number = ? desc', [$identifier])->first();
     }
 
     // Check password match

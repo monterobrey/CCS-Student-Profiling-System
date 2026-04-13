@@ -63,6 +63,10 @@ export const API_ENDPOINTS = {
   SECTIONS: {
     LIST: "/sections",
   },
+  ARCHIVE: {
+    LIST: "/archive",
+    RESTORE: (id) => `/archive/${id}/restore`,
+  },
   VIOLATIONS: {
     LIST: "/violations",
     UPDATE: (id) => `/violations/${id}`,

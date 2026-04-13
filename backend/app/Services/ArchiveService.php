@@ -19,14 +19,14 @@ class ArchiveService
     {
         $archivedStudents = Student::onlyTrashed()->with(['user' => function($query) {
             $query->withTrashed();
-        }, 'program', 'archiver'])->get()->map(function($s) {
+        }, 'program', 'archiver.faculty', 'archiver.student'])->get()->map(function($s) {
             $s->type = 'student';
             return $s;
         });
 
         $archivedFaculty = Faculty::onlyTrashed()->with(['user' => function($query) {
             $query->withTrashed();
-        }, 'department', 'archiver'])->get()->map(function($f) {
+        }, 'department', 'archiver.faculty', 'archiver.student'])->get()->map(function($f) {
             $f->type = 'faculty';
             return $f;
         });

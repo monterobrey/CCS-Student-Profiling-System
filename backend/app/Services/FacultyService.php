@@ -12,6 +12,7 @@ use App\Notifications\SetupPasswordNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Service for faculty management operations.
@@ -127,7 +128,7 @@ class FacultyService
     public function getMyViolations($facultyId)
     {
         return StudentViolation::where('faculty_id', $facultyId)
-            ->with(['student.user', 'student.section', 'student.program', 'course'])
+            ->with(['student.user', 'student.section', 'student.program', 'course', 'actionByUser'])
             ->latest()
             ->get();
     }
@@ -138,6 +139,25 @@ class FacultyService
     public function recordViolations($facultyId, $data)
     {
         $violations = [];
+        $handledSchedules = Schedule::where('faculty_id', $facultyId)->get(['section_id', 'course_id']);
+        $handledSectionIds = $handledSchedules->pluck('section_id')->filter()->unique();
+        $handledCourseIds = $handledSchedules->pluck('course_id')->filter()->unique();
+
+        $allowedStudentIds = Student::whereIn('section_id', $handledSectionIds)->pluck('id');
+        $submittedStudentIds = collect($data['student_ids'])->map(fn($id) => (int) $id)->unique();
+
+        $unauthorizedStudentIds = $submittedStudentIds->diff($allowedStudentIds);
+        if ($unauthorizedStudentIds->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'student_ids' => ['One or more selected students are not in your handled sections.'],
+            ]);
+        }
+
+        if (!empty($data['course_id']) && !$handledCourseIds->contains((int) $data['course_id'])) {
+            throw ValidationException::withMessages([
+                'course_id' => ['Selected subject is not in your assigned schedule.'],
+            ]);
+        }
 
         DB::transaction(function () use ($facultyId, $data, &$violations) {
             foreach ($data['student_ids'] as $studentId) {
@@ -148,10 +168,10 @@ class FacultyService
                     'violationType' => $data['violationType'],
                     'severity' => $data['severity'],
                     'description' => $data['description'],
-                    'dateReported' => $data['dateReported'],
+                    'dateReported' => $data['dateReported'] ?? now()->toDateString(),
                     'incident_time' => $data['incident_time'] ?? null,
                     'location' => $data['location'] ?? null,
-                    'status' => 'active',
+                    'status' => 'Pending',
                 ]);
             }
         });

@@ -22,6 +22,7 @@ class StudentViolation extends Model
         'location',
         'status',
         'action_taken',
+        'action_taken_by',
     ];
 
     public function student(): BelongsTo
@@ -37,5 +38,10 @@ class StudentViolation extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function actionByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'action_taken_by');
     }
 }

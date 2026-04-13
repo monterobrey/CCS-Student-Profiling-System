@@ -1,65 +1,199 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { facultyService } from '../../services';
 import '../../styles/Faculty/FacultyManagementViolation.css';
 
-const FacultyViolationManager = () => {
-  const [violations, setViolations] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selectedViolation, setSelectedViolation] = useState(null);
+const VIOLATION_TYPES = [
+  'Academic Dishonesty',
+  'Disruptive Behavior',
+  'Dress Code Violation',
+  'Tardiness / Absences',
+  'Physical Altercation',
+  'Substance Abuse',
+  'Other',
+];
 
-  const fetchFiledViolations = async () => {
-    setLoading(true);
-    try {
-      // Endpoint for violations filed by this faculty member
-      const res = await axios.get('/faculty/violations/filed');
-      setViolations(res.data || []);
-    } catch (err) {
-      console.error('Failed to fetch filed violations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const EMPTY_FORM = {
+  violationType: '',
+  severity: '',
+  location: '',
+  incidentDate: '',
+  incidentTime: '',
+  description: '',
+};
+
+const FacultyViolationManager = () => {
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentDropdownOpen, setStudentDropdownOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sevFilter, setSevFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [selectedViolation, setSelectedViolation] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const studentDropdownRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  const violationsQuery = useQuery({
+    queryKey: ['faculty-violations'],
+    queryFn: async () => {
+      const res = await facultyService.getMyViolations();
+      const rows = res?.ok ? (res.data || []) : [];
+      return rows.map((item) => ({
+        id: item.id,
+        studentName: `${item.student?.last_name || ''}, ${item.student?.first_name || ''} ${item.student?.middle_name || ''}`.trim().replace(/^,\s*/, ''),
+        studentId: item.student?.user?.student_number || '—',
+        section: item.student?.section?.section_name || '—',
+        violationType: item.violationType,
+        severity: item.severity,
+        dateReported: item.dateReported,
+        status: item.status || 'Pending',
+        actionTaken: item.action_taken || '',
+        actionTakenBy: item.action_by_user?.name || item.action_by_user?.email || '',
+        description: item.description,
+        location: item.location,
+        incidentTime: item.incident_time,
+      }));
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const studentsQuery = useQuery({
+    queryKey: ['faculty-handled-students'],
+    queryFn: async () => {
+      const res = await facultyService.getMyStudents();
+      const payload = res?.ok ? (res.data ?? {}) : {};
+      return payload.students || [];
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const violations = violationsQuery.data || [];
+  const students = studentsQuery.data || [];
+
+  useEffect(() => {
+    const onClickOutside = (event) => {
+      if (!studentDropdownRef.current?.contains(event.target)) {
+        setStudentDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
   const filteredReports = useMemo(() => {
     return violations.filter(v => {
       const s = search.toLowerCase();
-      return (
-        !search ||
+      const matchSearch = !search ||
         v.violationType?.toLowerCase().includes(s) ||
         v.studentName?.toLowerCase().includes(s) ||
-        v.section?.toLowerCase().includes(s)
-      );
+        v.section?.toLowerCase().includes(s);
+      const matchSev = !sevFilter || v.severity === sevFilter;
+      const matchDate = !dateFilter || v.dateReported === dateFilter;
+      return matchSearch && matchSev && matchDate;
     });
-  }, [violations, search]);
+  }, [violations, search, sevFilter, dateFilter]);
+
+  const filteredStudentOptions = useMemo(() => {
+    const term = studentSearch.trim().toLowerCase();
+    if (!term) return students;
+    return students.filter((s) => {
+      const fullName = `${s.last_name || ''}, ${s.first_name || ''} ${s.middle_name || ''}`.toLowerCase();
+      const studentNo = (s.user?.student_number || '').toLowerCase();
+      const section = (s.section?.section_name || '').toLowerCase();
+      return fullName.includes(term) || studentNo.includes(term) || section.includes(term);
+    });
+  }, [students, studentSearch]);
+
+  const selectedStudents = useMemo(() => {
+    const selectedSet = new Set(selectedStudentIds.map((id) => Number(id)));
+    return students.filter((student) => selectedSet.has(student.id));
+  }, [students, selectedStudentIds]);
 
   const stats = useMemo(() => [
-    { label: 'Filed by Me', value: violations.length, color: '#FF6B1A', icon: '📝' },
-    { label: 'Major Cases', value: violations.filter(v => v.severity === 'Major').length, color: '#ef4444', icon: '🚫' },
-    { label: 'Awaiting Action', value: violations.filter(v => v.status === 'Pending').length, color: '#f59e0b', icon: '⏳' },
-    { label: 'Resolved', value: violations.filter(v => v.status === 'Resolved').length, color: '#3b82f6', icon: '✅' }
+    { label: 'Filed by Me',     value: violations.length,                                           color: 'orange', icon: '📝' },
+    { label: 'Major Cases',     value: violations.filter(v => v.severity === 'Major').length,        color: 'red',    icon: '🚫' },
+    { label: 'Awaiting Action', value: violations.filter(v => v.status === 'Pending').length,        color: 'amber',  icon: '⏳' },
+    { label: 'Resolved',        value: violations.filter(v => v.status === 'Resolved').length,       color: 'blue',   icon: '✅' },
   ], [violations]);
 
-  useEffect(() => {
-    fetchFiledViolations();
-  }, []);
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const toggleStudent = (studentId) => {
+    setSelectedStudentIds((prev) => (
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    ));
+  };
+
+  const resetForm = () => {
+    setForm(EMPTY_FORM);
+    setSelectedStudentIds([]);
+    setStudentSearch('');
+    setStudentDropdownOpen(false);
+  };
+
+  const reportViolationMutation = useMutation({
+    mutationFn: (payload) => facultyService.reportViolation(payload),
+    onSuccess: async (res) => {
+      if (!res?.ok) {
+        throw new Error(res?.message || 'Failed to submit violation report.');
+      }
+      resetForm();
+      setShowReportModal(false);
+      await queryClient.invalidateQueries({ queryKey: ['faculty-violations'] });
+    },
+  });
+
+  const handleSubmit = async () => {
+    if (!selectedStudentIds.length || !form.violationType || !form.severity || !form.description) {
+      alert('Please select students and fill in violation type, severity, and description.');
+      return;
+    }
+
+    try {
+      const payload = {
+        student_ids: selectedStudentIds,
+        violationType: form.violationType,
+        severity: form.severity,
+        description: form.description,
+        location: form.location || null,
+        dateReported: form.incidentDate || null,
+        incident_time: form.incidentTime || null,
+      };
+      await reportViolationMutation.mutateAsync(payload);
+    } catch (error) {
+      alert(error.message || 'Failed to submit violation report.');
+    }
+  };
 
   return (
     <div className="faculty-violation-page">
+
+      {/* Header */}
       <div className="page-header">
         <div className="header-text">
           <h2 className="title">Violation Management</h2>
           <p className="subtitle">Track and manage incident reports filed for your handled sections.</p>
         </div>
-        <button className="record-btn" onClick={() => alert('Opening Recording Form...')}>
-          + New Incident Report
+        <button className="record-btn" onClick={() => { resetForm(); setShowReportModal(true); }}>
+          + Report Violation
         </button>
       </div>
 
-      {/* Metric Cards */}
+      {/* Stats Row */}
       <div className="stats-row">
         {stats.map((stat, i) => (
-          <div key={i} className="mini-card" style={{ borderLeftColor: stat.color }}>
+          <div key={i} className={`mini-card accent-${stat.color}`}>
             <div className="card-icon">{stat.icon}</div>
             <div className="card-info">
               <span className="card-value">{stat.value}</span>
@@ -72,31 +206,49 @@ const FacultyViolationManager = () => {
       {/* Toolbar */}
       <div className="table-actions">
         <div className="search-container">
-          <input 
-            type="text" 
-            placeholder="Search by student name, section, or violation type..." 
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by student name, section, or violation type…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <select
+          className="filter-select"
+          value={sevFilter}
+          onChange={(e) => setSevFilter(e.target.value)}
+        >
+          <option value="">All Severities</option>
+          <option value="Major">Major</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Minor">Minor</option>
+        </select>
+        <input
+          type="date"
+          className="filter-select"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          title="Filter by date filed"
+        />
       </div>
 
-      {/* Reports Table */}
+      {/* Table */}
       <div className="table-wrapper">
-        {loading ? (
+        {violationsQuery.isLoading ? (
           <div className="table-loader">
-            <div className="spinner"></div>
-            <p>Loading reports...</p>
+            <div className="spinner" />
+            <p>Loading reports…</p>
           </div>
         ) : (
           <table className="violation-table">
             <thead>
               <tr>
-                <th>STUDENT / SECTION</th>
-                <th>INCIDENT TYPE</th>
-                <th>SEVERITY</th>
-                <th>DATE FILED</th>
-                <th>STATUS</th>
+                <th>Student / Section</th>
+                <th>Violation Type</th>
+                <th>Severity</th>
+                <th>Date Filed</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -127,7 +279,7 @@ const FacultyViolationManager = () => {
               ))}
               {filteredReports.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="empty-msg">No filed violations match your search.</td>
+                  <td colSpan="5" className="empty-msg">No filed violations match your filters.</td>
                 </tr>
               )}
             </tbody>
@@ -135,7 +287,132 @@ const FacultyViolationManager = () => {
         )}
       </div>
 
-      {/* Details Modal */}
+      {/* Report Violation Modal */}
+      {showReportModal && (
+        <div className="modal-backdrop" onClick={() => { resetForm(); setShowReportModal(false); }}>
+          <div className="modal-box modal-wide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Report a Violation</h3>
+              <button className="close-x" onClick={() => { resetForm(); setShowReportModal(false); }}>&times;</button>
+            </div>
+            <div className="modal-content">
+
+              <div className="modal-section-label">Student Info</div>
+              <div className="modal-grid">
+                <div className="modal-field full" ref={studentDropdownRef}>
+                  <label>Select Students</label>
+                  <div className="student-multi-select">
+                    <div
+                      className="student-multi-trigger"
+                      onClick={() => setStudentDropdownOpen((prev) => !prev)}
+                    >
+                      {selectedStudentIds.length
+                        ? `${selectedStudentIds.length} student(s) selected`
+                        : 'Search and select students...'}
+                    </div>
+                    {studentDropdownOpen && (
+                      <div className="student-dropdown-panel">
+                        <input
+                          type="text"
+                          className="student-search-input"
+                          value={studentSearch}
+                          onChange={(e) => setStudentSearch(e.target.value)}
+                          placeholder="Search by name, student number, or section"
+                        />
+                        <div className="student-option-list">
+                          {filteredStudentOptions.map((student) => {
+                            const fullName = `${student.last_name || ''}, ${student.first_name || ''} ${student.middle_name || ''}`.trim().replace(/^,\s*/, '');
+                            const isSelected = selectedStudentIds.includes(student.id);
+                            return (
+                              <label key={student.id} className="student-option-item">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => toggleStudent(student.id)}
+                                />
+                                <span>
+                                  {fullName} - {student.user?.student_number || '—'} - {student.section?.section_name || 'No Section'}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {!!selectedStudents.length && (
+                    <div className="selected-students-preview">
+                      {selectedStudents.map((student) => {
+                        const fullName = `${student.last_name || ''}, ${student.first_name || ''}`.trim().replace(/^,\s*/, '');
+                        return (
+                          <span key={student.id} className="selected-student-chip">
+                            {fullName} ({student.section?.section_name || 'No Section'})
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-section-label">Incident Info</div>
+              <div className="modal-grid">
+                <div className="modal-field">
+                  <label>Violation Type</label>
+                  <select name="violationType" value={form.violationType} onChange={handleFormChange}>
+                    <option value="">Select type…</option>
+                    {VIOLATION_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="modal-field">
+                  <label>Severity</label>
+                  <select name="severity" value={form.severity} onChange={handleFormChange}>
+                    <option value="">Select severity…</option>
+                    <option>Minor</option>
+                    <option>Moderate</option>
+                    <option>Major</option>
+                  </select>
+                </div>
+                <div className="modal-field">
+                  <label>Location</label>
+                  <input name="location" value={form.location} onChange={handleFormChange} placeholder="e.g. Room 301, Library" />
+                </div>
+                <div className="modal-field">
+                  <label>Incident Date (Optional)</label>
+                  <input type="date" name="incidentDate" value={form.incidentDate} onChange={handleFormChange} />
+                </div>
+                <div className="modal-field">
+                  <label>Incident Time (Optional)</label>
+                  <input type="time" name="incidentTime" value={form.incidentTime} onChange={handleFormChange} />
+                </div>
+              </div>
+
+              <div className="modal-section-label">Description</div>
+              <div className="modal-grid">
+                <div className="modal-field full">
+                  <label>Detailed Description</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleFormChange}
+                    rows={4}
+                    placeholder="Describe what happened in detail. Include witnesses, context, and any prior incidents if applicable."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => { resetForm(); setShowReportModal(false); }}>Cancel</button>
+              <button className="btn-submit" onClick={handleSubmit} disabled={reportViolationMutation.isPending}>
+                {reportViolationMutation.isPending ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
       {selectedViolation && (
         <div className="modal-backdrop" onClick={() => setSelectedViolation(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -144,13 +421,54 @@ const FacultyViolationManager = () => {
               <button className="close-x" onClick={() => setSelectedViolation(null)}>&times;</button>
             </div>
             <div className="modal-content">
+              <div className="detail-grid">
+                <div className="detail-card">
+                  <label>Subject Student</label>
+                  <p>{selectedViolation.studentName}</p>
+                  <span className="detail-sub">{selectedViolation.studentId} · {selectedViolation.section}</span>
+                </div>
+                <div className="detail-card">
+                  <label>Violation Type</label>
+                  <p>{selectedViolation.violationType}</p>
+                </div>
+                <div className="detail-card">
+                  <label>Severity</label>
+                  <span className={`sev-tag ${selectedViolation.severity?.toLowerCase()}`}>
+                    {selectedViolation.severity}
+                  </span>
+                </div>
+                <div className="detail-card">
+                  <label>Status</label>
+                  <span className={`status-pill ${selectedViolation.status?.toLowerCase()}`}>
+                    {selectedViolation.status}
+                  </span>
+                </div>
+                <div className="detail-card">
+                  <label>Date Filed</label>
+                  <p>{selectedViolation.dateReported || '—'}</p>
+                </div>
+                <div className="detail-card">
+                  <label>Incident Time</label>
+                  <p>{selectedViolation.incidentTime || '—'}</p>
+                </div>
+                <div className="detail-card">
+                  <label>Action Taken By</label>
+                  <p>{selectedViolation.actionTakenBy || 'Not yet set'}</p>
+                </div>
+              </div>
+              {selectedViolation.location && (
+                <div className="detail-group">
+                  <label>Location:</label>
+                  <p>{selectedViolation.location}</p>
+                </div>
+              )}
               <div className="detail-group">
-                <label>Complainant (Faculty):</label>
-                <p>Professor Mateo Delos Reyes</p>
+                <label>Action Taken:</label>
+                <p className="desc-box">{selectedViolation.actionTaken || 'No action taken yet.'}</p>
               </div>
               <div className="detail-group">
-                <label>Subject Student:</label>
-                <p>{selectedViolation.studentName} ({selectedViolation.section})</p>
+                <label>Action Taken By:</label>
+                <p>{selectedViolation.actionTakenBy || 'Not yet set'}</p>
               </div>
               <div className="detail-group">
                 <label>Incident Description:</label>

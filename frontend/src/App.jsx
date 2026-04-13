@@ -27,7 +27,7 @@ import CurriculumManagement from "./pages/Dean/CurriculumManagement";
 import CourseManagement from "./pages/Dean/CourseManagement";
 import PerformanceOverview from "./pages/Dean/PerformanceOverview";
 import FacultyManagement from "./pages/Shared/FacultyManagement";
-import ViolationsList from "./pages/Dean/ViolationsList";
+import ViolationsList from "./pages/Shared/ViolationsList";
 import StudentManagement from "./pages/Shared/StudentManagement";
 import FacultyWorkloadPage from "./pages/Shared/FacultyWorkloadPage";
 import Settings from "./components/Settings";

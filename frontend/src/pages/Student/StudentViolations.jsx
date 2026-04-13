@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import '../../styles/Student/StudentViolations.css'
-
+import { studentService } from '../../services'
 
 const ViolationRecords = () => {
-  const [violations, setViolations] = useState([])
-  const [loading, setLoading] = useState(false)
-
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -14,29 +12,27 @@ const ViolationRecords = () => {
     })
   }
 
-  const fetchViolations = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/student/violations')
-      const data = await res.json()
-      const mapped = data.map((v) => ({
+  const { data: violations = [], isLoading: loading } = useQuery({
+    queryKey: ['student-violations'],
+    queryFn: async () => {
+      const res = await studentService.getViolations()
+      const data = res?.ok ? (res.data || []) : []
+      return data.map((v) => ({
         ...v,
         type: v.violationType,
         date: formatDate(v.dateReported),
         severityClass: 'sev-' + v.severity.toLowerCase(),
-        resolved: v.status === 'resolved',
+        resolved: (v.status || '').toLowerCase() === 'resolved',
       }))
-      setViolations(mapped)
-    } catch (err) {
-      console.error('Failed to fetch violations:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
 
-  useEffect(() => {
-    fetchViolations()
-  }, [])
+  const renderedViolations = useMemo(() => violations, [violations])
 
   return (
     <div className="page">
@@ -54,7 +50,7 @@ const ViolationRecords = () => {
               <div className="spinner"></div>
               <p>Fetching your records...</p>
             </div>
-          ) : violations.length === 0 ? (
+          ) : renderedViolations.length === 0 ? (
             <div className="empty-clean">
               <div className="clean-icon">
                 <svg viewBox="0 0 48 48" fill="none" style={{ width: 48, height: 48 }}>
@@ -73,7 +69,7 @@ const ViolationRecords = () => {
             </div>
           ) : (
             <div className="violation-list">
-              {violations.map((v) => (
+              {renderedViolations.map((v) => (
                 <div className="violation-row" key={v.type + v.date}>
                   <div className="v-avatar">!</div>
                   <div className="v-info">

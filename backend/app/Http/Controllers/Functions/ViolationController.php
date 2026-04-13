@@ -38,7 +38,7 @@ class ViolationController extends Controller
             'action_taken' => 'nullable|string',
         ]);
 
-        $violation = $this->violationService->updateViolation($id, $data);
+        $violation = $this->violationService->updateViolation($id, $data, $request->user()->id);
         return ApiResponse::success($violation, 'Violation status updated successfully.');
     }
 }

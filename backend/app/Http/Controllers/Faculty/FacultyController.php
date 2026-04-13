@@ -56,8 +56,8 @@ class FacultyController extends Controller
             'violationType' => 'required|string',
             'severity' => 'required|in:Minor,Moderate,Major',
             'description' => 'required|string',
-            'dateReported' => 'required|date',
-            'incident_time' => 'nullable|string',
+            'dateReported' => 'nullable|date',
+            'incident_time' => 'nullable|date_format:H:i',
             'location' => 'nullable|string',
             'course_id' => 'nullable|exists:courses,id',
         ]);

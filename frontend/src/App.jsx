@@ -25,7 +25,7 @@ import FacultyManagement from "./pages/Shared/FacultyManagement";
 import ViolationsList from "./pages/Dean/ViolationsList";
 import StudentManagement from "./pages/Shared/StudentManagement";
 import FacultyWorkloadPage from "./pages/Shared/FacultyWorkloadPage";
-import Settings from "./components/Settings";
+import Settings from "./pages/Shared/Settings";
 import ArchiveManagement from "./pages/Dean/ArchiveManagement";
 
 // Import Student Pages
@@ -341,7 +341,7 @@ function App() {
               }
             />
             <Route
-              path="/dean/settings"
+              path="/dean/users"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
                   <Users />

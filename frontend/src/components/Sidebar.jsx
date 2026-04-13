@@ -64,7 +64,6 @@ const { role } = useAuth();
         { name: "Management", items: [
           { path: "archive", meta: { title: "Archive Management", icon: "archive" } }
         ]},
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
       ],
       [ROLES.CHAIR]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -79,7 +78,6 @@ const { role } = useAuth();
         { name: "Monitoring", items: [
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
         ]},
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
       ],
       [ROLES.FACULTY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -106,7 +104,6 @@ const { role } = useAuth();
         { name: "Monitoring", items: [
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
         ]},
-        { name: "Settings", items: [{ path: "settings", meta: { title: "Settings", icon: "settings" } }] },
       ],
       [ROLES.STUDENT]: [
         { name: "Overview", items: [

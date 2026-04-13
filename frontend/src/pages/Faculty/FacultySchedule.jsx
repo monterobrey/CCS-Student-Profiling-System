@@ -225,19 +225,18 @@ const FacultySchedule = () => {
       {selectedSection && (
         <div className="modal-overlay" onClick={() => setSelectedSection(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
             <div className="modal-header-styled">
               <div className="modal-title-info">
-                <h3>{selectedSection.course?.course_code || ""}</h3>
-                <p className="modal-subtitle">{selectedSection.section?.section_name || ""}</p>
+                <div className="modal-course-badge">Course</div>
+                <h3>{selectedSection?.course?.course_code || ""}</h3>
+                <p className="modal-subtitle">{selectedSection?.section?.section_name || ""}</p>
               </div>
-              <button
-                className="close-btn"
-                onClick={() => setSelectedSection(null)}
-              >
+              <button className="close-btn" onClick={() => setSelectedSection(null)}>
                 &times;
               </button>
             </div>
+
+            <div className="modal-student-count">{students.length} enrolled students</div>
 
             <div className="modal-body-styled">
               <table className="students-table">
@@ -261,10 +260,19 @@ const FacultySchedule = () => {
                   ) : (
                     students.map((student) => (
                       <tr key={student.id}>
-                        <td>{student.student_number || "N/A"}</td>
+                        <td className="student-num">{student.user?.student_number || student.student_number || "N/A"}</td>
                         <td>{student.user?.name || `${student.user?.first_name || ""} ${student.user?.last_name || ""}`.trim() || "N/A"}</td>
-                        <td>{student.status || "Active"}</td>
-                        <td className="text-right">-</td>
+                        <td>
+                          <span className={`status-badge ${student.status === "Inactive" ? "status-inactive" : "status-active"}`}>
+                            <span className="dot" />
+                            {student.status || "Active"}
+                          </span>
+                        </td>
+                        <td className="text-right">
+                          <button className="report-btn" type="button">
+                            Report violation
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -272,6 +280,11 @@ const FacultySchedule = () => {
               </table>
             </div>
 
+            <div className="modal-footer">
+              <button className="modal-close-footer-btn" onClick={() => setSelectedSection(null)}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

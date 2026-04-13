@@ -5,8 +5,6 @@ import { httpClient } from "../../services/httpClient";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
 import "../../styles/Chair/ScheduleManagement.css";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_SHORT = { Monday: "M", Tuesday: "T", Wednesday: "W", Thursday: "Th", Friday: "F", Saturday: "Sat" };
 
@@ -17,8 +15,6 @@ const EMPTY_FORM = {
 
 const EMPTY_AUTO = { program_id: "", year_level: "1", semester: "1st" };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const formatTime = (t) =>
   t ? new Date(`2000-01-01T${t}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
@@ -28,15 +24,21 @@ const formatDays = (days) =>
     .map((d) => DAY_SHORT[d])
     .join("/");
 
-// ─── Component ───────────────────────────────────────────────────────────────
-
 export default function ScheduleManagement() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
 
-  const [filterProgram,   setFilterProgram]   = useState("");
-  const [filterYear,      setFilterYear]      = useState("");
-  const [activeSectionId, setActiveSectionId] = useState("");
+  // ── Restore filters from cache on mount (survives navigation) ────────────
+  const cachedFilters = queryClient.getQueryData(["schedule-filters"]);
+
+  const [filterProgram,   setFilterProgram]   = useState(cachedFilters?.filterProgram   ?? "");
+  const [filterYear,      setFilterYear]      = useState(cachedFilters?.filterYear      ?? "");
+  const [activeSectionId, setActiveSectionId] = useState(cachedFilters?.activeSectionId ?? "");
+
+  // Persist filters to cache whenever they change
+  const persistFilters = (patch) => {
+    queryClient.setQueryData(["schedule-filters"], (prev = {}) => ({ ...prev, ...patch }));
+  };
 
   const [showAddModal,    setShowAddModal]    = useState(false);
   const [showAutoModal,   setShowAutoModal]   = useState(false);
@@ -52,7 +54,7 @@ export default function ScheduleManagement() {
   const [assigning,  setAssigning]  = useState(false);
   const [importing,  setImporting]  = useState(false);
 
-  const [toast, setToast] = useState(null);
+  const [toast,         setToast]         = useState(null);
   const [assignError,   setAssignError]   = useState("");
   const [autoConflicts, setAutoConflicts] = useState([]);
 
@@ -116,9 +118,20 @@ export default function ScheduleManagement() {
       .sort((a, b) => a.section_name.localeCompare(b.section_name));
   }, [sections, filterProgram, filterYear]);
 
-  // Auto-select first tab when filter changes
+  // Auto-select first tab when filter changes — but respect cached active section
   useEffect(() => {
-    setActiveSectionId(filteredSections.length > 0 ? filteredSections[0].id : "");
+    if (filteredSections.length === 0) {
+      setActiveSectionId("");
+      persistFilters({ activeSectionId: "" });
+      return;
+    }
+    // If cached section is still in the filtered list, keep it; otherwise pick first
+    const stillValid = filteredSections.some((s) => s.id == activeSectionId);
+    if (!stillValid) {
+      const first = filteredSections[0].id;
+      setActiveSectionId(first);
+      persistFilters({ activeSectionId: first });
+    }
   }, [filteredSections]);
 
   // ── Derived: grouped schedules ────────────────────────────────────────────
@@ -219,10 +232,17 @@ export default function ScheduleManagement() {
         setShowAssignModal(false);
         setAssignForm({ faculty_id: "" });
         setAssignError("");
-        queryClient.invalidateQueries({ queryKey: ["schedules"] });
+        // Update cache directly — no refetch needed
+        const assignedFaculty = faculty.find((f) => f.id == assignForm.faculty_id);
+        queryClient.setQueryData(["schedules"], (old = []) =>
+          old.map((s) =>
+            s.section_id === selectedSchedule.section_id &&
+            s.course_id  === selectedSchedule.course_id
+              ? { ...s, faculty_id: assignedFaculty?.id ?? null, faculty: assignedFaculty ?? null }
+              : s
+          )
+        );
       } else {
-        // Backend throws descriptive conflict message e.g.
-        // "Faculty has schedule conflicts at these times: Monday at 08:00 AM"
         setAssignError(res.message || "Failed to assign faculty.");
       }
     } catch {
@@ -238,7 +258,10 @@ export default function ScheduleManagement() {
       const res = await scheduleService.bulkDelete(item.ids);
       if (res.ok) {
         showToast("success", "Schedule deleted.");
-        queryClient.invalidateQueries({ queryKey: ["schedules"] });
+        // Remove deleted entries from cache directly — no refetch
+        queryClient.setQueryData(["schedules"], (old = []) =>
+          old.filter((s) => !item.ids.includes(s.id))
+        );
       } else {
         showToast("error", res.message || "Failed to delete.");
       }
@@ -303,13 +326,20 @@ export default function ScheduleManagement() {
 
       {/* FILTERS */}
       <div className="filter-bar pcard">
-        <select value={filterProgram} onChange={(e) => { setFilterProgram(e.target.value); setFilterYear(""); }}>
+        <select value={filterProgram} onChange={(e) => {
+          setFilterProgram(e.target.value);
+          setFilterYear("");
+          persistFilters({ filterProgram: e.target.value, filterYear: "", activeSectionId: "" });
+        }}>
           <option value="">Select Program</option>
           {programs.map((p) => (
             <option key={p.id} value={p.id}>{p.program_code}</option>
           ))}
         </select>
-        <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)} disabled={!filterProgram}>
+        <select value={filterYear} onChange={(e) => {
+          setFilterYear(e.target.value);
+          persistFilters({ filterYear: e.target.value, activeSectionId: "" });
+        }} disabled={!filterProgram}>
           <option value="">Select Year</option>
           {["1","2","3","4"].map((y) => (
             <option key={y} value={y}>{y}{y==="1"?"st":y==="2"?"nd":y==="3"?"rd":"th"} Year</option>
@@ -325,7 +355,7 @@ export default function ScheduleManagement() {
               <button
                 key={sec.id}
                 className={`section-tab ${activeSectionId == sec.id ? "active" : ""}`}
-                onClick={() => setActiveSectionId(sec.id)}
+                onClick={() => { setActiveSectionId(sec.id); persistFilters({ activeSectionId: sec.id }); }}
               >
                 {sec.section_name}
               </button>

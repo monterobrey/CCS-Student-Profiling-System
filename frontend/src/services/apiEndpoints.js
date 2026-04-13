@@ -65,6 +65,16 @@ export const API_ENDPOINTS = {
     LIST: "/violations",
     UPDATE: (id) => `/violations/${id}`,
   },
+  SCHEDULE: {
+    LIST: "/schedules",
+    CREATE: "/schedules",
+    IMPORT: "/schedules/import",
+    AUTO_GENERATE: "/schedules/auto-generate",
+    ASSIGN_FACULTY: (id) => `/schedules/${id}/assign-faculty`,
+    BULK_DELETE: "/schedules/bulk-delete",
+    DELETE: (id) => `/schedules/${id}`,
+    CURRICULUM_COURSES: "/curriculum-courses",
+  },
 };
 
 export default API_ENDPOINTS;

@@ -19,3 +19,4 @@ export { analyticsService } from './analyticsService';
 export { curriculumService } from './curriculumService';
 export { profilingService } from './profilingService';
 export { violationService } from './violationService';
+export { scheduleService } from './scheduleService';

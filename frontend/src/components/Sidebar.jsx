@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth, ROLES } from "../context/AuthContext";
 import "./AppLayout.css";
-import ccsLogo from "../assets/ccs-logo.jpg";
+import ccsLogo from "../assets/ccs-logo.png";
 
 const getBasePath = (role) => {
   if (role === ROLES.DEAN) return 'dean';

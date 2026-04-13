@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { authService } from "../../../services";
-import "../../../styles/FacultyLogin.css";
+import "../../../styles/Auth/login/FacultyLogin.css";
+import pncLogo from "../../../assets/pnc-logo.png";
+import ccsLogo from "../../../assets/ccs-logo.png";
+import schoolBuilding from "../../../assets/school-building.jpg";
 
 export default function FacultyLogin() {
   const navigate = useNavigate();
@@ -51,7 +54,7 @@ export default function FacultyLogin() {
             </h2>
 
             <p className="form-sub">
-              Sign in to access your dashboard and records
+              Enter your credentials to access the faculty portal
             </p>
 
             <form onSubmit={handleLogin} className="login-form">
@@ -137,23 +140,21 @@ export default function FacultyLogin() {
                 {loading ? (
                   <span>Signing in...</span>
                 ) : (
-                  <span>Sign In <span className="b-arrow">→</span></span>
+                  <span>Sign In</span>
                 )}
               </button>
 
             </form>
 
             <div className="divider">
-              <div className="divider-line" />
               <span className="divider-text">Faculty Portal</span>
-              <div className="divider-line" />
             </div>
 
             <div className="secure-row">
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              <p>Department Information System — Unified Faculty Access.</p>
+              <p>CCS Student Profiling System</p>
             </div>
           </div>
         </div>
@@ -161,14 +162,8 @@ export default function FacultyLogin() {
         {/* RIGHT HERO */}
         <div className="right-hero">
           <div className="hero-bg">
-            <img src="/assets/school-building.jpg" alt="University Building" />
+            <img src={schoolBuilding} alt="University Building" />
             <div className="hero-overlay" />
-          </div>
-
-          <div className="floating-icons">
-            {[1,2,3,4,5].map(n => (
-              <span key={n} className={`ico ico-${n}`}></span>
-            ))}
           </div>
 
           <div className="brand">
@@ -178,10 +173,10 @@ export default function FacultyLogin() {
             </div>
             <div className="brand-logos">
               <div className="brand-logo pnc">
-                <img src="/assets/pnc-logo.png" alt="University Logo" />
+                <img src={pncLogo} alt="University Logo" />
               </div>
               <div className="brand-logo ccs">
-                <img src="/assets/ccs-logo.jpg" alt="CCS Logo" />
+                <img src={ccsLogo} alt="CCS Logo" />
               </div>
             </div>
           </div>
@@ -193,12 +188,11 @@ export default function FacultyLogin() {
               <span>Faculty Portal</span>
             </h1>
             <p className="hero-desc">
-              Dedicated platform for CCS faculty members to manage student profiles, 
-              monitor academic performance, and streamline departmental administrative tasks.
+              Manage student profiles, track academic progress, and handle departmental operations seamlessly.
             </p>
           </div>
 
-          <p className="foot-note">© 2026 University of Cabuyao — College of Computing Studies</p>
+          <p className="foot-note">University of Cabuyao — College of Computing Studies</p>
         </div>
 
       </div>

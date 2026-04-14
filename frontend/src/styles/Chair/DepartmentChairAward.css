@@ -1,0 +1,157 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: "Outfit", sans-serif;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a0a00;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: #b89f90;
+  margin-top: 4px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  background: #faf8f6;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid #f0e8e0;
+  width: fit-content;
+}
+
+.filter-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9a8070;
+  cursor: pointer;
+}
+
+.filter-tab.active {
+  background: #1a0a00;
+  color: #fff;
+}
+
+.awards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ach-card {
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ach-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ach-info {
+  flex: 1;
+}
+
+.ach-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ach-student {
+  font-size: 12px;
+  color: #9a8070;
+}
+
+.ach-meta {
+  font-size: 11px;
+  color: #b89f90;
+}
+
+.cat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.ach-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.as-pending {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.as-approved {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.as-rejected {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.ach-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.approve-btn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.reject-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ach-resolved {
+  font-size: 12px;
+  color: #9a8070;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: #b89f90;
+}

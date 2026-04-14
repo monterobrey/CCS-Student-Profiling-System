@@ -274,35 +274,59 @@ export default function CurriculumManagement() {
       {isLoading ? (
         <p className="loading-text">Loading curriculum...</p>
       ) : (
-        groupedCurriculum.map((year) => (
-          <div key={year.year} className="year-section">
-            <h3 className="year-title">{year.year}{getYearSuffix(year.year)} Year</h3>
-            {year.semesters.map((sem) => (
-              <div key={sem.semester} className="semester-card">
-                <h4>{sem.semester} Semester</h4>
-                <table className="sem-table">
-                  <thead>
-                    <tr><th>Code</th><th>Name</th><th>Units</th><th></th></tr>
-                  </thead>
-                  <tbody>
-                    {sem.courses.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.course.course_code}</td>
-                        <td>{item.course.course_name}</td>
-                        <td>{item.course.units}</td>
-                        <td>
-                          <button className="delete-btn-sm" onClick={() => deleteEntry(item.id)}>
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        groupedCurriculum.map((year) => {
+          const totalCourses = year.semesters.reduce((sum, s) => sum + s.courses.length, 0);
+          return (
+            <div key={year.year} className="year-block" data-year={year.year}>
+              <div className="year-block-header">
+                <span className="year-pill">{year.year}{getYearSuffix(year.year)} Year</span>
+                <span className="year-course-count">{totalCourses} course{totalCourses !== 1 ? "s" : ""}</span>
               </div>
-            ))}
-          </div>
-        ))
+
+              <div className="semesters-grid">
+                {year.semesters.map((sem) => (
+                  <div key={sem.semester} className="semester-box">
+                    <div className="semester-box-header">
+                      <span className="semester-label">{sem.semester} Semester</span>
+                      <span className="semester-count-badge">{sem.courses.length} subjects</span>
+                    </div>
+
+                    <table className="sem-table">
+                      <thead>
+                        <tr>
+                          <th>Code</th>
+                          <th>Name</th>
+                          <th>Type</th>
+                          <th>Lec</th>
+                          <th>Lab</th>
+                          <th>Units</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sem.courses.map((item) => (
+                          <tr key={item.id}>
+                            <td><span className="code-badge">{item.course.course_code}</span></td>
+                            <td>{item.course.course_name}</td>
+                            <td><span className={`type-badge type-${item.course.type}`}>{item.course.type}</span></td>
+                            <td className="unit-cell">{item.course.lec_units ?? "—"}</td>
+                            <td className="unit-cell">{item.course.lab_units ?? "—"}</td>
+                            <td className="unit-cell total">{item.course.units}</td>
+                            <td>
+                              <button className="delete-btn-sm" onClick={() => deleteEntry(item.id)}>
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })
       )}
 
       {/* ADD CURRICULUM MODAL */}

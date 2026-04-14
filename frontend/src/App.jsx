@@ -30,7 +30,7 @@ import FacultyManagement from "./pages/Shared/FacultyManagement";
 import ViolationsList from "./pages/Shared/ViolationsList";
 import AwardsList from "./pages/Shared/AwardsList";
 import StudentManagement from "./pages/Shared/StudentManagement";
-import FacultyWorkloadPage from "./pages/Shared/FacultyWorkloadPage";
+import FacultyWorkload from "./pages/Shared/FacultyWorkload";
 import Settings from "./pages/Shared/Settings";
 import ArchiveManagement from "./pages/Dean/ArchiveManagement";
 
@@ -134,7 +134,7 @@ function App() {
               path="/dean/faculty-workload"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
-                  <FacultyWorkloadPage />
+                  <FacultyWorkload />
                 </ProtectedRoute>
               }
             />
@@ -254,7 +254,7 @@ function App() {
               path="/department-chair/faculty-workload"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
-                  <FacultyWorkloadPage />
+                  <FacultyWorkload />
                 </ProtectedRoute>
               }
             />
@@ -302,7 +302,7 @@ function App() {
               path="/secretary/faculty-workload"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
-                  <FacultyWorkloadPage />
+                  <FacultyWorkload />
                 </ProtectedRoute>
               }
             />

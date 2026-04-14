@@ -46,10 +46,19 @@ class AnalyticsController extends Controller
 
         if ($user->isDepartmentChair() && $user->faculty) {
             $departmentId = $user->faculty->department_id;
-            $programId    = $user->faculty->program_id; // null if not assigned to a specific program
+            $programId    = $user->faculty->program_id;
         }
 
         $data = $this->analyticsService->getAcademicPerformance($departmentId, $programId);
+        return ApiResponse::success($data);
+    }
+
+    /**
+     * Get overall department-wide report for the Dean.
+     */
+    public function deanReport(Request $request)
+    {
+        $data = $this->analyticsService->getDeanReport();
         return ApiResponse::success($data);
     }
 }

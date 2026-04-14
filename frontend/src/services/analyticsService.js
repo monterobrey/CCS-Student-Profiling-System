@@ -36,6 +36,13 @@ export const analyticsService = {
   },
 
   /**
+   * Get overall department-wide report for the Dean
+   */
+  getDeanReport: async () => {
+    return httpClient.get(API_ENDPOINTS.ANALYTICS.DEAN_REPORT);
+  },
+
+  /**
    * Get profiling report with filters
    * @param {Object} filters - Filter options
    * @returns {Promise<Object>}

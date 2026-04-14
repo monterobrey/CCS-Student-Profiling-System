@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
     SUMMARY: "/analytics/summary",
     FACULTY: "/analytics/faculty",
     PERFORMANCE: "/analytics/performance",
+    DEAN_REPORT: "/analytics/dean-report",
   },
   PROFILING: {
     REPORT: "/profiling/report",

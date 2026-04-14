@@ -76,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:dean')->group(function () {
         Route::get('/archive', [ArchiveController::class, 'index']);
         Route::post('/archive/{id}/restore', [ArchiveController::class, 'restore']);
+        Route::get('/analytics/dean-report', [AnalyticsController::class, 'deanReport']);
 
         // Dean can approve/reject awards
         Route::post('/awards/{id}/approve', [AwardController::class, 'approve']);

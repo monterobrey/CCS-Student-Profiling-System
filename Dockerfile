@@ -27,6 +27,6 @@ RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN php artisan key:generate --force
 RUN php artisan config:cache
 
-EXPOSE 8080
+EXPOSE 80
 
-CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "80"]

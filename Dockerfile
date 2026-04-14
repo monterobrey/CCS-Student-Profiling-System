@@ -22,10 +22,7 @@ RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts
 COPY backend/ .
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN php artisan key:generate --force
-RUN php artisan config:clear
-RUN php artisan route:clear
 
 EXPOSE 80
 
-CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "80"]
+CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "80", "--tries=0", "--timeout=0"]

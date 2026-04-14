@@ -22,17 +22,12 @@ return [
     'allowed_origins' => [
         'http://localhost:3000',
         'http://localhost:5173',
-        'https://ccs-student-profiling-frontend.onrender.com',
-        // Add your Vercel URL here after deployment
-        // Example: 'https://your-project.vercel.app',
+        'https://ccs-student-profiling-system.vercel.app',
     ],
 
-    // Alternative: Allow all Vercel preview deployments
     'allowed_origins_patterns' => [
         '/\.vercel\.app$/',
     ],
-
-    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 

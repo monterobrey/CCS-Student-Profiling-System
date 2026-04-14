@@ -42,9 +42,6 @@ class StudentService
                 'status' => 'pending',
             ]);
 
-            // Send setup password notification
-            $user->notify(new SetupPasswordNotification($setupToken, $data['email']));
-
             // Create student record
             $student = Student::create([
                 'user_id' => $user->id,
@@ -55,6 +52,10 @@ class StudentService
                 'last_name' => $data['last_name'],
                 'middle_name' => $data['middle_name'] ?? null,
             ]);
+
+            // Send setup password notification (after profile exists so greeting uses name)
+            $user->load('student');
+            $user->notify(new SetupPasswordNotification($setupToken));
 
             // Create guardian if provided
             if (isset($data['guardian']) && !empty($data['guardian']['first_name'])) {
@@ -197,7 +198,7 @@ class StudentService
 
         $setupToken = \Illuminate\Support\Str::random(60);
         $user->update(['password_setup_token' => $setupToken]);
-        $user->notify(new SetupPasswordNotification($setupToken, $user->email));
+        $user->notify(new SetupPasswordNotification($setupToken));
 
         return true;
     }

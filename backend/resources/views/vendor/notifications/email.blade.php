@@ -1,7 +1,7 @@
 <x-mail::message>
 <div style="text-align: center; margin-bottom: 20px;">
-    <img src="{{ asset('https://img.sanishtech.com/u/0bb9864afea7976c450ee6a7ea2a0f5c.png') }}" width="80" height="80" style="margin: 0 10px;" alt="PNC Logo">
-    <img src="{{ asset('https://img.sanishtech.com/u/4695aabd02f518129ab88656fae2e93a.jpg') }}" width="80" height="80" style="margin: 0 10px;" alt="CCS Logo">
+    <img src="{{ url('/assets/pnc-logo.png') }}" width="80" height="80" style="margin: 0 10px;" alt="PNC Logo">
+    <img src="{{ url('/assets/ccs-logo.jpg') }}" width="80" height="80" style="margin: 0 10px;" alt="CCS Logo">
 </div>
 
 {{-- Greeting --}}

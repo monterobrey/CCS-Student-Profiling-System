@@ -50,13 +50,22 @@ class AuthService
     // =========================
     public function setupPassword($request)
     {
-        // Find user using email + token (security check)
-        $user = User::where('email', $request->email)
-            ->where('password_setup_token', $request->token)
-            ->first();
+        $email = (string) $request->email;
+        $token = (string) $request->token;
 
+        $user = User::where('email', $email)->first();
         if (!$user) {
             return ['message' => 'Invalid setup link', 'status' => 400];
+        }
+
+        // Token already consumed / password already set
+        if (is_null($user->password_setup_token) && !is_null($user->password_set_at)) {
+            return ['message' => 'You already set your password. Please log in.', 'status' => 409];
+        }
+
+        // Token mismatch (expired / wrong)
+        if ((string) $user->password_setup_token !== $token) {
+            return ['message' => 'Invalid or expired setup link. Please request a new one.', 'status' => 400];
         }
 
         // Transaction = ensures all DB updates succeed or fail together

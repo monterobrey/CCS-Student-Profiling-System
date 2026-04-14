@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import httpClient from '../../../services/httpClient';
-import pncLogo from '../../../assets/pnc-logo.png';
-import ccsLogo from '../../../assets/ccs-logo.png';
-import './SetupPasswordFaculty.css';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { httpClient } from '../../services/httpClient';
+import { API_ENDPOINTS } from '../../services/apiEndpoints';
+import ccsLogo from '../../assets/ccs-logo.png'; 
+import pncLogo from '../../assets/pnc-logo.png'; 
+import '../../styles/Shared/SetupPassword.css';
 
-const SetupPasswordFaculty = () => {
-  const navigate = useNavigate();
+export default function SetupPassword() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
@@ -18,8 +20,22 @@ const SetupPasswordFaculty = () => {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [countdown, setCountdown] = useState(3);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const loginPath = useMemo(() => {
+    return location.pathname.includes('faculty') ? '/faculty/login' : '/students/login';
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const e = searchParams.get('email');
+    const t = searchParams.get('token');
+    if (e && t) {
+      setEmail(e);
+      setToken(t);
+    } else {
+      setError('Invalid setup link. Please check your email.');
+    }
+  }, [searchParams]);
 
   const passwordsMatch = useMemo(() => {
     return passwordConfirmation && password && password === passwordConfirmation;
@@ -39,28 +55,9 @@ const SetupPasswordFaculty = () => {
     return ['', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength];
   }, [passwordStrength]);
 
-  useEffect(() => {
-    const emailParam = searchParams.get('email');
-    const tokenParam = searchParams.get('token');
-    setEmail(emailParam || '');
-    setToken(tokenParam || '');
-    if (!emailParam || !tokenParam) {
-      setError('Invalid setup link. Please check your email.');
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (isSuccess && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (isSuccess && countdown === 0) {
-      navigate('/login');
-    }
-  }, [isSuccess, countdown, navigate]);
-
-  const handleSetup = async () => {
+  const handleSetup = async (e) => {
+    e.preventDefault();
+    if (loading || isSuccess) return;
     if (!password || !passwordConfirmation) {
       setError('Please fill in both fields.');
       return;
@@ -69,21 +66,32 @@ const SetupPasswordFaculty = () => {
       setError('Passwords do not match.');
       return;
     }
+    if (password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+    }
+
     setLoading(true);
     setError('');
     setIsSuccess(false);
+
     try {
-      const response = await httpClient.post('/setup-password', {
+      const response = await httpClient.post(API_ENDPOINTS.AUTH.SETUP_PASSWORD, {
         email,
         token,
         password,
         password_confirmation: passwordConfirmation
       });
-      setSuccess(response.message || 'Account setup successful');
-      setIsSuccess(true);
-      setCountdown(3);
+
+      if (response.ok) {
+        setSuccess(response.message || 'Account setup successful');
+        setIsSuccess(true);
+        setToken('');
+      } else {
+        setError(response.message || 'Failed to set password. Link might be expired.');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to set password. Link might be expired.');
+      setError(err.message || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +114,7 @@ const SetupPasswordFaculty = () => {
             </div>
           </div>
           <div className="brand-text">
-            <span className="brand-name">CCS Faculty Portal</span>
+            <span className="brand-name">CCS Student Portal</span>
             <span className="brand-sub">University of Cabuyao</span>
           </div>
         </div>
@@ -133,9 +141,8 @@ const SetupPasswordFaculty = () => {
               </svg>
             </div>
             <h2>Password Set!</h2>
-            <p>{success || 'Your faculty account password has been created successfully.'}</p>
-            <div className="redirect-note">Redirecting to login in {countdown} seconds...</div>
-            <button className="login-btn" onClick={() => navigate('/login')}>
+            <p>{success || 'Your password has been created successfully.'}</p>
+            <button className="login-btn" onClick={() => navigate(loginPath)}>
               Go to Login Now
             </button>
           </div>
@@ -148,8 +155,8 @@ const SetupPasswordFaculty = () => {
               </svg>
             </div>
 
-            <h1>Faculty Setup</h1>
-            <p className="subtitle">Create a secure password for your account</p>
+            <h1>Set Password</h1>
+            <p className="subtitle">Create a strong password</p>
 
             <div className="email-chip">
               <span className="dot"></span>
@@ -191,7 +198,7 @@ const SetupPasswordFaculty = () => {
                     {[1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
-                        className={`strength-segment ${passwordStrength >= i ? `active level-${passwordStrength}` : ''}`}
+                        className={`strength-segment ${passwordStrength >= i ? 'active' : ''} ${passwordStrength >= i ? `level-${passwordStrength}` : ''}`}
                       ></div>
                     ))}
                     <span className="strength-label">{strengthLabel}</span>
@@ -227,38 +234,37 @@ const SetupPasswordFaculty = () => {
                     )}
                   </button>
                 </div>
-                {passwordsMatch && (
+                {passwordsMatch ? (
                   <div className="match-success">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                     Passwords match!
                   </div>
-                )}
-                {error && !passwordsMatch && passwordConfirmation && (
-                  <div className="match-success match-error">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    {error}
-                  </div>
+                ) : (
+                  error && passwordConfirmation && (
+                    <div className="match-success match-error">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      {error}
+                    </div>
+                  )
                 )}
               </div>
             </div>
 
-            <button className={`submit-btn ${loading ? 'loading' : ''}`} disabled={loading} onClick={handleSetup}>
-              {!loading ? (
-                <span>Set Password</span>
-              ) : (
-                <span className="spinner"></span>
-              )}
+            <button 
+              className={`submit-btn ${loading ? 'loading' : ''}`} 
+              disabled={loading || !token} 
+              onClick={handleSetup}
+            >
+              {!loading ? <span>Set Password</span> : <span className="spinner"></span>}
             </button>
           </>
         )}
       </div>
     </div>
   );
-};
-
-export default SetupPasswordFaculty;
+}

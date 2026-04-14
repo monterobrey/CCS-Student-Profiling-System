@@ -38,9 +38,6 @@ class FacultyService
                 'status' => 'pending',
             ]);
 
-            // Send setup password notification
-            $user->notify(new SetupPasswordNotification($setupToken, $data['email']));
-
             // Create faculty record
             $faculty = Faculty::create([
                 'user_id' => $user->id,
@@ -51,6 +48,10 @@ class FacultyService
                 'middle_name' => $data['middle_name'] ?? null,
                 'position' => $data['position'],
             ]);
+
+            // Send setup password notification (after profile exists so greeting uses name)
+            $user->load('faculty');
+            $user->notify(new SetupPasswordNotification($setupToken));
 
             return $faculty->load('user', 'department');
         });
@@ -193,7 +194,7 @@ class FacultyService
 
         $setupToken = Str::random(60);
         $user->update(['password_setup_token' => $setupToken]);
-        $user->notify(new SetupPasswordNotification($setupToken, $user->email));
+        $user->notify(new SetupPasswordNotification($setupToken));
 
         return true;
     }

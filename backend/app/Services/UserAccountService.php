@@ -33,7 +33,7 @@ class UserAccountService
         ]);
 
         // Send setup password notification
-        $user->notify(new SetupPasswordNotification($setupToken, $data['email']));
+        $user->notify(new SetupPasswordNotification($setupToken));
 
         return $user;
     }

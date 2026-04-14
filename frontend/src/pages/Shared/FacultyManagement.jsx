@@ -563,16 +563,10 @@ export default function FacultyManagement() {
 
               <div className="modal-footer">
                 <button className="ghost-btn" onClick={closeViewModal}>Close</button>
-                {isSecretary && (
-                  <button className="ghost-btn" onClick={openEditFromView}>
-                    <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    Edit Account
-                  </button>
-                )}
                 {isDean && (
                   <button className="ghost-btn" onClick={openEditFromView}>
                     <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    Edit Position
+                    Edit Account
                   </button>
                 )}
                 {(isSecretary || isDeanOrChair) && (

@@ -1,10 +1,5 @@
-[build]
-  # Laravel configuration
-  [build.buildpack]
-    php = "8.2"
-
-[deploy]
-  numReplicas = 1
-
-[buildpack]
-  exclude = ["node_modules", ".git"]
+{
+  "build": {
+    "builder": "DOCKERFILE"
+  }
+}

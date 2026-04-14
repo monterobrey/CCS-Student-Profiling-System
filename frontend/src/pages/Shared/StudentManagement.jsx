@@ -115,11 +115,11 @@ export default function StudentManagement() {
   =========================== */
 
   const miniStats = useMemo(() => [
-    { label: 'Total Students', value: students.length,                                                    color: '#3b82f6' },
-    { label: 'Active',         value: students.filter(s => s.user?.status === 'active').length,           color: '#16a34a' },
-    { label: 'Pending Setup',  value: students.filter(s => s.user?.status === 'pending').length,          color: '#8b5cf6' },
-    { label: 'BSCS',           value: students.filter(s => s.program?.program_code === 'BSCS').length,    color: '#FF6B1A' },
-    { label: 'BSIT',           value: students.filter(s => s.program?.program_code === 'BSIT').length,    color: '#16a34a' },
+    { label: 'Total Students', value: students.length,                                                 color: '#3b82f6', iconBg: '#eff6ff'  },
+    { label: 'Active',         value: students.filter(s => s.user?.status === 'active').length,        color: '#16a34a', iconBg: '#f0fdf4'  },
+    { label: 'Pending Setup',  value: students.filter(s => s.user?.status === 'pending').length,       color: '#f97316', iconBg: '#fff7ed'  },
+    { label: 'BSCS',           value: students.filter(s => s.program?.program_code === 'BSCS').length, color: '#8b5cf6', iconBg: '#f5f3ff'  },
+    { label: 'BSIT',           value: students.filter(s => s.program?.program_code === 'BSIT').length, color: '#0891b2', iconBg: '#ecfeff'  },
   ], [students]);
 
   const availableSections = useMemo(() => {
@@ -379,19 +379,23 @@ export default function StudentManagement() {
 
       {/* MINI STATS */}
       <div className="mini-stats">
-        {miniStats.map((stat, idx) => (
-          <div className={`mini-stat stat-${['blue','green','purple','orange','green'][idx]}`} key={idx}>
-            <div className="mini-stat-icon" style={{ background: ['#eff6ff','#f0fdf4','#f5f3ff','#fff5ef','#f0fdf4'][idx], color: stat.color }}>
-              <svg viewBox="0 0 20 20" fill="none">
-                {idx === 0 && <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>}
-                {idx === 1 && <path d="M16 5L7.75 13.25 4 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
-                {idx === 2 && <><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v4l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></>}
-                {idx >= 3  && <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>}
-              </svg>
-            </div>
-            <div className="mini-stat-info">
-              <span className="mini-stat-value" style={{ color: stat.color }}>{stat.value}</span>
-              <span className="mini-stat-label">{stat.label}</span>
+        {miniStats.map((s, idx) => (
+          <div className="mini-stat-card" key={idx}>
+            <div className="mini-stat-border" style={{ background: s.color }}></div>
+            <div className="mini-stat-content">
+              <div className="mini-stat-icon" style={{ background: s.iconBg, color: s.color }}>
+                <svg viewBox="0 0 24 24" fill="none">
+                  {idx === 0 && <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/></>}
+                  {idx === 1 && <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
+                  {idx === 2 && <><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>}
+                  {idx === 3 && <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/></>}
+                  {idx === 4 && <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/></>}
+                </svg>
+              </div>
+              <div className="mini-stat-info">
+                <span className="mini-stat-value" style={{ color: s.color }}>{s.value}</span>
+                <span className="mini-stat-label">{s.label}</span>
+              </div>
             </div>
           </div>
         ))}

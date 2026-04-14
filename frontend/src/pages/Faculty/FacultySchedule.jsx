@@ -245,17 +245,16 @@ const FacultySchedule = () => {
                     <th>Student Number</th>
                     <th>Name</th>
                     <th>Status</th>
-                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loadingStudents ? (
                     <tr>
-                      <td colSpan={4}>Loading students...</td>
+                      <td colSpan={3}>Loading students...</td>
                     </tr>
                   ) : students.length === 0 ? (
                     <tr>
-                      <td colSpan={4}>No students found.</td>
+                      <td colSpan={3}>No students found.</td>
                     </tr>
                   ) : (
                     students.map((student) => (
@@ -267,11 +266,6 @@ const FacultySchedule = () => {
                             <span className="dot" />
                             {student.status || "Active"}
                           </span>
-                        </td>
-                        <td className="text-center">
-                          <button className="report-btn" type="button">
-                            Report violation
-                          </button>
                         </td>
                       </tr>
                     ))

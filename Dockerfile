@@ -17,13 +17,13 @@ WORKDIR /var/www/html
 COPY backend/composer.json backend/composer.lock* ./
 COPY backend/.env.production .env
 
-RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs || true
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 COPY backend/ .
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN php artisan key:generate --force || true
-RUN php artisan config:cache || true
+RUN php artisan key:generate --force
+RUN php artisan config:cache
 
 EXPOSE 8080
 

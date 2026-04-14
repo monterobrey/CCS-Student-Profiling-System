@@ -301,10 +301,6 @@ export default function FacultyManagement() {
         </div>
         {isSecretary && (
           <div className="header-actions">
-            <button className="ghost-btn" onClick={handleRefresh} title="Refresh data">
-              <svg viewBox="0 0 18 18" fill="none" width="16" height="16"><path d="M1 4v5h5M17 14v-5h-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M15.66 7A7 7 0 103.34 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              Refresh
-            </button>
             <button className="ghost-btn" onClick={() => document.getElementById('facultyCsvInput')?.click()} disabled={loadingImport}>
               {loadingImport
                 ? <svg className="spinner-sm" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="5"/></svg>

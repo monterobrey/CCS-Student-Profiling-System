@@ -123,9 +123,17 @@ export default function StudentManagement() {
   ], [students]);
 
   const availableSections = useMemo(() => {
-    const names = students.map(s => s.section?.section_name).filter(Boolean);
-    return [...new Set(names)].sort();
-  }, [students]);
+    return students
+      .filter(s => {
+        const matchProgram = !filterProgram || s.program?.program_code === filterProgram;
+        const matchYear    = !filterYear    || s.year_level == filterYear;
+        return matchProgram && matchYear;
+      })
+      .map(s => s.section?.section_name)
+      .filter(Boolean);
+  }, [students, filterProgram, filterYear]);
+
+  const uniqueSections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections]);
 
   const filteredFormSections = useMemo(() => {
     if (!form.program_id || !form.year_level) return [];
@@ -408,17 +416,17 @@ export default function StudentManagement() {
           <input type="text" placeholder="Search by name, email, or student number..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="filter-group">
-          <select value={filterProgram} onChange={e => setFilterProgram(e.target.value)}>
+          <select value={filterProgram} onChange={e => { setFilterProgram(e.target.value); setFilterSection(''); setFilterYear(''); }}>
             <option value="">All Programs</option>
             {programs.map(p => <option key={p.id} value={p.program_code}>{p.program_code}</option>)}
           </select>
-          <select value={filterYear} onChange={e => setFilterYear(e.target.value)}>
+          <select value={filterYear} onChange={e => { setFilterYear(e.target.value); setFilterSection(''); }}>
             <option value="">All Years</option>
             {['1','2','3','4'].map(y => <option key={y} value={y}>{y}{y==='1'?'st':y==='2'?'nd':y==='3'?'rd':'th'} Year</option>)}
           </select>
           <select value={filterSection} onChange={e => setFilterSection(e.target.value)}>
             <option value="">All Sections</option>
-            {availableSections.map(sec => <option key={sec} value={sec}>{sec}</option>)}
+            {uniqueSections.map(sec => <option key={sec} value={sec}>{sec}</option>)}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>

@@ -21,11 +21,12 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 
 COPY backend/ .
 
-RUN composer run-script post-autoload-dump
+RUN composer run-script post-autoload-dump || true
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN php artisan key:generate --force
-RUN php artisan config:cache
+RUN php artisan config:clear
+RUN php artisan route:clear
 
 EXPOSE 80
 

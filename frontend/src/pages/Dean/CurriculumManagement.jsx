@@ -3,9 +3,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { curriculumService, courseService } from "../../services";
 import { httpClient } from "../../services/httpClient";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
-import "../../styles/Dean/CurriculumManagement.css";
+import styles from "../../styles/Dean/CurriculumManagement.module.css";
 
 export default function CurriculumManagement() {
+  const cx = (...classKeys) =>
+    classKeys
+      .filter(Boolean)
+      .map((k) => styles[k])
+      .filter(Boolean)
+      .join(" ");
+
   const queryClient = useQueryClient();
   const fileInput = useRef();
 
@@ -221,23 +228,23 @@ export default function CurriculumManagement() {
   =========================== */
 
   return (
-    <div className="curriculum-page">
+    <div className={styles["curriculum-page"]}>
 
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+      {toast && <div className={cx("toast", `toast-${toast.type}`)}>{toast.message}</div>}
 
       {/* HEADER */}
-      <div className="page-header">
+      <div className={styles["page-header"]}>
         <div>
-          <h2 className="page-title">Curriculum Management</h2>
-          <p className="page-sub">Define and manage program curricula.</p>
+          <h2 className={styles["page-title"]}>Curriculum Management</h2>
+          <p className={styles["page-sub"]}>Define and manage program curricula.</p>
         </div>
-        <div className="header-actions">
-          <button className="outline-btn" onClick={() => fileInput.current.click()} disabled={importing}>
+        <div className={styles["header-actions"]}>
+          <button className={styles["outline-btn"]} onClick={() => fileInput.current.click()} disabled={importing}>
             {importing ? "Importing..." : "Import CSV"}
           </button>
           <input ref={fileInput} type="file" hidden accept=".csv" onChange={handleImport} />
           <button
-            className="primary-btn"
+            className={styles["primary-btn"]}
             onClick={() => {
               setForm({ program_id: filterProgram || "", year_level: "1", semester: "1st", course_ids: [] });
               setShowAddModal(true);
@@ -249,9 +256,9 @@ export default function CurriculumManagement() {
       </div>
 
       {/* FILTER */}
-      <div className="filter-bar">
+      <div className={styles["filter-bar"]}>
         <input
-          className="search-input"
+          className={styles["search-input"]}
           placeholder="Search..."
           value={curriculumSearch}
           onChange={(e) => setCurriculumSearch(e.target.value)}
@@ -272,26 +279,26 @@ export default function CurriculumManagement() {
 
       {/* TABLE */}
       {isLoading ? (
-        <p className="loading-text">Loading curriculum...</p>
+        <p className={styles["loading-text"]}>Loading curriculum...</p>
       ) : (
         groupedCurriculum.map((year) => {
           const totalCourses = year.semesters.reduce((sum, s) => sum + s.courses.length, 0);
           return (
-            <div key={year.year} className="year-block" data-year={year.year}>
-              <div className="year-block-header">
-                <span className="year-pill">{year.year}{getYearSuffix(year.year)} Year</span>
-                <span className="year-course-count">{totalCourses} course{totalCourses !== 1 ? "s" : ""}</span>
+            <div key={year.year} className={styles["year-block"]} data-year={year.year}>
+              <div className={styles["year-block-header"]}>
+                <span className={styles["year-pill"]}>{year.year}{getYearSuffix(year.year)} Year</span>
+                <span className={styles["year-course-count"]}>{totalCourses} course{totalCourses !== 1 ? "s" : ""}</span>
               </div>
 
-              <div className="semesters-grid">
+              <div className={styles["semesters-grid"]}>
                 {year.semesters.map((sem) => (
-                  <div key={sem.semester} className="semester-box">
-                    <div className="semester-box-header">
-                      <span className="semester-label">{sem.semester} Semester</span>
-                      <span className="semester-count-badge">{sem.courses.length} subjects</span>
+                  <div key={sem.semester} className={styles["semester-box"]}>
+                    <div className={styles["semester-box-header"]}>
+                      <span className={styles["semester-label"]}>{sem.semester} Semester</span>
+                      <span className={styles["semester-count-badge"]}>{sem.courses.length} subjects</span>
                     </div>
 
-                    <table className="sem-table">
+                    <table className={styles["sem-table"]}>
                       <thead>
                         <tr>
                           <th>Code</th>
@@ -306,14 +313,18 @@ export default function CurriculumManagement() {
                       <tbody>
                         {sem.courses.map((item) => (
                           <tr key={item.id}>
-                            <td><span className="code-badge">{item.course.course_code}</span></td>
+                            <td><span className={styles["code-badge"]}>{item.course.course_code}</span></td>
                             <td>{item.course.course_name}</td>
-                            <td><span className={`type-badge type-${item.course.type}`}>{item.course.type}</span></td>
-                            <td className="unit-cell">{item.course.lec_units ?? "—"}</td>
-                            <td className="unit-cell">{item.course.lab_units ?? "—"}</td>
-                            <td className="unit-cell total">{item.course.units}</td>
                             <td>
-                              <button className="delete-btn-sm" onClick={() => deleteEntry(item.id)}>
+                              <span className={cx("type-badge", `type-${item.course.type}`)}>
+                                {item.course.type}
+                              </span>
+                            </td>
+                            <td className={styles["unit-cell"]}>{item.course.lec_units ?? "—"}</td>
+                            <td className={styles["unit-cell"]}>{item.course.lab_units ?? "—"}</td>
+                            <td className={cx("unit-cell", "total")}>{item.course.units}</td>
+                            <td>
+                              <button className={styles["delete-btn-sm"]} onClick={() => deleteEntry(item.id)}>
                                 Delete
                               </button>
                             </td>
@@ -331,14 +342,17 @@ export default function CurriculumManagement() {
 
       {/* ADD CURRICULUM MODAL */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div
+          className={styles["modal-overlay"]}
+          onClick={(e) => !saving && e.target === e.currentTarget && setShowAddModal(false)}
+        >
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles["modal-header"]}>
               <h3>Add Curriculum Entries</h3>
-              <button className="modal-close" onClick={() => setShowAddModal(false)}>✕</button>
+              <button className={styles["modal-close"]} onClick={() => setShowAddModal(false)}>✕</button>
             </div>
-            <div className="modal-body">
-              <div className="field">
+            <div className={styles["modal-body"]}>
+              <div className={styles.field}>
                 <label>Program</label>
                 <select value={form.program_id} onChange={(e) => setForm({ ...form, program_id: e.target.value })}>
                   <option value="">Select program</option>
@@ -347,7 +361,7 @@ export default function CurriculumManagement() {
                   ))}
                 </select>
               </div>
-              <div className="field">
+              <div className={styles.field}>
                 <label>Year Level</label>
                 <select value={form.year_level} onChange={(e) => setForm({ ...form, year_level: e.target.value })}>
                   <option value="1">1st Year</option>
@@ -356,7 +370,7 @@ export default function CurriculumManagement() {
                   <option value="4">4th Year</option>
                 </select>
               </div>
-              <div className="field">
+              <div className={styles.field}>
                 <label>Semester</label>
                 <select value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}>
                   <option value="1st">1st Semester</option>
@@ -364,35 +378,44 @@ export default function CurriculumManagement() {
                   <option value="Summer">Summer</option>
                 </select>
               </div>
-              <div className="field">
+              <div className={styles.field}>
                 <label>Courses</label>
                 <input
-                  className="search-input"
+                  className={styles["search-input"]}
                   placeholder="Search courses..."
                   value={courseSearch}
                   onChange={(e) => setCourseSearch(e.target.value)}
                 />
               </div>
-              <div className="course-checklist">
+              <div className={styles["course-checklist"]}>
                 {filteredCourses.map((c) => (
-                  <label key={c.id} className="course-check-item">
+                  <label
+                    key={c.id}
+                    className={cx(
+                      "course-check-item",
+                      form.course_ids.includes(c.id) && "course-check-item-checked"
+                    )}
+                  >
                     <input
                       type="checkbox"
                       checked={form.course_ids.includes(c.id)}
                       onChange={() => toggleCourse(c.id)}
                     />
-                    <span>{c.course_code} — {c.course_name}</span>
+                    <span className={styles["course-meta"]}>
+                      <span className={styles["course-code"]}>{c.course_code}</span>
+                      <span className={styles["course-name"]}>{c.course_name}</span>
+                    </span>
                   </label>
                 ))}
-                {filteredCourses.length === 0 && <p className="no-results">No courses found.</p>}
+                {filteredCourses.length === 0 && <p className={styles["no-results"]}>No courses found.</p>}
               </div>
-              <p className="selected-count">
+              <p className={styles["selected-count"]}>
                 {form.course_ids.length} course{form.course_ids.length !== 1 ? "s" : ""} selected
               </p>
             </div>
-            <div className="modal-footer">
-              <button className="outline-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
-              <button className="primary-btn" onClick={saveBulkEntry} disabled={saving}>
+            <div className={styles["modal-footer"]}>
+              <button className={styles["outline-btn"]} onClick={() => setShowAddModal(false)}>Cancel</button>
+              <button className={styles["primary-btn"]} onClick={saveBulkEntry} disabled={saving}>
                 {saving ? "Saving..." : "Save"}
               </button>
             </div>

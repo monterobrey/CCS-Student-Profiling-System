@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../services';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/Dean/DeanDashboard.css';
 
 export default function DeanDashboard() {
+  const { user } = useAuth();
   // ── Cached query — staleTime: Infinity, never auto-refetches ──
   const { data: summary = {}, isLoading } = useQuery({
     queryKey: ['dean-summary'],
@@ -44,10 +46,14 @@ export default function DeanDashboard() {
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour >= 12 && hour < 18) return 'Good afternoon, Dean';
-    if (hour >= 18 || hour < 5)  return 'Good evening, Dean';
-    return 'Good morning, Dean';
-  }, []);
+    const prefix = hour >= 12 && hour < 18
+      ? 'Good afternoon, '
+      : (hour >= 18 || hour < 5)
+        ? 'Good evening, '
+        : 'Good morning, ';
+    const name = (user?.name || 'Dean').trim();
+    return `${prefix}${name}`;
+  }, [user?.name]);
 
   const stats = useMemo(() => [
     {

@@ -28,7 +28,13 @@ class AnalyticsService
         $totalFaculty = Faculty::count();
         $totalViolations = StudentViolation::where('status', 'active')->count();
         $totalAwards = AcademicAward::count();
+        $pendingAwardsCount = AcademicAward::where('status', 'pending')->count();
         $avgGwa = Student::whereNotNull('gwa')->avg('gwa') ?: 1.87;
+
+        $dayOfWeek = date('l');
+        $facultyPresentToday = (int) Schedule::where('dayOfWeek', $dayOfWeek)
+            ->distinct('faculty_id')
+            ->count('faculty_id');
 
         $topStudents = Student::with(['program'])
             ->whereNotNull('gwa')
@@ -136,6 +142,8 @@ class AnalyticsService
             'total_faculty' => $totalFaculty,
             'active_violations' => $totalViolations,
             'total_awards' => $totalAwards,
+            'pending_awards' => $pendingAwardsCount,
+            'faculty_present_today' => $facultyPresentToday,
             'dept_avg_gwa' => round($avgGwa, 2),
             'top_students' => $topStudents,
             'recent_violations' => $recentViolations,

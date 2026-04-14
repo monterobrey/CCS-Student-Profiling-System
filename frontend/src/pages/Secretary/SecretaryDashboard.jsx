@@ -19,16 +19,13 @@ export default function SecretaryDashboard() {
   const {
     total_students = 0,
     total_faculty = 0,
-    active_violations = 0,
     total_awards = 0,
-    pending_accounts = 0,
-    pending_verifications = 0,
+    pending_awards = 0,
+    faculty_present_today = 0,
     top_students = [],
     faculty_workload = [],
     recent_awards = [],
   } = summary;
-
-  const pendingApprovalsCount = pending_accounts + pending_verifications;
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -61,22 +58,22 @@ export default function SecretaryDashboard() {
       iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
     },
     {
-      label: 'Pending Approvals',
-      value: pendingApprovalsCount.toString(),
-      delta: 'Awaiting review',
-      deltaClass: pendingApprovalsCount > 0 ? 'warning' : 'positive',
-      fill: pendingApprovalsCount > 0 ? '60%' : '0%',
-      iconBg: '#fff7ed', iconColor: '#f97316',
-      iconPath: '<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+      label: 'Faculty Present',
+      value: faculty_present_today.toString(),
+      delta: 'Today',
+      deltaClass: faculty_present_today > 0 ? 'positive' : 'warning',
+      fill: total_faculty > 0 ? Math.min(100, (faculty_present_today / total_faculty) * 100) + '%' : '0%',
+      iconBg: '#ecfeff', iconColor: '#0891b2',
+      iconPath: '<path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6 10h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
     },
     {
-      label: 'With Violations',
-      value: active_violations.toString(),
-      delta: 'Active cases',
-      deltaClass: 'negative',
-      fill: total_students > 0 ? Math.min(100, (active_violations / total_students) * 100) + '%' : '0%',
-      iconBg: '#fff1f2', iconColor: '#ef4444',
-      iconPath: '<path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+      label: 'Pending Awards',
+      value: pending_awards.toString(),
+      delta: 'For approval',
+      deltaClass: pending_awards > 0 ? 'warning' : 'positive',
+      fill: pending_awards > 0 ? '60%' : '0%',
+      iconBg: '#fff7ed', iconColor: '#f97316',
+      iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
     },
     {
       label: 'Awards Logged',
@@ -87,7 +84,7 @@ export default function SecretaryDashboard() {
       iconBg: '#fffbeb', iconColor: '#f59e0b',
       iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
     },
-  ], [total_students, total_faculty, pendingApprovalsCount, active_violations, total_awards]);
+  ], [total_students, total_faculty, faculty_present_today, pending_awards, total_awards]);
 
   if (isLoading) {
     return (
@@ -113,12 +110,12 @@ export default function SecretaryDashboard() {
             </p>
             <h2 className="hero-greeting">{greeting} 👋</h2>
             <p className="secretary-hero-desc">
-              You have <strong>{pendingApprovalsCount} pending approvals</strong> and{' '}
-              <strong>{active_violations} student violations</strong> requiring attention this week.
+              You have <strong>{pending_awards} pending awards</strong> for approval and{' '}
+              <strong>{faculty_present_today} faculty members</strong> with schedules today.
             </p>
             <div className="hero-actions">
               <button className="hero-btn-primary">
-                Pending Approvals <span className="hero-btn-badge">{pendingApprovalsCount}</span>
+                Pending Awards <span className="hero-btn-badge">{pending_awards}</span>
               </button>
               <button className="hero-btn-ghost">Generate Report</button>
             </div>
@@ -126,13 +123,13 @@ export default function SecretaryDashboard() {
           <div className="hero-right">
             <div className="hero-stat-card">
               <span className="hsc-label">This Week</span>
-              <span className="hsc-value">{active_violations + pendingApprovalsCount}</span>
+              <span className="hsc-value">{pending_awards}</span>
               <span className="hsc-sub">Activities logged</span>
             </div>
             <div className="hero-stat-card accent">
               <span className="hsc-label">Pending</span>
-              <span className="hsc-value">{pendingApprovalsCount}</span>
-              <span className="hsc-sub">Awaiting review</span>
+              <span className="hsc-value">{pending_awards}</span>
+              <span className="hsc-sub">Awards to approve</span>
             </div>
           </div>
         </div>

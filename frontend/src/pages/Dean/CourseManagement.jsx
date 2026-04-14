@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { courseService } from "../../services";
 import { httpClient } from "../../services/httpClient";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
-import "../../styles/Dean/CourseManagement.css";
+import styles from "../../styles/Dean/CourseManagement.module.css";
 
 const EMPTY_FORM = {
   course_code: "", course_name: "", program_id: "",
@@ -12,6 +12,13 @@ const EMPTY_FORM = {
 };
 
 export default function CourseManagement() {
+  const cx = (...classKeys) =>
+    classKeys
+      .filter(Boolean)
+      .map((k) => styles[k])
+      .filter(Boolean)
+      .join(" ");
+
   const queryClient = useQueryClient();
 
   // ── Cached queries ──
@@ -176,39 +183,39 @@ export default function CourseManagement() {
   =========================== */
 
   return (
-    <div className="courses-page">
+    <div className={styles["courses-page"]}>
 
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+      {toast && <div className={cx("toast", `toast-${toast.type}`)}>{toast.message}</div>}
 
       {/* HEADER */}
-      <div className="page-header">
+      <div className={styles["page-header"]}>
         <div>
-          <h2 className="page-title">Course Management</h2>
-          <p className="page-sub">Add, edit, and manage all available courses in the department.</p>
+          <h2 className={styles["page-title"]}>Course Management</h2>
+          <p className={styles["page-sub"]}>Add, edit, and manage all available courses in the department.</p>
         </div>
-        <div className="header-actions">
-          <button className="primary-btn" onClick={openAddModal}>Add New Course</button>
+        <div className={styles["header-actions"]}>
+          <button className={styles["primary-btn"]} onClick={openAddModal}>Add New Course</button>
         </div>
       </div>
 
       {/* FILTER BAR */}
-      <div className="filter-bar pcard">
-        <div className="filter-main">
-          <div className="search-group">
+      <div className={cx("filter-bar", "pcard")}>
+        <div className={styles["filter-main"]}>
+          <div className={styles["search-group"]}>
             <label>Search Course</label>
-            <div className="search-wrapper">
+            <div className={styles["search-wrapper"]}>
               <input
                 type="text"
                 placeholder="Search by code or name..."
-                className="search-input"
+                className={styles["search-input"]}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </div>
-          <div className="filter-group">
+          <div className={styles["filter-group"]}>
             <label>Program</label>
-            <div className="select-wrapper">
+            <div className={styles["select-wrapper"]}>
               <select value={filterProgram} onChange={(e) => setFilterProgram(e.target.value)}>
                 <option value="">All Programs</option>
                 {programs.map((p) => (
@@ -221,15 +228,15 @@ export default function CourseManagement() {
       </div>
 
       {/* TABLE */}
-      <div className="courses-list pcard">
+      <div className={cx("courses-list", "pcard")}>
         {isLoading ? (
-          <div className="loading-state">
-            <div className="spinner" />
+          <div className={styles["loading-state"]}>
+            <div className={styles.spinner} />
             Loading courses...
           </div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
+          <div className={styles["table-container"]}>
+            <table className={styles["data-table"]}>
               <thead>
                 <tr>
                   <th width="120">Code</th>
@@ -238,45 +245,47 @@ export default function CourseManagement() {
                   <th width="100">Type</th>
                   <th width="150">Year / Sem</th>
                   <th width="150">Units</th>
-                  <th width="100" className="text-right">Action</th>
+                  <th width="100" className={styles["text-right"]}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCourses.map((c) => (
                   <tr key={c.id}>
-                    <td><span className="code-badge">{c.course_code}</span></td>
+                    <td><span className={styles["code-badge"]}>{c.course_code}</span></td>
                     <td><strong>{c.course_name}</strong></td>
                     <td>
                       {c.curriculum_programs?.length > 0 ? (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                           {c.curriculum_programs.map((p) => (
-                            <span key={p.id} className="program-badge-table">{p.program_code}</span>
+                            <span key={p.id} className={styles["program-badge-table"]}>{p.program_code}</span>
                           ))}
                         </div>
                       ) : (
-                        <span className="program-badge-table">{c.program?.program_code ?? "—"}</span>
+                        <span className={styles["program-badge-table"]}>{c.program?.program_code ?? "—"}</span>
                       )}
                     </td>
-                    <td><span className={`type-badge ${c.type}`}>{c.type}</span></td>
-                    <td className="year-sem-text">
+                    <td>
+                      <span className={cx("type-badge", c.type)}>{c.type}</span>
+                    </td>
+                    <td className={styles["year-sem-text"]}>
                       {c.year_level}{getYearSuffix(c.year_level)} Year · {c.semester}
                     </td>
                     <td>
-                      <div className="units-breakdown">
-                        <span className="total-units-badge">{c.units} Units</span>
-                        <span className="units-detail">
+                      <div className={styles["units-breakdown"]}>
+                        <span className={styles["total-units-badge"]}>{c.units} Units</span>
+                        <span className={styles["units-detail"]}>
                           <span>Lec {c.lec_units}</span><span>·</span><span>Lab {c.lab_units}</span>
                         </span>
                       </div>
                     </td>
-                    <td className="actions-cell">
-                      <button className="edit-btn" onClick={() => openEditModal(c)}>Edit</button>
-                      <button className="delete-btn" onClick={() => deleteCourse(c.id)}>Delete</button>
+                    <td className={styles["actions-cell"]}>
+                      <button className={styles["edit-btn"]} onClick={() => openEditModal(c)}>Edit</button>
+                      <button className={styles["delete-btn"]} onClick={() => deleteCourse(c.id)}>Delete</button>
                     </td>
                   </tr>
                 ))}
                 {filteredCourses.length === 0 && (
-                  <tr><td colSpan="7" className="empty-row">No courses found matching your criteria.</td></tr>
+                  <tr><td colSpan="7" className={styles["empty-row"]}>No courses found matching your criteria.</td></tr>
                 )}
               </tbody>
             </table>
@@ -286,82 +295,82 @@ export default function CourseManagement() {
 
       {/* MODAL */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles["modal-overlay"]} onClick={(e) => !saving && e.target === e.currentTarget && setShowModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles["modal-header"]}>
               <div>
                 <h3>{editingCourse ? "Edit Course" : "Add New Course"}</h3>
-                <p className="modal-sub">
+                <p className={styles["modal-sub"]}>
                   {editingCourse ? `Editing ${editingCourse.course_code}` : "Fill in the course details below."}
                 </p>
               </div>
-              <button className="ghost-btn" onClick={() => setShowModal(false)}>✕</button>
+              <button className={styles["ghost-btn"]} onClick={() => setShowModal(false)}>✕</button>
             </div>
 
-            <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
-              <div className="form-grid">
-                <div className="form-group">
+            <div className={styles["modal-body"]}>
+              <div className={styles["form-grid"]}>
+                <div className={styles["form-group"]}>
                   <label>Course Code</label>
-                  <input className="form-control-modern" placeholder="e.g. IT101" value={form.course_code} onChange={(e) => setForm({ ...form, course_code: e.target.value })} />
+                  <input className={styles["form-control-modern"]} placeholder="e.g. IT101" value={form.course_code} onChange={(e) => setForm({ ...form, course_code: e.target.value })} />
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Program</label>
-                  <select className="form-control-modern" value={form.program_id} onChange={(e) => setForm({ ...form, program_id: e.target.value })}>
+                  <select className={styles["form-control-modern"]} value={form.program_id} onChange={(e) => setForm({ ...form, program_id: e.target.value })}>
                     <option value="">Select program</option>
                     {programs.map((p) => <option key={p.id} value={p.id}>{p.program_code} — {p.program_name}</option>)}
                   </select>
                 </div>
-                <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                <div className={styles["form-group"]} style={{ gridColumn: "1 / -1" }}>
                   <label>Course Name</label>
-                  <input className="form-control-modern" placeholder="e.g. Introduction to Computing" value={form.course_name} onChange={(e) => setForm({ ...form, course_name: e.target.value })} />
+                  <input className={styles["form-control-modern"]} placeholder="e.g. Introduction to Computing" value={form.course_name} onChange={(e) => setForm({ ...form, course_name: e.target.value })} />
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Year Level</label>
-                  <select className="form-control-modern" value={form.year_level} onChange={(e) => setForm({ ...form, year_level: e.target.value })}>
+                  <select className={styles["form-control-modern"]} value={form.year_level} onChange={(e) => setForm({ ...form, year_level: e.target.value })}>
                     <option value="1">1st Year</option>
                     <option value="2">2nd Year</option>
                     <option value="3">3rd Year</option>
                     <option value="4">4th Year</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Semester</label>
-                  <select className="form-control-modern" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}>
+                  <select className={styles["form-control-modern"]} value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}>
                     <option value="1st">1st Semester</option>
                     <option value="2nd">2nd Semester</option>
                     <option value="Summer">Summer</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Type</label>
-                  <select className="form-control-modern" value={form.type} onChange={(e) => handleTypeChange(e.target.value)}>
+                  <select className={styles["form-control-modern"]} value={form.type} onChange={(e) => handleTypeChange(e.target.value)}>
                     <option value="lec">Lecture</option>
                     <option value="lab">Laboratory</option>
                     <option value="lec+lab">Lec + Lab</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Total Units</label>
-                  <input className="form-control-modern" type="number" min="0" value={form.units} readOnly style={{ background: "#faf8f6", color: "#9a8070" }} />
+                  <input className={styles["form-control-modern"]} type="number" min="0" value={form.units} readOnly style={{ background: "#faf8f6", color: "#9a8070" }} />
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Lec Units</label>
-                  <input className="form-control-modern" type="number" min="0" value={form.lec_units} onChange={(e) => handleUnitChange("lec_units", e.target.value)} />
+                  <input className={styles["form-control-modern"]} type="number" min="0" value={form.lec_units} onChange={(e) => handleUnitChange("lec_units", e.target.value)} />
                 </div>
-                <div className="form-group">
+                <div className={styles["form-group"]}>
                   <label>Lab Units</label>
-                  <input className="form-control-modern" type="number" min="0" value={form.lab_units} onChange={(e) => handleUnitChange("lab_units", e.target.value)} />
+                  <input className={styles["form-control-modern"]} type="number" min="0" value={form.lab_units} onChange={(e) => handleUnitChange("lab_units", e.target.value)} />
                 </div>
-                <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                <div className={styles["form-group"]} style={{ gridColumn: "1 / -1" }}>
                   <label>Prerequisites <span style={{ color: "#b89f90", fontWeight: 400 }}>(optional, comma-separated codes)</span></label>
-                  <input className="form-control-modern" placeholder="e.g. IT101, IT102" value={form.prerequisites} onChange={(e) => setForm({ ...form, prerequisites: e.target.value })} />
+                  <input className={styles["form-control-modern"]} placeholder="e.g. IT101, IT102" value={form.prerequisites} onChange={(e) => setForm({ ...form, prerequisites: e.target.value })} />
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="ghost-btn" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="primary-btn" onClick={saveCourse} disabled={saving}>
+            <div className={styles["modal-footer"]}>
+              <button className={styles["ghost-btn"]} onClick={() => setShowModal(false)}>Cancel</button>
+              <button className={styles["primary-btn"]} onClick={saveCourse} disabled={saving}>
                 {saving ? "Saving..." : editingCourse ? "Update Course" : "Add Course"}
               </button>
             </div>

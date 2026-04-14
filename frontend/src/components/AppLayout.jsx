@@ -62,6 +62,9 @@ export default function AppLayout() {
   const pageName = currentPath
     .replace(/-/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase());
+  
+  // Don't show duplicate breadcrumb when section and page name are the same
+  const showSection = section !== pageName;
 
   return (
     <div className="dashboard-root">
@@ -78,8 +81,12 @@ export default function AppLayout() {
         />
         <main className="content">
           <div className="page-breadcrumb-trail">
-            <span className="breadcrumb-section">{section}</span>
-            <span className="breadcrumb-sep">›</span>
+            {showSection && (
+              <>
+                <span className="breadcrumb-section">{section}</span>
+                <span className="breadcrumb-sep">›</span>
+              </>
+            )}
             <span className="breadcrumb-current">{pageName}</span>
           </div>
           <Outlet />

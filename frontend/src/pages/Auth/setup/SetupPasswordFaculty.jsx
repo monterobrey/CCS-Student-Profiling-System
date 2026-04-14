@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import httpClient from '../../../services/httpClient';
 import pncLogo from '../../../assets/pnc-logo.png';
-import ccsLogo from '../../../assets/ccs-logo.jpg';
+import ccsLogo from '../../../assets/ccs-logo.png';
 import './SetupPasswordFaculty.css';
 
 const SetupPasswordFaculty = () => {

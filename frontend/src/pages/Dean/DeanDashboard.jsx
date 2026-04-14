@@ -123,7 +123,7 @@ export default function DeanDashboard() {
               Academic Year 2026-2027 · 2nd Semester
             </p>
             <h2 className="hero-greeting">{greeting} 👋</h2>
-            <p className="hero-desc">
+            <p className="dean-hero-desc">
               You have <strong>{pendingApprovalsCount} pending approvals</strong> and{' '}
               <strong>{active_violations} student violations</strong> requiring attention this week.
             </p>

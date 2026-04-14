@@ -54,7 +54,7 @@ const FacultyDashboard = () => {
   }, []);
 
   return (
-    <div className="faculty-page">
+    <div className="faculty-dashboard-home">
       {/* Hero Banner - Matches your screenshot height and wide layout */}
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
@@ -62,7 +62,7 @@ const FacultyDashboard = () => {
           <div className="hero-left">
             <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
             <h2 className="hero-greeting">Good morning, {user?.name || user?.first_name || 'Professor'} 👋</h2>
-            <p className="hero-desc">You have <strong>{facultyStats.totalSubjects} subjects</strong> this semester with <strong>{facultyStats.totalStudents} enrolled students</strong> across all your classes.</p>
+            <p className="faculty-hero-desc">You have <strong>{facultyStats.totalSubjects} subjects</strong> this semester with <strong>{facultyStats.totalStudents} enrolled students</strong> across all your classes.</p>
             <div className="hero-actions">
               <Link to="/faculty/schedule" className="hero-btn-primary">My Schedule</Link>
               <Link to="/faculty/students" className="hero-btn-ghost">View My Students</Link>
@@ -83,21 +83,28 @@ const FacultyDashboard = () => {
         </div>
       </div>
 
-      {/* 5-Column Stats Grid */}
-      <div className="stats-grid">
+      {/* Stats Grid (isolated, Dean-style) */}
+      <div className="faculty-stats-grid">
         {stats.map((stat, idx) => (
-          <div key={idx} className="stat-card" onClick={() => stat.route && navigate(stat.route)}>
-            <div className="stat-top">
-              <span className="stat-label">{stat.label}</span>
-              <div className="stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
+          <div
+            key={idx}
+            className="faculty-stat-card"
+            onClick={() => stat.route && navigate(stat.route)}
+            style={{ borderTop: `3px solid ${stat.iconColor}` }}
+          >
+            <div className="faculty-stat-top">
+              <div className="faculty-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
                 <svg viewBox="0 0 18 18" fill="none">{stat.iconPath}</svg>
               </div>
             </div>
-            <div className="stat-bottom">
-              <span className="stat-number">{stat.value}</span>
-              <span className={`stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
+            <div className="faculty-stat-bottom">
+              <span className="faculty-stat-value">{stat.value}</span>
+              <span className={`faculty-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
-            <div className="stat-bar"><div className="stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div></div>
+            <span className="faculty-stat-label">{stat.label}</span>
+            <div className="faculty-stat-bar">
+              <div className="faculty-stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
+            </div>
           </div>
         ))}
       </div>

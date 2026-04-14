@@ -47,7 +47,7 @@
   text-align: left;
 }
 
-.hero-desc {
+.dean-hero-desc {
   text-align: left;
 }
 
@@ -79,7 +79,7 @@
   margin-bottom: 8px;
 }
 
-.hero-desc {
+.dean-hero-desc {
   font-size: 13.5px;
   color: rgba(255, 255, 255, 0.55);
   line-height: 1.6;
@@ -87,7 +87,7 @@
   margin-bottom: 20px;
 }
 
-.hero-desc strong {
+.dean-hero-desc strong {
   color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, ROLES } from '../../context/AuthContext';
 import { violationService } from '../../services';
-import '../../styles/Shared/ViolationsList.css';
+import styles from '../../styles/Shared/ViolationsList.module.css';
 
 const STATS_CONFIG = [
   { label: 'Total Reports', color: '#FF6B1A', bg: '#fff5ef', icon: 'users' },
@@ -20,6 +20,8 @@ const ICONS = {
 };
 
 export default function ViolationsList() {
+  const cx = (...classKeys) => classKeys.filter(Boolean).map((k) => styles[k]).filter(Boolean).join(' ');
+
   const { role } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -118,32 +120,32 @@ export default function ViolationsList() {
   };
 
   return (
-    <div className="violations-page">
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+    <div className={styles['violations-page']}>
+      {toast && <div className={cx('toast', `toast-${toast.type}`)}>{toast.message}</div>}
 
-      <div className="violations-header">
-        <h2 className="violations-title">Student Violations</h2>
-        <p className="violations-subtitle">Monitor all disciplinary reports and take administrative action as needed.</p>
+      <div className={styles['violations-header']}>
+        <h2 className={styles['violations-title']}>Student Violations</h2>
+        <p className={styles['violations-subtitle']}>Monitor all disciplinary reports and take administrative action as needed.</p>
       </div>
 
-      <div className="violations-stats">
+      <div className={styles['violations-stats']}>
         {STATS_CONFIG.map((stat, idx) => (
-          <div key={idx} className="stat-card" style={{ borderTopColor: stat.color }}>
-            <div className="stat-icon-wrapper" style={{ background: stat.bg }}>
+          <div key={idx} className={styles['stat-card']} style={{ borderTopColor: stat.color }}>
+            <div className={styles['stat-icon-wrapper']} style={{ background: stat.bg }}>
               <svg viewBox="0 0 24 24" fill="none" stroke={stat.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
                 {ICONS[stat.icon]}
               </svg>
             </div>
-            <div className="stat-info">
-              <span className="stat-number" style={{ color: stat.color }}>{stats[idx].value}</span>
-              <span className="stat-label">{stat.label}</span>
+            <div className={styles['stat-info']}>
+              <span className={styles['stat-number']} style={{ color: stat.color }}>{stats[idx].value}</span>
+              <span className={styles['stat-label']}>{stat.label}</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="violations-toolbar">
-        <div className="search-box">
+      <div className={styles['violations-toolbar']}>
+        <div className={styles['search-box']}>
           <svg viewBox="0 0 18 18" fill="none" stroke="#b89f90" strokeWidth="1.5">
             <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" />
           </svg>
@@ -154,7 +156,7 @@ export default function ViolationsList() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="filter-box">
+        <div className={styles['filter-box']}>
           <select value={severityFilter} onChange={(e) => setSeverityFilter(e.target.value)}>
             <option value="">All Severity</option>
             <option value="Major">Major</option>
@@ -172,15 +174,15 @@ export default function ViolationsList() {
         </div>
       </div>
 
-      <div className="violations-table-card">
+      <div className={styles['violations-table-card']}>
         {isLoading && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
+          <div className={styles['loading-spinner']}>
+            <div className={styles.spinner}></div>
             <p>Loading violations...</p>
           </div>
         )}
-        <div className="table-scroll">
-          <table className="data-table">
+        <div className={styles['table-scroll']}>
+          <table className={styles['data-table']}>
             <thead>
               <tr>
                 <th>STUDENT</th>
@@ -193,35 +195,35 @@ export default function ViolationsList() {
             </thead>
             <tbody>
               {filteredCases.map((v) => (
-                <tr key={v.id} onClick={() => openViolation(v)} className="clickable">
+                <tr key={v.id} onClick={() => openViolation(v)} className={styles.clickable}>
                   <td>
-                    <div className="student-info">
-                      <div className="avatar">{v.student?.first_name?.charAt(0)}</div>
+                    <div className={styles['student-info']}>
+                      <div className={styles.avatar}>{v.student?.first_name?.charAt(0)}</div>
                       <div>
-                        <p className="name">{v.student?.first_name} {v.student?.last_name}</p>
-                        <p className="number">{v.student?.user?.student_number}</p>
+                        <p className={styles.name}>{v.student?.first_name} {v.student?.last_name}</p>
+                        <p className={styles.number}>{v.student?.user?.student_number}</p>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <p className="violation-name">{v.violationType}</p>
-                    <span className={`severity ${v.severity?.toLowerCase()}`}>{v.severity}</span>
+                    <p className={styles['violation-name']}>{v.violationType}</p>
+                    <span className={cx('severity', v.severity?.toLowerCase())}>{v.severity}</span>
                   </td>
                   <td>
-                    <p className="reporter-name">{v.faculty?.first_name} {v.faculty?.last_name}</p>
-                    <p className="reporter-pos">{v.faculty?.position}</p>
+                    <p className={styles['reporter-name']}>{v.faculty?.first_name} {v.faculty?.last_name}</p>
+                    <p className={styles['reporter-pos']}>{v.faculty?.position}</p>
                   </td>
                   <td>{formatDate(v.dateReported)}</td>
                   <td>{getActionByLabel(v)}</td>
                   <td>
-                    <span className={`status ${v.status?.toLowerCase().replace(' ', '-')}`}>
+                    <span className={cx('status', v.status?.toLowerCase().replace(' ', '-'))}>
                       {v.status}
                     </span>
                   </td>
                 </tr>
               ))}
               {filteredCases.length === 0 && !isLoading && (
-                <tr><td colSpan="6" className="empty">No violations found.</td></tr>
+                <tr><td colSpan="6" className={styles.empty}>No violations found.</td></tr>
               )}
             </tbody>
           </table>
@@ -229,79 +231,79 @@ export default function ViolationsList() {
       </div>
 
       {viewingViolation && (
-        <div className="modal-overlay" onClick={(e) => !saving && e.target === e.currentTarget && closeModal()}>
-          <div className="violations-modal">
-            <div className="modal-header">
+        <div className={styles['modal-overlay']} onClick={(e) => !saving && e.target === e.currentTarget && closeModal()}>
+          <div className={styles['violations-modal']}>
+            <div className={styles['modal-header']}>
               <h3>Violation Case Details</h3>
-              <button className="close-btn" onClick={closeModal}>×</button>
+              <button className={styles['close-btn']} onClick={closeModal}>×</button>
             </div>
 
-            <div className="modal-body">
-              <div className="info-grid">
-                <div className="info-box">
+            <div className={styles['modal-body']}>
+              <div className={styles['info-grid']}>
+                <div className={styles['info-box']}>
                   <h4>Reported Student</h4>
-                  <p className="info-name">{viewingViolation.student?.first_name} {viewingViolation.student?.last_name}</p>
-                  <p className="info-detail">{viewingViolation.student?.user?.student_number}</p>
-                  <p className="info-detail">
+                  <p className={styles['info-name']}>{viewingViolation.student?.first_name} {viewingViolation.student?.last_name}</p>
+                  <p className={styles['info-detail']}>{viewingViolation.student?.user?.student_number}</p>
+                  <p className={styles['info-detail']}>
                     {viewingViolation.student?.section?.section_name} · {viewingViolation.student?.program?.program_code}
                   </p>
                 </div>
-                <div className="info-box">
+                <div className={styles['info-box']}>
                   <h4>Reporting Faculty</h4>
-                  <p className="info-name">{viewingViolation.faculty?.first_name} {viewingViolation.faculty?.last_name}</p>
-                  <p className="info-detail">{viewingViolation.faculty?.position}</p>
+                  <p className={styles['info-name']}>{viewingViolation.faculty?.first_name} {viewingViolation.faculty?.last_name}</p>
+                  <p className={styles['info-detail']}>{viewingViolation.faculty?.position}</p>
                 </div>
               </div>
 
-              <div className="detail-section">
+              <div className={styles['detail-section']}>
                 <h4>Incident Information</h4>
-                <div className="detail-rows">
-                  <div className="detail-row">
+                <div className={styles['detail-rows']}>
+                  <div className={styles['detail-row']}>
                     <span>Type & Severity</span>
                     <span>
-                      <span className="incident-type">{viewingViolation.violationType}</span>
-                      <span className={`severity ${viewingViolation.severity?.toLowerCase()}`}>{viewingViolation.severity}</span>
+                      <span className={styles['incident-type']}>{viewingViolation.violationType}</span>
+                      <span className={cx('severity', viewingViolation.severity?.toLowerCase())}>{viewingViolation.severity}</span>
                     </span>
                   </div>
-                  <div className="detail-row">
+                  <div className={styles['detail-row']}>
                     <span>Date Filed</span>
                     <span>{formatDate(viewingViolation.dateReported)}</span>
                   </div>
                   {viewingViolation.incident_time && (
-                    <div className="detail-row">
+                    <div className={styles['detail-row']}>
                       <span>Time</span>
                       <span>{viewingViolation.incident_time}</span>
                     </div>
                   )}
-                  <div className="detail-row">
+                  <div className={styles['detail-row']}>
                     <span>Location</span>
                     <span>{viewingViolation.location || 'Not specified'}</span>
                   </div>
-                  <div className="detail-row">
+                  <div className={styles['detail-row']}>
                     <span>Action By</span>
                     <span>{getActionByLabel(viewingViolation)}</span>
                   </div>
-                  <div className="detail-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                  <div className={styles['detail-row']} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                     <span>Description</span>
-                    <p className="description">{viewingViolation.description}</p>
+                    <p className={styles.description}>{viewingViolation.description}</p>
                   </div>
                   {viewingViolation.action_taken && (
-                    <div className="detail-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                    <div className={styles['detail-row']} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                       <span>Previous Action Taken</span>
-                      <p className="description">{viewingViolation.action_taken}</p>
+                      <p className={styles.description}>{viewingViolation.action_taken}</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {isDeanOrChair && (
-                <div className="action-section">
+                <div className={styles['action-section']}>
                   <h4>Administrative Action</h4>
                   {isResolvedCase && (
-                    <p className="info-detail">This case is already resolved and can no longer be edited.</p>
+                    <p className={styles['info-detail']}>This case is already resolved and can no longer be edited.</p>
                   )}
-                  <div className="action-form">
-                    <div className="form-field">
+                  <div className={styles['action-form']}>
+                    <div className={styles['form-field']}>
                       <label>Update Case Status</label>
                       <select
                         value={editForm.status}
@@ -315,7 +317,7 @@ export default function ViolationsList() {
                         <option value="Sanctioned">Sanctioned</option>
                       </select>
                     </div>
-                    <div className="form-field">
+                    <div className={styles['form-field']}>
                       <label>Action Taken / Remarks</label>
                       <textarea
                         value={editForm.action_taken}
@@ -330,10 +332,10 @@ export default function ViolationsList() {
               )}
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-ghost" onClick={closeModal} disabled={saving}>Cancel</button>
+            <div className={styles['modal-footer']}>
+              <button className={styles['btn-ghost']} onClick={closeModal} disabled={saving}>Cancel</button>
               {isDeanOrChair && !isResolvedCase && (
-                <button className="btn-primary" onClick={handleUpdateViolation} disabled={saving}>
+                <button className={styles['btn-primary']} onClick={handleUpdateViolation} disabled={saving}>
                   {saving ? 'Saving...' : 'Update Record'}
                 </button>
               )}

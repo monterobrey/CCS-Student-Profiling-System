@@ -5,7 +5,7 @@ import { useAuth, ROLES } from '../../context/AuthContext';
 import { studentService } from '../../services';
 import { httpClient } from '../../services/httpClient';
 import { API_ENDPOINTS } from '../../services/apiEndpoints';
-import styles from './StudentManagement.module.css';
+import styles from '../../styles/Shared/StudentManagement.module.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 

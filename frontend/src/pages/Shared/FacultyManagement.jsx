@@ -5,7 +5,7 @@ import { useAuth, ROLES } from '../../context/AuthContext';
 import { facultyService } from '../../services';
 import { httpClient } from '../../services/httpClient';
 import { API_ENDPOINTS } from '../../services/apiEndpoints';
-import styles from './FacultyManagement.module.css';
+import styles from '../../styles/Shared/FacultyManagement.module.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 const POSITIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Instructor', 'Department Chair'];

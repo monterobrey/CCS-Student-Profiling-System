@@ -38,14 +38,14 @@
 .stat-green::before { background: #16a34a; }
 .mini-stat-label { font-size: 11px; color: #9a8070; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 400; }
 
-.table-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.search-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #f0e8e0; border-radius: 10px; padding: 9px 14px; flex: 1; min-width: 200px; transition: all 0.2s; }
+.table-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; }
+.search-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #f0e8e0; border-radius: 10px; padding: 9px 14px; flex: 1; min-width: 0; transition: all 0.2s; }
 .search-wrap:focus-within { border-color: #FF6B1A; box-shadow: 0 0 0 3px rgba(255,107,26,0.07); }
 .search-wrap svg { width: 15px; height: 15px; color: #c0b0a5; flex-shrink: 0; }
 .search-wrap input { border: none; outline: none; font-size: 13px; font-family: 'Outfit', sans-serif; color: #1a0a00; width: 100%; background: none; }
 .search-wrap input::placeholder { color: #c0b0a5; }
-.filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-group select { padding: 9px 14px; border: 1.5px solid #f0e8e0; border-radius: 10px; font-size: 13px; font-family: 'Outfit', sans-serif; color: #1a0a00; background: #fff; outline: none; cursor: pointer; transition: border-color 0.2s; }
+.filter-group { display: flex; gap: 8px; flex-wrap: nowrap; flex-shrink: 0; }
+.filter-group select { padding: 9px 14px; border: 1.5px solid #f0e8e0; border-radius: 10px; font-size: 13px; font-family: 'Outfit', sans-serif; color: #1a0a00; background: #fff; outline: none; cursor: pointer; transition: border-color 0.2s; white-space: nowrap; }
 .filter-group select:focus { border-color: #FF6B1A; }
 
 .error-input { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
@@ -161,9 +161,6 @@
   .primary-btn, .ghost-btn { flex: 1; justify-content: center; }
   .mini-stats { flex-wrap: wrap; }
   .mini-stat { min-width: calc(50% - 8px); }
-  .table-toolbar { flex-direction: column; align-items: stretch; }
-  .filter-group { width: 100%; }
-  .filter-group select { flex: 1; min-width: 0; }
   .modal-footer { flex-direction: column-reverse; }
   .modal-footer button { width: 100%; justify-content: center; }
 }

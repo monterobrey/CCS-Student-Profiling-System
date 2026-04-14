@@ -79,7 +79,16 @@ class FacultyController extends Controller
      */
     public function index()
     {
-        $faculty = Faculty::with(['user', 'department', 'expertise', 'organizations', 'schedules.course', 'schedules.section'])->get();
+        $faculty = Faculty::with([
+            'user',
+            'department',
+            'expertise',
+            'organizations',
+            'schedules.course',
+            'schedules.section' => function ($q) {
+                $q->withCount('students');
+            },
+        ])->get();
         return ApiResponse::success($faculty);
     }
 

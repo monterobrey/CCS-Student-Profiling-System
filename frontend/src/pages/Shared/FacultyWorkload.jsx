@@ -29,21 +29,27 @@ export default function FacultyWorkload() {
       const key = `${s.course_id}-${s.section_id}`;
       if (!seen.has(key)) {
         seen.add(key);
-        totalUnits += parseFloat(s.course?.lec_units || 0) + parseFloat(s.course?.lab_units || 0);
+        totalUnits += parseFloat(s.course?.units || 0);
       }
     });
 
     const subjects = [...new Map(schedules.map(s => [
       `${s.course_id}-${s.section_id}`,
       {
-        code:     s.course?.code || 'N/A',
-        name:     s.course?.title || 'Untitled',
-        section:  s.section?.name || 'N/A',
-        schedule: `${s.day || 'TBA'} ${s.time_start || ''}-${s.time_end || ''}`.trim(),
+        code:     s.course?.course_code || 'N/A',
+        name:     s.course?.course_name || 'Untitled',
+        section:  s.section?.section_name || 'N/A',
+        schedule: s.dayOfWeek ? `${s.dayOfWeek} ${s.startTime || ''}-${s.endTime || ''}`.trim() : 'TBA',
       }
     ])).values()];
 
-    const totalStudents = schedules.reduce((sum, s) => sum + (s.section?.students_count || 0), 0);
+    const uniqueSections = new Map();
+    schedules.forEach(s => {
+      if (s.section_id && !uniqueSections.has(s.section_id)) {
+        uniqueSections.set(s.section_id, s.section?.students_count || 0);
+      }
+    });
+    const totalStudents = [...uniqueSections.values()].reduce((sum, c) => sum + c, 0);
 
     return {
       id:           f.id,
@@ -70,13 +76,16 @@ export default function FacultyWorkload() {
     return matchSearch && matchDept && matchLoad;
   }), [faculty, search, filterDept, filterLoad]);
 
-  const miniStats = useMemo(() => [
-    { label: 'Total Faculty',  value: faculty.length,                                    color: '#FF6B1A' },
-    { label: 'Full Load',      value: faculty.filter(f => f.units >= 18).length,         color: '#ef4444' },
-    { label: 'Normal Load',    value: faculty.filter(f => f.units >= 12 && f.units < 18).length, color: '#f59e0b' },
-    { label: 'Light Load',     value: faculty.filter(f => f.units < 12).length,          color: '#16a34a' },
-    { label: 'Total Subjects', value: faculty.reduce((a, f) => a + f.subjects.length, 0), color: '#8b5cf6' },
-  ], [faculty]);
+  const miniStats = useMemo(() => {
+    const withSchedules = faculty.filter(f => f.subjects.length > 0);
+    return [
+      { label: 'Total Faculty',  value: faculty.length,                                              color: '#FF6B1A' },
+      { label: 'Full Load',      value: withSchedules.filter(f => f.units >= 18).length,             color: '#ef4444' },
+      { label: 'Normal Load',    value: withSchedules.filter(f => f.units >= 12 && f.units < 18).length, color: '#f59e0b' },
+      { label: 'Light Load',     value: withSchedules.filter(f => f.units > 0 && f.units < 12).length, color: '#16a34a' },
+      { label: 'Total Subjects', value: faculty.reduce((a, f) => a + f.subjects.length, 0),          color: '#8b5cf6' },
+    ];
+  }, [faculty]);
 
   const getLoadClass = (units) => units >= 18 ? 'load-full' : units >= 12 ? 'load-mid' : 'load-low';
   const getBadgeClass = (units) => units >= 18 ? 'wl-full' : units >= 12 ? 'wl-normal' : 'wl-light';

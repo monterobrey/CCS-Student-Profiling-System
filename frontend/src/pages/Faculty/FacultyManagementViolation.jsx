@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { facultyService } from '../../services';
-import '../../styles/Faculty/FacultyManagementViolation.css';
+import styles from '../../styles/Faculty/FacultyManagementViolation.module.css';
 
 const VIOLATION_TYPES = [
   'Academic Dishonesty',
@@ -23,6 +23,8 @@ const EMPTY_FORM = {
 };
 
 const FacultyViolationManager = () => {
+  const cx = (...names) => names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(' ');
+
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [studentDropdownOpen, setStudentDropdownOpen] = useState(false);
@@ -177,36 +179,36 @@ const FacultyViolationManager = () => {
   };
 
   return (
-    <div className="faculty-violation-page">
+    <div className={styles['faculty-violation-page']}>
 
       {/* Header */}
-      <div className="page-header">
-        <div className="header-text">
-          <h2 className="title">Violation Management</h2>
-          <p className="subtitle">Track and manage incident reports filed for your handled sections.</p>
+      <div className={styles['page-header']}>
+        <div className={styles['header-text']}>
+          <h2 className={styles.title}>Violation Management</h2>
+          <p className={styles.subtitle}>Track and manage incident reports filed for your handled sections.</p>
         </div>
-        <button className="record-btn" onClick={() => { resetForm(); setShowReportModal(true); }}>
+        <button className={styles['record-btn']} onClick={() => { resetForm(); setShowReportModal(true); }}>
           + Report Violation
         </button>
       </div>
 
       {/* Stats Row */}
-      <div className="stats-row">
+      <div className={styles['stats-row']}>
         {stats.map((stat, i) => (
-          <div key={i} className={`mini-card accent-${stat.color}`}>
-            <div className="card-icon">{stat.icon}</div>
-            <div className="card-info">
-              <span className="card-value">{stat.value}</span>
-              <span className="card-label">{stat.label}</span>
+          <div key={i} className={cx('mini-card', `accent-${stat.color}`)}>
+            <div className={styles['card-icon']}>{stat.icon}</div>
+            <div className={styles['card-info']}>
+              <span className={styles['card-value']}>{stat.value}</span>
+              <span className={styles['card-label']}>{stat.label}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Toolbar */}
-      <div className="table-actions">
-        <div className="search-container">
-          <span className="search-icon">🔍</span>
+      <div className={styles['table-actions']}>
+        <div className={styles['search-container']}>
+          <span className={styles['search-icon']}>🔍</span>
           <input
             type="text"
             placeholder="Search by student name, section, or violation type…"
@@ -215,7 +217,7 @@ const FacultyViolationManager = () => {
           />
         </div>
         <select
-          className="filter-select"
+          className={styles['filter-select']}
           value={sevFilter}
           onChange={(e) => setSevFilter(e.target.value)}
         >
@@ -226,7 +228,7 @@ const FacultyViolationManager = () => {
         </select>
         <input
           type="date"
-          className="filter-select"
+          className={styles['filter-select']}
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
           title="Filter by date filed"
@@ -234,14 +236,14 @@ const FacultyViolationManager = () => {
       </div>
 
       {/* Table */}
-      <div className="table-wrapper">
+      <div className={styles['table-wrapper']}>
         {violationsQuery.isLoading ? (
-          <div className="table-loader">
-            <div className="spinner" />
+          <div className={styles['table-loader']}>
+            <div className={styles.spinner} />
             <p>Loading reports…</p>
           </div>
         ) : (
-          <table className="violation-table">
+          <table className={styles['violation-table']}>
             <thead>
               <tr>
                 <th>Student / Section</th>
@@ -253,25 +255,25 @@ const FacultyViolationManager = () => {
             </thead>
             <tbody>
               {filteredReports.map((report) => (
-                <tr key={report.id} className="row-hover" onClick={() => setSelectedViolation(report)}>
+                <tr key={report.id} className={styles['row-hover']} onClick={() => setSelectedViolation(report)}>
                   <td>
-                    <div className="student-profile">
-                      <div className="avatar">{report.studentName?.charAt(0)}</div>
-                      <div className="meta">
-                        <p className="name">{report.studentName}</p>
-                        <p className="section">{report.section}</p>
+                    <div className={styles['student-profile']}>
+                      <div className={styles.avatar}>{report.studentName?.charAt(0)}</div>
+                      <div className={styles.meta}>
+                        <p className={styles.name}>{report.studentName}</p>
+                        <p className={styles.section}>{report.section}</p>
                       </div>
                     </div>
                   </td>
-                  <td><span className="type-text">{report.violationType}</span></td>
+                  <td><span className={styles['type-text']}>{report.violationType}</span></td>
                   <td>
-                    <span className={`sev-tag ${report.severity?.toLowerCase()}`}>
+                    <span className={cx('sev-tag', report.severity?.toLowerCase())}>
                       {report.severity}
                     </span>
                   </td>
-                  <td className="date-text">{report.dateReported}</td>
+                  <td className={styles['date-text']}>{report.dateReported}</td>
                   <td>
-                    <span className={`status-pill ${report.status?.toLowerCase()}`}>
+                    <span className={cx('status-pill', report.status?.toLowerCase())}>
                       {report.status}
                     </span>
                   </td>
@@ -279,7 +281,7 @@ const FacultyViolationManager = () => {
               ))}
               {filteredReports.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="empty-msg">No filed violations match your filters.</td>
+                  <td colSpan="5" className={styles['empty-msg']}>No filed violations match your filters.</td>
                 </tr>
               )}
             </tbody>
@@ -289,21 +291,21 @@ const FacultyViolationManager = () => {
 
       {/* Report Violation Modal */}
       {showReportModal && (
-        <div className="modal-backdrop" onClick={() => { resetForm(); setShowReportModal(false); }}>
-          <div className="modal-box modal-wide" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles['modal-backdrop']} onClick={() => { resetForm(); setShowReportModal(false); }}>
+          <div className={cx('modal-box', 'modal-wide')} onClick={e => e.stopPropagation()}>
+            <div className={styles['modal-header']}>
               <h3>Report a Violation</h3>
-              <button className="close-x" onClick={() => { resetForm(); setShowReportModal(false); }}>&times;</button>
+              <button className={styles['close-x']} onClick={() => { resetForm(); setShowReportModal(false); }}>&times;</button>
             </div>
-            <div className="modal-content">
+            <div className={styles['modal-content']}>
 
-              <div className="modal-section-label">Student Info</div>
-              <div className="modal-grid">
-                <div className="modal-field full" ref={studentDropdownRef}>
+              <div className={styles['modal-section-label']}>Student Info</div>
+              <div className={styles['modal-grid']}>
+                <div className={cx('modal-field', 'full')} ref={studentDropdownRef}>
                   <label>Select Students</label>
-                  <div className="student-multi-select">
+                  <div className={styles['student-multi-select']}>
                     <div
-                      className="student-multi-trigger"
+                      className={styles['student-multi-trigger']}
                       onClick={() => setStudentDropdownOpen((prev) => !prev)}
                     >
                       {selectedStudentIds.length
@@ -311,20 +313,20 @@ const FacultyViolationManager = () => {
                         : 'Search and select students...'}
                     </div>
                     {studentDropdownOpen && (
-                      <div className="student-dropdown-panel">
+                      <div className={styles['student-dropdown-panel']}>
                         <input
                           type="text"
-                          className="student-search-input"
+                          className={styles['student-search-input']}
                           value={studentSearch}
                           onChange={(e) => setStudentSearch(e.target.value)}
                           placeholder="Search by name, student number, or section"
                         />
-                        <div className="student-option-list">
+                        <div className={styles['student-option-list']}>
                           {filteredStudentOptions.map((student) => {
                             const fullName = `${student.last_name || ''}, ${student.first_name || ''} ${student.middle_name || ''}`.trim().replace(/^,\s*/, '');
                             const isSelected = selectedStudentIds.includes(student.id);
                             return (
-                              <label key={student.id} className="student-option-item">
+                              <label key={student.id} className={styles['student-option-item']}>
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
@@ -341,11 +343,11 @@ const FacultyViolationManager = () => {
                     )}
                   </div>
                   {!!selectedStudents.length && (
-                    <div className="selected-students-preview">
+                    <div className={styles['selected-students-preview']}>
                       {selectedStudents.map((student) => {
                         const fullName = `${student.last_name || ''}, ${student.first_name || ''}`.trim().replace(/^,\s*/, '');
                         return (
-                          <span key={student.id} className="selected-student-chip">
+                          <span key={student.id} className={styles['selected-student-chip']}>
                             {fullName} ({student.section?.section_name || 'No Section'})
                           </span>
                         );
@@ -355,16 +357,16 @@ const FacultyViolationManager = () => {
                 </div>
               </div>
 
-              <div className="modal-section-label">Incident Info</div>
-              <div className="modal-grid">
-                <div className="modal-field">
+              <div className={styles['modal-section-label']}>Incident Info</div>
+              <div className={styles['modal-grid']}>
+                <div className={styles['modal-field']}>
                   <label>Violation Type</label>
                   <select name="violationType" value={form.violationType} onChange={handleFormChange}>
                     <option value="">Select type…</option>
                     {VIOLATION_TYPES.map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="modal-field">
+                <div className={styles['modal-field']}>
                   <label>Severity</label>
                   <select name="severity" value={form.severity} onChange={handleFormChange}>
                     <option value="">Select severity…</option>
@@ -373,23 +375,23 @@ const FacultyViolationManager = () => {
                     <option>Major</option>
                   </select>
                 </div>
-                <div className="modal-field">
+                <div className={styles['modal-field']}>
                   <label>Location</label>
                   <input name="location" value={form.location} onChange={handleFormChange} placeholder="e.g. Room 301, Library" />
                 </div>
-                <div className="modal-field">
+                <div className={styles['modal-field']}>
                   <label>Incident Date (Optional)</label>
                   <input type="date" name="incidentDate" value={form.incidentDate} onChange={handleFormChange} />
                 </div>
-                <div className="modal-field">
+                <div className={styles['modal-field']}>
                   <label>Incident Time (Optional)</label>
                   <input type="time" name="incidentTime" value={form.incidentTime} onChange={handleFormChange} />
                 </div>
               </div>
 
-              <div className="modal-section-label">Description</div>
-              <div className="modal-grid">
-                <div className="modal-field full">
+              <div className={styles['modal-section-label']}>Description</div>
+              <div className={styles['modal-grid']}>
+                <div className={cx('modal-field', 'full')}>
                   <label>Detailed Description</label>
                   <textarea
                     name="description"
@@ -402,9 +404,9 @@ const FacultyViolationManager = () => {
               </div>
             </div>
 
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => { resetForm(); setShowReportModal(false); }}>Cancel</button>
-              <button className="btn-submit" onClick={handleSubmit} disabled={reportViolationMutation.isPending}>
+            <div className={styles['modal-actions']}>
+              <button className={styles['btn-cancel']} onClick={() => { resetForm(); setShowReportModal(false); }}>Cancel</button>
+              <button className={styles['btn-submit']} onClick={handleSubmit} disabled={reportViolationMutation.isPending}>
                 {reportViolationMutation.isPending ? 'Submitting...' : 'Submit Report'}
               </button>
             </div>
@@ -414,65 +416,65 @@ const FacultyViolationManager = () => {
 
       {/* Detail Modal */}
       {selectedViolation && (
-        <div className="modal-backdrop" onClick={() => setSelectedViolation(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles['modal-backdrop']} onClick={() => setSelectedViolation(null)}>
+          <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
+            <div className={styles['modal-header']}>
               <h3>Incident Report Details</h3>
-              <button className="close-x" onClick={() => setSelectedViolation(null)}>&times;</button>
+              <button className={styles['close-x']} onClick={() => setSelectedViolation(null)}>&times;</button>
             </div>
-            <div className="modal-content">
-              <div className="detail-grid">
-                <div className="detail-card">
+            <div className={styles['modal-content']}>
+              <div className={styles['detail-grid']}>
+                <div className={styles['detail-card']}>
                   <label>Subject Student</label>
                   <p>{selectedViolation.studentName}</p>
-                  <span className="detail-sub">{selectedViolation.studentId} · {selectedViolation.section}</span>
+                  <span className={styles['detail-sub']}>{selectedViolation.studentId} · {selectedViolation.section}</span>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Violation Type</label>
                   <p>{selectedViolation.violationType}</p>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Severity</label>
-                  <span className={`sev-tag ${selectedViolation.severity?.toLowerCase()}`}>
+                  <span className={cx('sev-tag', selectedViolation.severity?.toLowerCase())}>
                     {selectedViolation.severity}
                   </span>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Status</label>
-                  <span className={`status-pill ${selectedViolation.status?.toLowerCase()}`}>
+                  <span className={cx('status-pill', selectedViolation.status?.toLowerCase())}>
                     {selectedViolation.status}
                   </span>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Date Filed</label>
                   <p>{selectedViolation.dateReported || '—'}</p>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Incident Time</label>
                   <p>{selectedViolation.incidentTime || '—'}</p>
                 </div>
-                <div className="detail-card">
+                <div className={styles['detail-card']}>
                   <label>Action Taken By</label>
                   <p>{selectedViolation.actionTakenBy || 'Not yet set'}</p>
                 </div>
               </div>
               {selectedViolation.location && (
-                <div className="detail-group">
+                <div className={styles['detail-group']}>
                   <label>Location:</label>
                   <p>{selectedViolation.location}</p>
                 </div>
               )}
-              <div className="detail-group">
+              <div className={styles['detail-group']}>
                 <label>Action Taken:</label>
-                <p className="desc-box">{selectedViolation.actionTaken || 'No action taken yet.'}</p>
+                <p className={styles['desc-box']}>{selectedViolation.actionTaken || 'No action taken yet.'}</p>
               </div>
-              <div className="detail-group">
+              <div className={styles['detail-group']}>
                 <label>Action Taken By:</label>
                 <p>{selectedViolation.actionTakenBy || 'Not yet set'}</p>
               </div>
-              <div className="detail-group">
+              <div className={styles['detail-group']}>
                 <label>Incident Description:</label>
-                <p className="desc-box">{selectedViolation.description || 'No additional notes provided.'}</p>
+                <p className={styles['desc-box']}>{selectedViolation.description || 'No additional notes provided.'}</p>
               </div>
             </div>
           </div>

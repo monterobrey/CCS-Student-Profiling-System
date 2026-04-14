@@ -207,53 +207,108 @@ class AnalyticsService
     }
 
     /**
-     * Get academic performance statistics.
+     * Get department-level report data, scoped to the chair's department/program.
      */
-    public function getAcademicPerformance()
+    public function getAcademicPerformance(?int $departmentId = null, ?int $programId = null)
     {
-        $students = Student::whereNotNull('gwa')->get();
-        $total = $students->count();
+        // ── Base student query scoped to department/program ──
+        $baseQuery = fn() => Student::query()
+            ->when($programId, fn($q) => $q->where('program_id', $programId))
+            ->when(!$programId && $departmentId, function ($q) use ($departmentId) {
+                $ids = \App\Models\Program::where('department_id', $departmentId)->pluck('id');
+                $q->whereIn('program_id', $ids);
+            });
 
-        $avgGwa = $total > 0 ? round($students->avg('gwa'), 2) : null;
+        $allStudents  = $baseQuery()->with(['program', 'violations'])->get();
+        $gwaStudents  = $baseQuery()->whereNotNull('gwa')->with('program')->get();
 
-        $deansListCount    = $students->where('gwa', '<=', 1.50)->count();
-        $veryGoodCount     = $students->whereBetween('gwa', [1.51, 2.00])->count();
-        $goodCount         = $students->whereBetween('gwa', [2.01, 2.50])->count();
-        $satisfactoryCount = $students->whereBetween('gwa', [2.51, 3.00])->count();
-        $atRiskCount       = $students->where('gwa', '>', 3.00)->count();
+        $total    = $allStudents->count();
+        $gwaTotal = $gwaStudents->count();
+        $avgGwa   = $gwaTotal > 0 ? round($gwaStudents->avg('gwa'), 2) : null;
 
-        $distribution = [
-            ['range' => '1.00–1.50', 'desc' => "Dean's List",   'count' => $deansListCount,    'pct' => $total > 0 ? round($deansListCount    / $total * 100) : 0, 'color' => '#065f46'],
-            ['range' => '1.51–2.00', 'desc' => 'Very Good',     'count' => $veryGoodCount,     'pct' => $total > 0 ? round($veryGoodCount     / $total * 100) : 0, 'color' => '#1e40af'],
-            ['range' => '2.01–2.50', 'desc' => 'Good',          'count' => $goodCount,         'pct' => $total > 0 ? round($goodCount         / $total * 100) : 0, 'color' => '#d97706'],
-            ['range' => '2.51–3.00', 'desc' => 'Satisfactory',  'count' => $satisfactoryCount, 'pct' => $total > 0 ? round($satisfactoryCount / $total * 100) : 0, 'color' => '#ea580c'],
-            ['range' => 'Above 3.00','desc' => 'At Risk',        'count' => $atRiskCount,       'pct' => $total > 0 ? round($atRiskCount       / $total * 100) : 0, 'color' => '#b91c1c'],
+        // ── GWA buckets ──
+        $deansListCount    = $gwaStudents->where('gwa', '<=', 1.50)->count();
+        $veryGoodCount     = $gwaStudents->whereBetween('gwa', [1.51, 2.00])->count();
+        $goodCount         = $gwaStudents->whereBetween('gwa', [2.01, 2.50])->count();
+        $satisfactoryCount = $gwaStudents->whereBetween('gwa', [2.51, 3.00])->count();
+        $atRiskCount       = $gwaStudents->where('gwa', '>', 3.00)->count();
+
+        // ── Summary cards ──
+        $summary = [
+            ['label' => 'Total Students', 'value' => $total,           'sub' => 'Enrolled',        'color' => '#3b82f6'],
+            ['label' => "Dean's List",    'value' => $deansListCount,   'sub' => 'GWA ≤ 1.50',      'color' => '#065f46'],
+            ['label' => 'At Risk',        'value' => $atRiskCount,      'sub' => 'GWA > 3.00',      'color' => '#b91c1c'],
+            ['label' => 'Dept Avg GWA',   'value' => $avgGwa ?? 'N/A',  'sub' => 'With GWA recorded','color' => '#FF6B1A'],
         ];
 
-        // GWA by course (program)
-        $courseGwa = Student::with('program')
-            ->whereNotNull('gwa')
-            ->get()
+        // ── GWA Distribution ──
+        $pct = fn($n) => $gwaTotal > 0 ? round($n / $gwaTotal * 100) : 0;
+        $distribution = [
+            ['range' => '1.00–1.50', 'desc' => "Dean's List",  'count' => $deansListCount,    'pct' => $pct($deansListCount),    'color' => '#065f46'],
+            ['range' => '1.51–2.00', 'desc' => 'Very Good',    'count' => $veryGoodCount,     'pct' => $pct($veryGoodCount),     'color' => '#1e40af'],
+            ['range' => '2.01–2.50', 'desc' => 'Good',         'count' => $goodCount,         'pct' => $pct($goodCount),         'color' => '#d97706'],
+            ['range' => '2.51–3.00', 'desc' => 'Satisfactory', 'count' => $satisfactoryCount, 'pct' => $pct($satisfactoryCount), 'color' => '#ea580c'],
+            ['range' => 'Above 3.00','desc' => 'At Risk',       'count' => $atRiskCount,       'pct' => $pct($atRiskCount),       'color' => '#b91c1c'],
+        ];
+
+        // ── GWA by Program ──
+        $byProgram = $gwaStudents
             ->groupBy(fn($s) => $s->program?->program_code ?? 'Unknown')
             ->map(fn($group, $code) => [
                 'name'     => $code,
                 'students' => $group->count(),
                 'gwa'      => round($group->avg('gwa'), 2),
-                'pct'      => $total > 0 ? round($group->count() / $total * 100) : 0,
+                'pct'      => $gwaTotal > 0 ? round($group->count() / $gwaTotal * 100) : 0,
                 'color'    => '#' . substr(md5($code), 0, 6),
+            ])->values();
+
+        // ── Students by Year Level ──
+        $byYearLevel = $allStudents
+            ->groupBy('year_level')
+            ->map(fn($group, $year) => [
+                'year'     => $year ? "{$year}" . ['','st','nd','rd','th'][(int)$year] ?? 'th' . ' Year' : 'Unknown',
+                'label'    => "Year {$year}",
+                'students' => $group->count(),
+                'avg_gwa'  => $group->whereNotNull('gwa')->count() > 0
+                    ? round($group->whereNotNull('gwa')->avg('gwa'), 2)
+                    : null,
             ])
+            ->sortKeys()
             ->values();
 
-        // Summary cards
-        $summary = [
-            ['label' => "Dean's List",   'value' => $deansListCount,    'sub' => 'GWA ≤ 1.50',       'color' => '#065f46'],
-            ['label' => 'Satisfactory',  'value' => $satisfactoryCount + $goodCount + $veryGoodCount, 'sub' => 'GWA 1.51–3.00', 'color' => '#1e40af'],
-            ['label' => 'At Risk',       'value' => $atRiskCount,       'sub' => 'GWA > 3.00',        'color' => '#b91c1c'],
-            ['label' => 'Dept Avg GWA',  'value' => $avgGwa ?? 'N/A',   'sub' => 'All programs',      'color' => '#FF6B1A'],
+        // ── Violations by Severity (scoped to department students) ──
+        $studentIds = $allStudents->pluck('id');
+        $violations = StudentViolation::whereIn('student_id', $studentIds)->get();
+        $violationsBySeverity = [
+            ['severity' => 'Minor',    'count' => $violations->where('severity', 'Minor')->count(),    'color' => '#f59e0b'],
+            ['severity' => 'Moderate', 'count' => $violations->where('severity', 'Moderate')->count(), 'color' => '#ea580c'],
+            ['severity' => 'Major',    'count' => $violations->where('severity', 'Major')->count(),    'color' => '#b91c1c'],
         ];
 
-        // Semester trend — use dummy historical data with real current avg as the last point
-        // (Real multi-semester trend will populate naturally as more school years are added)
+        // ── Top 5 Students by GWA ──
+        $topStudents = $gwaStudents
+            ->sortBy('gwa')
+            ->take(5)
+            ->map(fn($s) => [
+                'name'    => "{$s->last_name}, {$s->first_name}",
+                'program' => $s->program?->program_code ?? 'N/A',
+                'gwa'     => number_format($s->gwa, 2),
+                'color'   => '#' . substr(md5($s->id), 0, 6),
+            ])->values();
+
+        // ── At-Risk vs Dean's List by Year Level ──
+        $riskVsHonors = $allStudents
+            ->whereNotNull('gwa')
+            ->groupBy('year_level')
+            ->map(fn($group, $year) => [
+                'label'      => "Year {$year}",
+                'deans_list' => $group->where('gwa', '<=', 1.50)->count(),
+                'at_risk'    => $group->where('gwa', '>', 3.00)->count(),
+            ])
+            ->sortKeys()
+            ->values();
+
+        // ── Semester GWA Trend (dummy history + real current) ──
         $semesterTrend = collect([
             ['sem' => "1st '23", 'gwa' => 2.10],
             ['sem' => "2nd '23", 'gwa' => 2.05],
@@ -263,11 +318,16 @@ class AnalyticsService
         ]);
 
         return [
-            'summary'          => $summary,
-            'distribution'     => $distribution,
-            'courses'          => $courseGwa,
-            'chart_data'       => $semesterTrend,
-            'total_with_gwa'   => $total,
+            'summary'              => $summary,
+            'distribution'         => $distribution,
+            'by_program'           => $byProgram,
+            'by_year_level'        => $byYearLevel,
+            'violations_severity'  => $violationsBySeverity,
+            'top_students'         => $topStudents,
+            'risk_vs_honors'       => $riskVsHonors,
+            'chart_data'           => $semesterTrend,
+            'total_students'       => $total,
+            'total_with_gwa'       => $gwaTotal,
         ];
     }
 }

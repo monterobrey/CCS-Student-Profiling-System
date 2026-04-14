@@ -19,6 +19,7 @@ class Faculty extends Model
         'user_id',
         'title',
         'department_id',
+        'program_id',
         'first_name',
         'last_name',
         'middle_name',
@@ -44,6 +45,11 @@ class Faculty extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class);
     }
 
     public function advisingSections(): HasMany

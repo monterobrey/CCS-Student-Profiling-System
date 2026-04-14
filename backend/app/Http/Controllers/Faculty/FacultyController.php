@@ -82,6 +82,7 @@ class FacultyController extends Controller
         $faculty = Faculty::with([
             'user',
             'department',
+            'program',
             'expertise',
             'organizations',
             'schedules.course',
@@ -122,9 +123,10 @@ class FacultyController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'title' => 'nullable|string',
-            'department_id' => 'required|exists:departments,id',
-            'position' => 'required|string|max:255',
+            'title'        => 'nullable|string',
+            'department_id'=> 'required|exists:departments,id',
+            'position'     => 'required|string|max:255',
+            'program_id'   => 'nullable|exists:programs,id',
         ]);
 
         $faculty = $this->facultyService->updateFaculty($id, $validated);

@@ -200,18 +200,31 @@ class FacultyService
 
     /**
      * Update faculty information.
+     * If position is set to 'Department Chair', also promote the user role.
+     * If changed away from 'Department Chair', demote back to 'faculty'.
      */
     public function updateFaculty($facultyId, $data)
     {
         $faculty = Faculty::findOrFail($facultyId);
 
         $faculty->update([
-            'title' => $data['title'] ?? $faculty->title,
-            'department_id' => $data['department_id'],
-            'position' => $data['position'],
+            'title'        => $data['title'] ?? $faculty->title,
+            'department_id'=> $data['department_id'],
+            'position'     => $data['position'],
+            'program_id'   => array_key_exists('program_id', $data) ? $data['program_id'] : $faculty->program_id,
         ]);
 
-        return $faculty->load('user', 'department');
+        // Sync user role with position
+        if ($faculty->user) {
+            if ($data['position'] === 'Department Chair') {
+                $faculty->user->update(['role' => 'department_chair']);
+            } elseif ($faculty->user->role === 'department_chair') {
+                // Demote back to faculty if position is no longer Department Chair
+                $faculty->user->update(['role' => 'faculty']);
+            }
+        }
+
+        return $faculty->load('user', 'department', 'program');
     }
 
     /**

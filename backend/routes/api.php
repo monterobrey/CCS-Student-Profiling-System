@@ -95,9 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/secretary/students/import', [StudentController::class, 'import']);
         Route::post('/secretary/students/{id}/resend-setup', [StudentController::class, 'resendSetup']);
         Route::post('/secretary/faculty', [FacultyController::class, 'store']);
-        Route::put('/secretary/faculty/{id}', [FacultyController::class, 'update']);
         Route::post('/secretary/faculty/import', [FacultyController::class, 'import']);
         Route::post('/secretary/faculty/{id}/resend-setup', [FacultyController::class, 'resendSetup']);
+    });
+
+    // Dean can update faculty position/program assignment
+    Route::middleware('role:dean,secretary')->group(function () {
+        Route::put('/secretary/faculty/{id}', [FacultyController::class, 'update']);
     });
 
     // Student edit (Secretary + Department Chair)

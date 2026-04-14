@@ -8,11 +8,11 @@ import { API_ENDPOINTS } from '../../services/apiEndpoints';
 import '../../styles/Shared/FacultyManagement.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-const POSITIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Instructor'];
+const POSITIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Instructor', 'Department Chair'];
 
 const EMPTY_FORM = {
   title: '', first_name: '', last_name: '', middle_name: '',
-  email: '', department_id: '', position: 'Instructor',
+  email: '', department_id: '', position: 'Instructor', program_id: '',
 };
 
 export default function FacultyManagement() {
@@ -22,6 +22,7 @@ export default function FacultyManagement() {
   const queryClient = useQueryClient();
 
   const isSecretary   = role === ROLES.SECRETARY;
+  const isDean        = role === ROLES.DEAN;
   const isDeanOrChair = role === ROLES.DEAN || role === ROLES.CHAIR;
 
   // ── Cached queries ──
@@ -37,6 +38,14 @@ export default function FacultyManagement() {
     queryKey: ['departments'],
     queryFn: async () => {
       const res = await httpClient.get(API_ENDPOINTS.DEPARTMENTS.LIST);
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ['programs'],
+    queryFn: async () => {
+      const res = await httpClient.get(API_ENDPOINTS.PROGRAMS.LIST);
       return res.ok ? (res.data ?? []) : [];
     },
   });
@@ -150,6 +159,7 @@ export default function FacultyManagement() {
       email:         f.user?.email || '',
       department_id: f.department_id?.toString() || '',
       position:      f.position,
+      program_id:    f.program_id?.toString() || '',
     });
     setShowModal(true);
   };
@@ -398,7 +408,14 @@ export default function FacultyManagement() {
                       </div>
                     </td>
                     <td>{deptName}</td>
-                    <td><span className="program-badge-table">{f.position}</span></td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="program-badge-table">{f.position}</span>
+                        {f.position === 'Department Chair' && f.program && (
+                          <span className="chair-program-badge">{f.program.program_code}</span>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <div className="units-breakdown">
                         <span className="total-units-badge">{load} hrs</span>
@@ -413,6 +430,11 @@ export default function FacultyManagement() {
                     {(isSecretary || isDeanOrChair) && (
                       <td onClick={e => e.stopPropagation()}>
                         <div className="action-btns">
+                          {isDean && (
+                            <button className="action-btn edit" onClick={() => openEditModal(f)} title="Edit position / program">
+                              <svg viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </button>
+                          )}
                           {status === 'pending' && isSecretary && (
                             <button className="action-btn resend" onClick={() => resendSetup(f)} title="Resend setup email">
                               <svg viewBox="0 0 16 16" fill="none"><path d="M2 4l6 4 6-4M2 4h12v9H2V4z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -496,6 +518,16 @@ export default function FacultyManagement() {
                   <h4 className="section-title">Employment Information</h4>
                   <div className="detail-rows">
                     <div className="detail-row"><span className="detail-key">Department</span><span className="detail-val">{deptName}</span></div>
+                    {viewingFaculty.position === 'Department Chair' && (
+                      <div className="detail-row">
+                        <span className="detail-key">Program</span>
+                        <span className="detail-val">
+                          {viewingFaculty.program
+                            ? <span className="chair-program-badge">{viewingFaculty.program.program_code}</span>
+                            : <span style={{ color: '#b89f90', fontStyle: 'italic' }}>Not assigned</span>}
+                        </span>
+                      </div>
+                    )}
                     <div className="detail-row">
                       <span className="detail-key">Workload</span>
                       <span className="detail-val">
@@ -541,6 +573,12 @@ export default function FacultyManagement() {
                     Edit Account
                   </button>
                 )}
+                {isDean && (
+                  <button className="ghost-btn" onClick={openEditFromView}>
+                    <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Edit Position
+                  </button>
+                )}
                 {(isSecretary || isDeanOrChair) && (
                   <button className="danger-btn" onClick={() => confirmArchive(viewingFaculty)}>
                     <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
@@ -554,7 +592,7 @@ export default function FacultyManagement() {
       })()}
 
       {/* CREATE / EDIT MODAL */}
-      {isSecretary && showModal && (
+      {(isSecretary || isDean) && showModal && (
         <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
@@ -600,6 +638,15 @@ export default function FacultyManagement() {
                     {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
+                {isDeanOrChair && form.position === 'Department Chair' && (
+                  <div className="form-group">
+                    <label>Assigned Program</label>
+                    <select value={form.program_id} onChange={e => setForm(p => ({...p, program_id: e.target.value}))} disabled={saving}>
+                      <option value="">No specific program</option>
+                      {programs.map(p => <option key={p.id} value={p.id}>{p.program_code} — {p.program_name}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
               {!editingFaculty && (
                 <div className="modal-notice">

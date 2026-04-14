@@ -69,7 +69,7 @@ const { role } = useAuth();
       [ROLES.CHAIR]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
         { name: "Academic", items: [
-          { path: "performance", meta: { title: "Academic Performance", icon: "performance" } },
+          { path: "performance", meta: { title: "Department Report", icon: "performance" } },
           { path: "violations", meta: { title: "Violations", icon: "violations" } }
         ]},
         { name: "Awards", items: [

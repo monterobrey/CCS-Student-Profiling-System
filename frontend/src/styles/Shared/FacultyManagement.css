@@ -148,3 +148,5 @@
   .mini-stat { min-width: 100%; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
+.chair-program-badge { font-size: 10px; font-weight: 700; color: #FF6B1A; background: #fff5ef; border: 1px solid #ffd5b0; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }

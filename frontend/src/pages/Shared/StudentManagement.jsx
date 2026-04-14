@@ -5,7 +5,7 @@ import { useAuth, ROLES } from '../../context/AuthContext';
 import { studentService } from '../../services';
 import { httpClient } from '../../services/httpClient';
 import { API_ENDPOINTS } from '../../services/apiEndpoints';
-import '../../styles/Shared/StudentManagement.css';
+import styles from './StudentManagement.module.css';
 
 const COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
@@ -17,6 +17,8 @@ const EMPTY_FORM = {
 };
 
 export default function StudentManagement() {
+  const cx = (...names) => names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(' ');
+
   const { role } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -352,28 +354,28 @@ export default function StudentManagement() {
   =========================== */
 
   return (
-    <div className="page">
+    <div className={styles.page}>
 
       {/* TOAST */}
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+      {toast && <div className={cx('toast', `toast-${toast.type}`)}>{toast.message}</div>}
 
       {/* HEADER */}
-      <div className="page-header">
+      <div className={styles['page-header']}>
         <div>
-          <h2 className="page-title">Student Management</h2>
-          <p className="page-sub">View and manage student profiles and accounts.</p>
+          <h2 className={styles['page-title']}>Student Management</h2>
+          <p className={styles['page-sub']}>View and manage student profiles and accounts.</p>
         </div>
         {isSecretary && (
-          <div className="header-actions">
-            <button className="ghost-btn" onClick={() => document.getElementById('csvInput')?.click()} disabled={loadingImport}>
+          <div className={styles['header-actions']}>
+            <button className={styles['ghost-btn']} onClick={() => document.getElementById('csvInput')?.click()} disabled={loadingImport}>
               {loadingImport
-                ? <svg className="spinner-sm" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="5"/></svg>
+                ? <svg className={styles['spinner-sm']} viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="5"/></svg>
                 : <svg viewBox="0 0 18 18" fill="none"><path d="M4 14v1a2 2 0 002 2h8a2 2 0 002-2v-1M9 2v9M6 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               }
               {loadingImport ? 'Importing...' : 'Import CSV'}
             </button>
             <input id="csvInput" type="file" accept=".csv" style={{ display: 'none' }} onChange={handleCSV} />
-            <button className="primary-btn" onClick={openCreateModal}>
+            <button className={styles['primary-btn']} onClick={openCreateModal}>
               <svg viewBox="0 0 18 18" fill="none"><path d="M9 3v12M3 9h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
               Create Account
             </button>
@@ -382,12 +384,12 @@ export default function StudentManagement() {
       </div>
 
       {/* MINI STATS */}
-      <div className="mini-stats">
+      <div className={styles['mini-stats']}>
         {miniStats.map((s, idx) => (
-          <div className="mini-stat-card" key={idx}>
-            <div className="mini-stat-border" style={{ background: s.color }}></div>
-            <div className="mini-stat-content">
-              <div className="mini-stat-icon" style={{ background: s.iconBg, color: s.color }}>
+          <div className={styles['mini-stat-card']} key={idx}>
+            <div className={styles['mini-stat-border']} style={{ background: s.color }}></div>
+            <div className={styles['mini-stat-content']}>
+              <div className={styles['mini-stat-icon']} style={{ background: s.iconBg, color: s.color }}>
                 <svg viewBox="0 0 24 24" fill="none">
                   {idx === 0 && <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/></>}
                   {idx === 1 && <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
@@ -396,9 +398,9 @@ export default function StudentManagement() {
                   {idx === 4 && <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/></>}
                 </svg>
               </div>
-              <div className="mini-stat-info">
-                <span className="mini-stat-value" style={{ color: s.color }}>{s.value}</span>
-                <span className="mini-stat-label">{s.label}</span>
+              <div className={styles['mini-stat-info']}>
+                <span className={styles['mini-stat-value']} style={{ color: s.color }}>{s.value}</span>
+                <span className={styles['mini-stat-label']}>{s.label}</span>
               </div>
             </div>
           </div>
@@ -406,12 +408,12 @@ export default function StudentManagement() {
       </div>
 
       {/* TOOLBAR */}
-      <div className="table-toolbar">
-        <div className="search-wrap">
+      <div className={styles['table-toolbar']}>
+        <div className={styles['search-wrap']}>
           <svg viewBox="0 0 18 18" fill="none"><path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           <input type="text" placeholder="Search by name, email, or student number..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <div className="filter-group">
+        <div className={styles['filter-group']}>
           <select value={filterProgram} onChange={e => { setFilterProgram(e.target.value); setFilterSection(''); setFilterYear(''); }}>
             <option value="">All Programs</option>
             {programs.map(p => <option key={p.id} value={p.program_code}>{p.program_code}</option>)}
@@ -433,15 +435,15 @@ export default function StudentManagement() {
       </div>
 
       {/* TABLE */}
-      <div className="table-card">
+      <div className={styles['table-card']}>
         {loading && (
-          <div className="loading-overlay">
-            <div className="spinner-lg"></div>
+          <div className={styles['loading-overlay']}>
+            <div className={styles['spinner-lg']}></div>
             <p>Fetching students...</p>
           </div>
         )}
-        <div className="table-container">
-          <table className="data-table">
+        <div className={styles['table-container']}>
+          <table className={styles['data-table']}>
             <thead>
               <tr>
                 <th>STUDENT</th>
@@ -464,40 +466,40 @@ export default function StudentManagement() {
                 const color     = getColor(student.id);
 
                 return (
-                  <tr key={student.id} onClick={() => viewDetails(student)} className="clickable-row">
+                  <tr key={student.id} onClick={() => viewDetails(student)} className={styles['clickable-row']}>
                     <td>
-                      <div className="student-cell">
-                        <div className="s-avatar" style={{ background: color }}>{student.first_name.charAt(0)}</div>
+                      <div className={styles['student-cell']}>
+                        <div className={styles['s-avatar']} style={{ background: color }}>{student.first_name.charAt(0)}</div>
                         <div>
-                          <p className="s-name">{student.last_name}, {student.first_name} {student.middle_name}</p>
-                          <p className="s-sub">{email}</p>
+                          <p className={styles['s-name']}>{student.last_name}, {student.first_name} {student.middle_name}</p>
+                          <p className={styles['s-sub']}>{email}</p>
                         </div>
                       </div>
                     </td>
-                    <td><span className={`code-badge ${progCode === 'BSIT' ? 'badge-bsit' : 'badge-bscs'}`}>{studNum}</span></td>
+                    <td><span className={cx('code-badge', progCode === 'BSIT' ? 'badge-bsit' : 'badge-bscs')}>{studNum}</span></td>
                     <td>{progCode}</td>
                     <td>{student.year_level}-{secLetter || '—'}</td>
-                    <td><span className={`gwa-val ${student.gwa && student.gwa <= 1.75 ? 'gwa-good' : 'gwa-ok'}`}>{student.gwa || 'N/A'}</span></td>
-                    <td><span className={`v-count ${(student.violations?.length || 0) > 0 ? 'v-danger' : 'v-clear'}`}>{student.violations?.length || 0}</span></td>
+                    <td><span className={cx('gwa-val', student.gwa && student.gwa <= 1.75 ? 'gwa-good' : 'gwa-ok')}>{student.gwa || 'N/A'}</span></td>
+                    <td><span className={cx('v-count', (student.violations?.length || 0) > 0 ? 'v-danger' : 'v-clear')}>{student.violations?.length || 0}</span></td>
                     <td>
-                      <span className={`status-badge ${status === 'active' ? 'st-active' : 'st-pending'}`}>
+                      <span className={cx('status-badge', status === 'active' ? 'st-active' : 'st-pending')}>
                         {status === 'active' ? 'Active' : 'Pending'}
                       </span>
                     </td>
                     {(isSecretary || isDeanOrChair) && (
                       <td onClick={e => e.stopPropagation()}>
-                        <div className="action-btns">
+                        <div className={styles['action-btns']}>
                           {isChair && (
-                            <button className="action-btn edit" onClick={() => openEditModal(student)} title="Edit">
+                            <button className={cx('action-btn', 'edit')} onClick={() => openEditModal(student)} title="Edit">
                               <svg viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2M2 14l2-2 8.5-8.5-2-2-8.5 8.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             </button>
                           )}
                           {status === 'pending' && isSecretary && (
-                            <button className="action-btn resend" onClick={() => resendSetup(student)} title="Resend setup email">
+                            <button className={cx('action-btn', 'resend')} onClick={() => resendSetup(student)} title="Resend setup email">
                               <svg viewBox="0 0 16 16" fill="none"><path d="M2 4l6 4 6-4M2 4h12v9H2V4z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             </button>
                           )}
-                          <button className="action-btn delete" onClick={() => confirmDelete(student)} title="Archive">
+                          <button className={cx('action-btn', 'delete')} onClick={() => confirmDelete(student)} title="Archive">
                             <svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                           </button>
                         </div>
@@ -507,27 +509,27 @@ export default function StudentManagement() {
                 );
               })}
               {paginatedStudents.length === 0 && !loading && (
-                <tr><td colSpan={isSecretary || isDeanOrChair ? 8 : 7} className="empty-row">No students found.</td></tr>
+                <tr><td colSpan={isSecretary || isDeanOrChair ? 8 : 7} className={styles['empty-row']}>No students found.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {filteredStudents.length > pageSize && (
-          <div className="pagination-bar">
-            <div className="pagination-info">
+          <div className={styles['pagination-bar']}>
+            <div className={styles['pagination-info']}>
               Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> to <strong>{Math.min(currentPage * pageSize, filteredStudents.length)}</strong> of <strong>{filteredStudents.length}</strong> students
             </div>
-            <div className="pagination-btns">
-              <button className="pag-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+            <div className={styles['pagination-btns']}>
+              <button className={styles['pag-btn']} disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
                 <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M12 15l-5-5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
-              <div className="pag-pages">
+              <div className={styles['pag-pages']}>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button key={p} className={`pag-page-btn ${currentPage === p ? 'active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
+                  <button key={p} className={cx('pag-page-btn', currentPage === p ? 'active' : '')} onClick={() => setCurrentPage(p)}>{p}</button>
                 ))}
               </div>
-              <button className="pag-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+              <button className={styles['pag-btn']} disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
                 <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
@@ -544,75 +546,75 @@ export default function StudentManagement() {
         const email    = viewingStudent.user?.email || '—';
         const color    = getColor(viewingStudent.id);
         return (
-          <div className="modal-overlay" onClick={closeViewModal}>
-            <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-student-meta">
-                  <div className="s-avatar lg" style={{ background: color }}>{viewingStudent.first_name.charAt(0)}</div>
+          <div className={styles['modal-overlay']} onClick={closeViewModal}>
+            <div className={cx('modal', 'modal-lg')} onClick={e => e.stopPropagation()}>
+              <div className={styles['modal-header']}>
+                <div className={styles['modal-student-meta']}>
+                  <div className={cx('s-avatar', 'lg')} style={{ background: color }}>{viewingStudent.first_name.charAt(0)}</div>
                   <div>
                     <h3>{viewingStudent.last_name}, {viewingStudent.first_name} {viewingStudent.middle_name}</h3>
-                    <p className="modal-sub">{studNum} · {progCode} · {formatYearSection(viewingStudent)}</p>
+                    <p className={styles['modal-sub']}>{studNum} · {progCode} · {formatYearSection(viewingStudent)}</p>
                   </div>
                 </div>
-                <button className="close-btn" onClick={closeViewModal}>×</button>
+                <button className={styles['close-btn']} onClick={closeViewModal}>×</button>
               </div>
 
-              <div className="modal-body profile-body">
-                <div className="profile-section">
-                  <h4 className="section-title">Personal Information</h4>
-                  <div className="detail-rows">
-                    <div className="detail-row"><span className="detail-key">Full Name</span><span className="detail-val">{viewingStudent.last_name}, {viewingStudent.first_name} {viewingStudent.middle_name}</span></div>
-                    <div className="detail-row"><span className="detail-key">Email Address</span><span className="detail-val">{email}</span></div>
-                    <div className="detail-row"><span className="detail-key">Student Number</span><span className="detail-val"><span className="code-badge">{studNum}</span></span></div>
+              <div className={cx('modal-body', 'profile-body')}>
+                <div className={styles['profile-section']}>
+                  <h4 className={styles['section-title']}>Personal Information</h4>
+                  <div className={styles['detail-rows']}>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Full Name</span><span className={styles['detail-val']}>{viewingStudent.last_name}, {viewingStudent.first_name} {viewingStudent.middle_name}</span></div>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Email Address</span><span className={styles['detail-val']}>{email}</span></div>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Student Number</span><span className={styles['detail-val']}><span className={styles['code-badge']}>{studNum}</span></span></div>
                   </div>
                 </div>
 
-                <div className="profile-section">
-                  <h4 className="section-title">Academic Information</h4>
-                  <div className="detail-rows">
-                    <div className="detail-row"><span className="detail-key">Program</span><span className="detail-val">{progCode}</span></div>
-                    <div className="detail-row"><span className="detail-key">Year & Section</span><span className="detail-val">{formatYearSection(viewingStudent)}</span></div>
-                    <div className="detail-row"><span className="detail-key">Status</span><span className="detail-val"><span className={`status-badge ${status === 'active' ? 'st-active' : 'st-pending'}`}>{status.toUpperCase()}</span></span></div>
-                    <div className="detail-row"><span className="detail-key">GWA</span><span className="detail-val">{viewingStudent.gwa || 'N/A'}</span></div>
+                <div className={styles['profile-section']}>
+                  <h4 className={styles['section-title']}>Academic Information</h4>
+                  <div className={styles['detail-rows']}>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Program</span><span className={styles['detail-val']}>{progCode}</span></div>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Year & Section</span><span className={styles['detail-val']}>{formatYearSection(viewingStudent)}</span></div>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>Status</span><span className={styles['detail-val']}><span className={cx('status-badge', status === 'active' ? 'st-active' : 'st-pending')}>{status.toUpperCase()}</span></span></div>
+                    <div className={styles['detail-row']}><span className={styles['detail-key']}>GWA</span><span className={styles['detail-val']}>{viewingStudent.gwa || 'N/A'}</span></div>
                   </div>
                 </div>
 
-                <div className="profile-section">
-                  <h4 className="section-title">Guardian Information</h4>
+                <div className={styles['profile-section']}>
+                  <h4 className={styles['section-title']}>Guardian Information</h4>
                   {viewingStudent.guardian ? (
-                    <div className="detail-rows">
-                      <div className="detail-row"><span className="detail-key">Guardian Name</span><span className="detail-val">{viewingStudent.guardian.first_name} {viewingStudent.guardian.last_name}</span></div>
-                      <div className="detail-row"><span className="detail-key">Relationship</span><span className="detail-val">{viewingStudent.guardian.relationship}</span></div>
-                      <div className="detail-row"><span className="detail-key">Contact Number</span><span className="detail-val">{viewingStudent.guardian.contact_number}</span></div>
+                    <div className={styles['detail-rows']}>
+                      <div className={styles['detail-row']}><span className={styles['detail-key']}>Guardian Name</span><span className={styles['detail-val']}>{viewingStudent.guardian.first_name} {viewingStudent.guardian.last_name}</span></div>
+                      <div className={styles['detail-row']}><span className={styles['detail-key']}>Relationship</span><span className={styles['detail-val']}>{viewingStudent.guardian.relationship}</span></div>
+                      <div className={styles['detail-row']}><span className={styles['detail-key']}>Contact Number</span><span className={styles['detail-val']}>{viewingStudent.guardian.contact_number}</span></div>
                     </div>
                   ) : (
-                    <div className="detail-rows"><div className="detail-row"><span className="detail-val" style={{ color: '#b89f90', fontStyle: 'italic' }}>No guardian information provided.</span></div></div>
+                    <div className={styles['detail-rows']}><div className={styles['detail-row']}><span className={styles['detail-val']} style={{ color: '#b89f90', fontStyle: 'italic' }}>No guardian information provided.</span></div></div>
                   )}
                 </div>
 
                 {status === 'pending' && isSecretary && (
-                  <div className="resend-row">
-                    <div className="resend-info">
+                  <div className={styles['resend-row']}>
+                    <div className={styles['resend-info']}>
                       <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M2 4l6 4 6-4M2 4h12v9H2V4z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
                       <span>Setup email <strong>resent {getResendCount(viewingStudent.id)}/3 times</strong></span>
                     </div>
-                    <button className="resend-btn" onClick={() => resendSetup(viewingStudent)} disabled={getResendCount(viewingStudent.id) >= 3}>
+                    <button className={styles['resend-btn']} onClick={() => resendSetup(viewingStudent)} disabled={getResendCount(viewingStudent.id) >= 3}>
                       {getResendCount(viewingStudent.id) >= 3 ? 'Limit Reached' : 'Resend Email'}
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="modal-footer">
-                <button className="ghost-btn" onClick={closeViewModal}>Close</button>
+              <div className={styles['modal-footer']}>
+                <button className={styles['ghost-btn']} onClick={closeViewModal}>Close</button>
                 {isChair && (
-                  <button className="secondary-btn" onClick={() => openEditFromView(viewingStudent)}>
+                  <button className={styles['secondary-btn']} onClick={() => openEditFromView(viewingStudent)}>
                     <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M11.5 2.5l2 2M2 14l2-2 8.5-8.5-2-2-8.5 8.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     Edit
                   </button>
                 )}
                 {(isSecretary || isDeanOrChair) && (
-                  <button className="danger-btn" onClick={() => confirmDelete(viewingStudent)}>
+                  <button className={styles['danger-btn']} onClick={() => confirmDelete(viewingStudent)}>
                     <svg viewBox="0 0 16 16" fill="none" width="13" height="13"><path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
                     Archive
                   </button>
@@ -625,92 +627,92 @@ export default function StudentManagement() {
 
       {/* CREATE / EDIT MODAL */}
       {(isSecretary || isChair) && showCreateModal && (
-        <div className="modal-overlay" onClick={() => !saving && setShowCreateModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles['modal-overlay']} onClick={() => !saving && setShowCreateModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles['modal-header']}>
               <h3>{editingStudent ? 'Edit Student Account' : 'Create Student Account'}</h3>
-              <button className="close-btn" onClick={() => setShowCreateModal(false)} disabled={saving}>×</button>
+              <button className={styles['close-btn']} onClick={() => setShowCreateModal(false)} disabled={saving}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>First Name <span className="req">*</span></label>
-                  <input name="first_name" value={form.first_name} onChange={e => setForm(p => ({...p, first_name: e.target.value}))} placeholder="First name" disabled={saving} className={formErrors.first_name ? 'error-input' : ''} />
-                  {formErrors.first_name && <span className="field-error">{formErrors.first_name}</span>}
+            <div className={styles['modal-body']}>
+              <div className={styles['form-grid']}>
+                <div className={styles['form-group']}>
+                  <label>First Name <span className={styles.req}>*</span></label>
+                  <input name="first_name" value={form.first_name} onChange={e => setForm(p => ({...p, first_name: e.target.value}))} placeholder="First name" disabled={saving} className={formErrors.first_name ? styles['error-input'] : ''} />
+                  {formErrors.first_name && <span className={styles['field-error']}>{formErrors.first_name}</span>}
                 </div>
-                <div className="form-group">
-                  <label>Last Name <span className="req">*</span></label>
-                  <input name="last_name" value={form.last_name} onChange={e => setForm(p => ({...p, last_name: e.target.value}))} placeholder="Last name" disabled={saving} className={formErrors.last_name ? 'error-input' : ''} />
-                  {formErrors.last_name && <span className="field-error">{formErrors.last_name}</span>}
+                <div className={styles['form-group']}>
+                  <label>Last Name <span className={styles.req}>*</span></label>
+                  <input name="last_name" value={form.last_name} onChange={e => setForm(p => ({...p, last_name: e.target.value}))} placeholder="Last name" disabled={saving} className={formErrors.last_name ? styles['error-input'] : ''} />
+                  {formErrors.last_name && <span className={styles['field-error']}>{formErrors.last_name}</span>}
                 </div>
-                <div className="form-group">
+                <div className={styles['form-group']}>
                   <label>Middle Name</label>
                   <input name="middle_name" value={form.middle_name} onChange={e => setForm(p => ({...p, middle_name: e.target.value}))} placeholder="Middle name" disabled={saving} />
                 </div>
-                <div className="form-group">
-                  <label>Student Number <span className="req">*</span></label>
-                  <input name="student_number" value={form.student_number} onChange={e => setForm(p => ({...p, student_number: e.target.value}))} placeholder="e.g. 2024-00001" disabled={saving} className={formErrors.student_number ? 'error-input' : ''} />
-                  {formErrors.student_number && <span className="field-error">{formErrors.student_number}</span>}
+                <div className={styles['form-group']}>
+                  <label>Student Number <span className={styles.req}>*</span></label>
+                  <input name="student_number" value={form.student_number} onChange={e => setForm(p => ({...p, student_number: e.target.value}))} placeholder="e.g. 2024-00001" disabled={saving} className={formErrors.student_number ? styles['error-input'] : ''} />
+                  {formErrors.student_number && <span className={styles['field-error']}>{formErrors.student_number}</span>}
                 </div>
-                <div className="form-group full-span">
-                  <label>Email Address <span className="req">*</span></label>
-                  <input name="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} type="email" placeholder="student@school.edu.ph" disabled={saving || !!editingStudent} className={formErrors.email ? 'error-input' : ''} />
-                  {formErrors.email && <span className="field-error">{formErrors.email}</span>}
+                <div className={cx('form-group', 'full-span')}>
+                  <label>Email Address <span className={styles.req}>*</span></label>
+                  <input name="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} type="email" placeholder="student@school.edu.ph" disabled={saving || !!editingStudent} className={formErrors.email ? styles['error-input'] : ''} />
+                  {formErrors.email && <span className={styles['field-error']}>{formErrors.email}</span>}
                 </div>
-                <div className="form-group">
-                  <label>Program <span className="req">*</span></label>
-                  <select value={form.program_id} onChange={e => setForm(p => ({...p, program_id: e.target.value, section_id: ''}))} disabled={saving} className={formErrors.program_id ? 'error-input' : ''}>
+                <div className={styles['form-group']}>
+                  <label>Program <span className={styles.req}>*</span></label>
+                  <select value={form.program_id} onChange={e => setForm(p => ({...p, program_id: e.target.value, section_id: ''}))} disabled={saving} className={formErrors.program_id ? styles['error-input'] : ''}>
                     <option value="">Select Program</option>
                     {programs.map(p => <option key={p.id} value={p.id}>{p.program_code}</option>)}
                   </select>
-                  {formErrors.program_id && <span className="field-error">{formErrors.program_id}</span>}
+                  {formErrors.program_id && <span className={styles['field-error']}>{formErrors.program_id}</span>}
                 </div>
-                <div className="form-group">
-                  <label>Year Level <span className="req">*</span></label>
-                  <select value={form.year_level} onChange={e => setForm(p => ({...p, year_level: e.target.value, section_id: ''}))} disabled={saving} className={formErrors.year_level ? 'error-input' : ''}>
+                <div className={styles['form-group']}>
+                  <label>Year Level <span className={styles.req}>*</span></label>
+                  <select value={form.year_level} onChange={e => setForm(p => ({...p, year_level: e.target.value, section_id: ''}))} disabled={saving} className={formErrors.year_level ? styles['error-input'] : ''}>
                     <option value="">Select Year</option>
                     {['1','2','3','4'].map(y => <option key={y} value={y}>{y}{y==='1'?'st':y==='2'?'nd':y==='3'?'rd':'th'} Year</option>)}
                   </select>
-                  {formErrors.year_level && <span className="field-error">{formErrors.year_level}</span>}
+                  {formErrors.year_level && <span className={styles['field-error']}>{formErrors.year_level}</span>}
                 </div>
-                <div className="form-group full-span">
-                  <label>Section <span className="req">*</span></label>
-                  <select value={form.section_id} onChange={e => setForm(p => ({...p, section_id: e.target.value}))} disabled={saving || !form.program_id || !form.year_level} className={formErrors.section_id ? 'error-input' : ''}>
+                <div className={cx('form-group', 'full-span')}>
+                  <label>Section <span className={styles.req}>*</span></label>
+                  <select value={form.section_id} onChange={e => setForm(p => ({...p, section_id: e.target.value}))} disabled={saving || !form.program_id || !form.year_level} className={formErrors.section_id ? styles['error-input'] : ''}>
                     <option value="">{form.program_id && form.year_level ? 'Select Section' : 'Select Program and Year Level first'}</option>
                     {filteredFormSections.map(sec => <option key={sec.id} value={sec.id}>{sec.section_name}</option>)}
                   </select>
-                  {formErrors.section_id && <span className="field-error">{formErrors.section_id}</span>}
+                  {formErrors.section_id && <span className={styles['field-error']}>{formErrors.section_id}</span>}
                 </div>
 
-                <div className="form-divider full-span">Guardian Information</div>
-                <div className="form-group">
+                <div className={cx('form-divider', 'full-span')}>Guardian Information</div>
+                <div className={styles['form-group']}>
                   <label>Guardian First Name</label>
                   <input value={form.guardian_first_name} onChange={e => setForm(p => ({...p, guardian_first_name: e.target.value}))} placeholder="First name" disabled={saving} />
                 </div>
-                <div className="form-group">
+                <div className={styles['form-group']}>
                   <label>Guardian Last Name</label>
                   <input value={form.guardian_last_name} onChange={e => setForm(p => ({...p, guardian_last_name: e.target.value}))} placeholder="Last name" disabled={saving} />
                 </div>
-                <div className="form-group">
+                <div className={styles['form-group']}>
                   <label>Relationship</label>
                   <input value={form.guardian_relationship} onChange={e => setForm(p => ({...p, guardian_relationship: e.target.value}))} placeholder="e.g. Mother, Father" disabled={saving} />
                 </div>
-                <div className="form-group">
+                <div className={styles['form-group']}>
                   <label>Guardian Contact</label>
                   <input value={form.guardian_contact_number} onChange={e => setForm(p => ({...p, guardian_contact_number: e.target.value}))} placeholder="Contact number" disabled={saving} />
                 </div>
               </div>
               {!editingStudent && (
-                <div className="modal-notice">
+                <div className={styles['modal-notice']}>
                   <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   A password setup link will be sent to the student's email after account creation.
                 </div>
               )}
             </div>
-            <div className="modal-footer">
-              <button className="ghost-btn" onClick={() => setShowCreateModal(false)} disabled={saving}>Cancel</button>
-              <button className="primary-btn" onClick={saveStudent} disabled={saving}>
-                {saving && <span className="spinner-sm"></span>}
+            <div className={styles['modal-footer']}>
+              <button className={styles['ghost-btn']} onClick={() => setShowCreateModal(false)} disabled={saving}>Cancel</button>
+              <button className={styles['primary-btn']} onClick={saveStudent} disabled={saving}>
+                {saving && <span className={styles['spinner-sm']}></span>}
                 {saving ? 'Saving...' : editingStudent ? 'Update Account' : 'Create Account'}
               </button>
             </div>
@@ -720,22 +722,22 @@ export default function StudentManagement() {
 
       {/* DELETE / ARCHIVE MODAL */}
       {(isSecretary || isDeanOrChair) && showDeleteModal && (
-        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
-          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles['modal-overlay']} onClick={() => setShowDeleteModal(false)}>
+          <div className={cx('modal', 'modal-sm')} onClick={e => e.stopPropagation()}>
+            <div className={styles['modal-header']}>
               <h3>Archive Student Account</h3>
-              <button className="close-btn" onClick={() => setShowDeleteModal(false)}>×</button>
+              <button className={styles['close-btn']} onClick={() => setShowDeleteModal(false)}>×</button>
             </div>
-            <div className="modal-body">
-              <p className="delete-msg">
+            <div className={styles['modal-body']}>
+              <p className={styles['delete-msg']}>
                 Are you sure you want to archive the account of
                 <strong> {deletingStudent?.last_name}, {deletingStudent?.first_name} {deletingStudent?.middle_name}</strong>?
                 The account will be moved to the archive and can be recovered by the Dean.
               </p>
             </div>
-            <div className="modal-footer">
-              <button className="ghost-btn" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-              <button className="danger-btn" onClick={deleteStudent}>Archive</button>
+            <div className={styles['modal-footer']}>
+              <button className={styles['ghost-btn']} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button className={styles['danger-btn']} onClick={deleteStudent}>Archive</button>
             </div>
           </div>
         </div>

@@ -72,7 +72,7 @@ const ChairDashboard = () => {
                 </svg>
                 View Students
               </Link>
-              <Link to="/chair/reports" className="hero-btn-ghost">Generate Report</Link>
+              <Link to="/department-chair/performance" className="hero-btn-ghost">Generate Report</Link>
             </div>
           </div>
           <div className="hero-right">

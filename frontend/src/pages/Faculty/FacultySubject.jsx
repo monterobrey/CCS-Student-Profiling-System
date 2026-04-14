@@ -1,59 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { facultyService } from '../../services';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../../styles/Faculty/FacultySubject.css';
 
-/* ─── Dummy data (remove when backend is wired) ───────────────────── */
-const DUMMY_SUBJECTS = [
-  { id: 1, code: 'CS 201', name: 'Data Structures and Algorithms', color: '#FF6B1A', sections: ['CS201-A', 'CS201-B'], enrolled_count: 48 },
-  { id: 2, code: 'CS 315', name: 'Operating Systems', color: '#E05A12', sections: ['CS315-A', 'CS315-B', 'CS315-C'], enrolled_count: 62 },
-  { id: 3, code: 'CS 422', name: 'Software Engineering', color: '#C94E0E', sections: ['CS422-A'], enrolled_count: 33 },
-  { id: 4, code: 'IT 211', name: 'Database Management Systems', color: '#A03D0A', sections: ['IT211-A', 'IT211-B'], enrolled_count: 45 },
-  { id: 5, code: 'IT 301', name: 'Web Systems and Technologies', color: '#7A2E07', sections: ['IT301-A'], enrolled_count: 25 },
-];
-
-const FIRST_NAMES = ['Maria','Juan','Ana','Pedro','Carlo','Rosa','Miguel','Elena','Jose','Clara','Lena','Marco','Pia','Rico','Gab','Lea','Sam','Troy','Nina','Bea'];
-const LAST_NAMES  = ['Santos','Reyes','Cruz','Garcia','Mendoza','Torres','Flores','Dela Cruz','Bautista','Gomez','Ramos','Aquino','Lopez','Hernandez','Villanueva','Castillo','Morales','Ramirez','Ocampo','Lim'];
-const STATUSES    = ['Regular','Regular','Regular','Regular','Irregular'];
-const AVATAR_COLORS = [
-  { bg: '#FF6B1A18', text: '#c04600' },
-  { bg: '#1D9E7518', text: '#0F6E56' },
-  { bg: '#534AB718', text: '#3C3489' },
-  { bg: '#D85A3018', text: '#993C1D' },
-  { bg: '#378ADD18', text: '#185FA5' },
-];
-const CARD_COLORS = ['#FF6B1A', '#E05A12', '#C94E0E', '#A03D0A', '#7A2E07', '#1D9E75', '#378ADD', '#534AB7'];
-
-function generateStudents(subject) {
-  const rows = [];
-  let n = 20181000 + subject.id * 100;
-  const perSection = Math.floor(subject.enrolled_count / subject.sections.length);
-  subject.sections.forEach((sec) => {
-    for (let i = 0; i < perSection; i++) {
-      const fn = FIRST_NAMES[(n * 3 + i) % FIRST_NAMES.length];
-      const ln = LAST_NAMES[(n * 7 + i * 2) % LAST_NAMES.length];
-      rows.push({
-        id:      `20${n + i}`,
-        name:    `${fn} ${ln}`,
-        section: sec,
-        year:    ['1st', '2nd', '3rd', '4th'][(i + subject.id) % 4],
-        status:  STATUSES[(n + i) % STATUSES.length],
-      });
-    }
-    n += 50;
-  });
-  return rows;
-}
-/* ──────────────────────────────────────────────────────────────────── */
-
-function getInitials(name) {
-  return name.split(' ').slice(0, 2).map((p) => p[0]).join('');
-}
-function getAvatarColor(name) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-}
-
-/* ─── Sub-components ─────────────────────────────────────────────── */
+/* ─── Icons ──────────────────────────────────────────────────────── */
 
 function BookIcon({ color, size = 18 }) {
   return (
@@ -108,121 +59,100 @@ function ArrowLeftIcon({ size = 14 }) {
   );
 }
 
+/* ─── Helpers ────────────────────────────────────────────────────── */
+
+const CARD_COLORS = ['#FF6B1A', '#E05A12', '#C94E0E', '#A03D0A', '#7A2E07', '#1D9E75', '#378ADD', '#534AB7'];
+const AVATAR_COLORS = [
+  { bg: '#FF6B1A18', text: '#c04600' },
+  { bg: '#1D9E7518', text: '#0F6E56' },
+  { bg: '#534AB718', text: '#3C3489' },
+  { bg: '#D85A3018', text: '#993C1D' },
+  { bg: '#378ADD18', text: '#185FA5' },
+];
+
+function getInitials(name = '') {
+  return name.split(' ').slice(0, 2).map(p => p[0]).join('');
+}
+
+function getAvatarColor(name = '') {
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+}
+
 /* ─── Main component ─────────────────────────────────────────────── */
 
-const FacultySubjects = () => {
-  const [searchQuery,    setSearchQuery]    = useState('');
-  const [activeSubject,  setActiveSubject]  = useState(null); // full subject object
-  const [studentSearch,  setStudentSearch]  = useState('');
+export default function FacultySubjects() {
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [activeSubject, setActiveSubject] = useState(null);
+  const [studentSearch, setStudentSearch] = useState('');
 
-  const { data, isLoading, refetch, isError } = useQuery({
-    queryKey: ['faculty-subjects-overview'],
+  // ── Cached query — backend does all the work ──
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['faculty-students'],
     queryFn: async () => {
       const res = await facultyService.getMyStudents();
-      if (res?.ok) {
-        return res.data ?? { subjects: [], students: [] };
-      }
-      throw new Error(res?.message || 'Unable to load faculty subjects.');
+      return res.ok ? (res.data ?? { subjects: [], students: [] }) : { subjects: [], students: [] };
     },
-    staleTime: Infinity,
-    gcTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
   });
 
-  const backendSubjects = data?.subjects ?? [];
-  const backendStudents = data?.students ?? [];
+  const subjects  = data?.subjects  ?? [];
+  const students  = data?.students  ?? [];
 
-  const normalizedStudents = useMemo(() => {
-    if (!isError) {
-      return backendStudents.map((student) => {
-        const fullName = [student.first_name, student.middle_name, student.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        return {
-          id: student.user?.student_number || `20${student.id}`,
-          name: fullName || student.name || 'Unnamed Student',
-          section: student.section?.section_name || student.section_name || student.section || '',
-          year: student.year_level || student.year || 'N/A',
-          status: student.status || 'Regular',
-        };
-      });
-    }
+  /* ── Subject cards — one card per subject+section combo ── */
+  const subjectCards = useMemo(() =>
+    subjects.map((s, idx) => ({
+      key:          `${s.id}-${s.section_id}`,
+      subjectId:    s.id,
+      code:         s.code,
+      name:         s.name,
+      sectionName:  s.section_name,
+      color:        CARD_COLORS[idx % CARD_COLORS.length],
+      // count students whose section matches this card
+      enrolledCount: students.filter(st => st.section?.section_name === s.section_name).length,
+    })),
+    [subjects, students]
+  );
 
-    return DUMMY_SUBJECTS.flatMap((subject) => generateStudents(subject));
-  }, [backendStudents, isError]);
-
-  /* ── Open roster ── */
-  const openRoster = (card) => {
-    setActiveSubject(card);
-    setStudentSearch('');
-  };
-
-  const closeRoster = () => {
-    setActiveSubject(null);
-    setStudentSearch('');
-  };
-
-  /* ── Derived values ── */
-  const subjectCards = useMemo(() => {
-    if (!isError) {
-      return backendSubjects.map((subject, idx) => {
-        const sectionName = subject.section_name || 'Unassigned';
-        const enrolledCount = normalizedStudents.filter((st) => st.section === sectionName).length;
-        const color = CARD_COLORS[idx % CARD_COLORS.length];
-        return {
-          key: `${subject.id}-${sectionName}-${idx}`,
-          subjectId: subject.id,
-          code: subject.code,
-          name: subject.name,
-          color,
-          sectionName,
-          sectionCount: 1,
-          enrolled_count: enrolledCount,
-        };
-      });
-    }
-
-    return DUMMY_SUBJECTS.flatMap((subject, idx) => {
-      const sectionList = subject.sections?.length ? subject.sections : ['Unassigned'];
-      const perSectionCount = sectionList.length
-        ? Math.round((subject.enrolled_count || 0) / sectionList.length)
-        : 0;
-
-      return sectionList.map((sectionName, sectionIdx) => ({
-        key: `${subject.id}-${sectionName}-${sectionIdx}`,
-        subjectId: subject.id,
-        code: subject.code,
-        name: subject.name,
-        color: subject.color || CARD_COLORS[(idx + sectionIdx) % CARD_COLORS.length],
-        sectionName,
-        sectionCount: sectionList.length,
-        enrolled_count: perSectionCount,
-      }));
-    });
-  }, [backendSubjects, normalizedStudents, isError]);
-
+  /* ── Stats ── */
   const totalLoad      = subjectCards.length;
-  const activeSections = new Set(subjectCards.map((s) => s.sectionName)).size;
-  const totalStudents  = normalizedStudents.length;
+  const activeSections = new Set(subjectCards.map(s => s.sectionName)).size;
+  const totalStudents  = students.length;
 
-  const filteredSubjects = subjectCards.filter((s) =>
-    s.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.sectionName.toLowerCase().includes(searchQuery.toLowerCase())
+  /* ── Filtered subject cards ── */
+  const filteredSubjects = useMemo(() =>
+    subjectCards.filter(s =>
+      s.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.sectionName.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [subjectCards, searchQuery]
   );
 
-  const activeRosterStudents = normalizedStudents.filter((st) => st.section === activeSubject?.sectionName);
-  const filteredStudents = activeRosterStudents.filter((st) =>
-    st.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-    st.id.includes(studentSearch)
+  /* ── Roster for active subject ── */
+  const rosterStudents = useMemo(() => {
+    if (!activeSubject) return [];
+    return students.filter(st => st.section?.section_name === activeSubject.sectionName);
+  }, [students, activeSubject]);
+
+  const filteredRoster = useMemo(() =>
+    rosterStudents.filter(st => {
+      const fullName = `${st.first_name} ${st.last_name}`.toLowerCase();
+      const studNum  = st.user?.student_number ?? '';
+      return (
+        fullName.includes(studentSearch.toLowerCase()) ||
+        studNum.includes(studentSearch)
+      );
+    }),
+    [rosterStudents, studentSearch]
   );
+
+  const openRoster  = (card) => { setActiveSubject(card); setStudentSearch(''); };
+  const closeRoster = ()     => { setActiveSubject(null); setStudentSearch(''); };
 
   /* ── Render ── */
   return (
     <div className="page faculty-subjects-page">
       <div className="subjects-container">
+
         {!activeSubject ? (
           <>
             {/* Header */}
@@ -237,7 +167,7 @@ const FacultySubjects = () => {
                   type="text"
                   placeholder="Search course code or name..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
@@ -264,7 +194,6 @@ const FacultySubjects = () => {
               </div>
             </div>
 
-            {/* Grid label */}
             <p className="section-eyebrow">Assigned Subjects</p>
 
             {/* Grid */}
@@ -282,19 +211,16 @@ const FacultySubjects = () => {
                   <button className="refresh-btn" onClick={() => refetch()}>Refresh List</button>
                 </div>
               ) : (
-                filteredSubjects.map((subject) => (
+                filteredSubjects.map(subject => (
                   <button
                     key={subject.key}
                     className="subject-card"
                     type="button"
                     onClick={() => openRoster(subject)}
                   >
-                    {/* Card icon */}
                     <div className="subject-icon-wrap" style={{ background: subject.color + '22' }}>
                       <BookIcon color={subject.color} size={20} />
                     </div>
-
-                    {/* Code + name */}
                     <div className="subject-body">
                       <div className="subject-code-row">
                         <span className="subject-code">{subject.code}</span>
@@ -304,18 +230,11 @@ const FacultySubjects = () => {
                       </div>
                       <p className="subject-name">{subject.name}</p>
                     </div>
-
                     <hr className="card-rule" />
-
-                    {/* Meta row */}
                     <div className="subject-meta-row">
                       <div className="meta-stat">
-                        <span className="meta-num">{subject.enrolled_count || 0}</span>
-                        <span className="meta-lbl">Students (est.)</span>
-                      </div>
-                      <div className="meta-stat">
-                        <span className="meta-num">{subject.sectionCount || 0}</span>
-                        <span className="meta-lbl">Subject Sections</span>
+                        <span className="meta-num">{subject.enrolledCount}</span>
+                        <span className="meta-lbl">Students</span>
                       </div>
                     </div>
                   </button>
@@ -324,6 +243,7 @@ const FacultySubjects = () => {
             </div>
           </>
         ) : (
+          /* ── Roster view ── */
           <div className="roster-page">
             <div className="roster-page-header">
               <button className="roster-back-btn" type="button" onClick={closeRoster}>
@@ -337,24 +257,22 @@ const FacultySubjects = () => {
                 <div>
                   <p className="roster-title">{activeSubject.code} — {activeSubject.name}</p>
                   <p className="roster-sub">
-                    Section {activeSubject.sectionName} &nbsp;·&nbsp; {activeRosterStudents.length} students enrolled
+                    Section {activeSubject.sectionName} · {rosterStudents.length} students enrolled
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Panel search */}
             <div className="roster-search">
               <SearchIcon size={13} />
               <input
                 type="text"
                 placeholder="Search student name or ID…"
                 value={studentSearch}
-                onChange={(e) => setStudentSearch(e.target.value)}
+                onChange={e => setStudentSearch(e.target.value)}
               />
             </div>
 
-            {/* Table */}
             <div className="roster-table-wrap">
               <table className="roster-table">
                 <thead>
@@ -363,35 +281,32 @@ const FacultySubjects = () => {
                     <th>ID Number</th>
                     <th>Section</th>
                     <th>Year</th>
-                    <th>Status</th>
+                    <th>Program</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.length === 0 ? (
+                  {filteredRoster.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="roster-empty">No students match your search.</td>
                     </tr>
                   ) : (
-                    filteredStudents.map((st) => {
-                      const av = getAvatarColor(st.name);
+                    filteredRoster.map(st => {
+                      const fullName = `${st.first_name} ${st.last_name}`;
+                      const av = getAvatarColor(fullName);
                       return (
                         <tr key={st.id}>
                           <td>
                             <div className="name-cell">
                               <span className="avatar" style={{ background: av.bg, color: av.text }}>
-                                {getInitials(st.name)}
+                                {getInitials(fullName)}
                               </span>
-                              {st.name}
+                              {fullName}
                             </div>
                           </td>
-                          <td className="cell-muted">{st.id}</td>
-                          <td><span className="section-tag">{st.section}</span></td>
-                          <td className="cell-muted">{st.year} year</td>
-                          <td>
-                            <span className={`status-pill ${st.status === 'Regular' ? 'status-regular' : 'status-irregular'}`}>
-                              {st.status}
-                            </span>
-                          </td>
+                          <td className="cell-muted">{st.user?.student_number ?? '—'}</td>
+                          <td><span className="section-tag">{st.section?.section_name ?? '—'}</span></td>
+                          <td className="cell-muted">{st.year_level ? `${st.year_level} Year` : '—'}</td>
+                          <td className="cell-muted">{st.program?.program_code ?? '—'}</td>
                         </tr>
                       );
                     })
@@ -400,15 +315,13 @@ const FacultySubjects = () => {
               </table>
             </div>
 
-            {/* Footer */}
             <div className="roster-footer">
-              Showing {filteredStudents.length} of {activeRosterStudents.length} student{activeRosterStudents.length !== 1 ? 's' : ''}
+              Showing {filteredRoster.length} of {rosterStudents.length} student{rosterStudents.length !== 1 ? 's' : ''}
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
-};
-
-export default FacultySubjects;
+}

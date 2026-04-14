@@ -52,7 +52,8 @@ const { role } = useAuth();
         ]},
         { name: "Academic", items: [
           { path: "performance", meta: { title: "Academic Performance", icon: "performance" } },
-          { path: "violations", meta: { title: "Violations", icon: "violations" } }
+          { path: "violations", meta: { title: "Violations", icon: "violations" } },
+          { path: "awards", meta: { title: "Awards & Recognition", icon: "awards" } }
         ]},
         { name: "Accounts", items: [
           { path: "student-accounts", meta: { title: "Student Accounts", icon: "profile" } },
@@ -108,7 +109,8 @@ const { role } = useAuth();
           { path: "faculty-accounts", meta: { title: "Faculty Accounts", icon: "faculty" } }
         ]},
         { name: "Monitoring", items: [
-          { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
+          { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } },
+          { path: "awards", meta: { title: "Awards & Recognition", icon: "awards" } }
         ]},
       ],
       [ROLES.STUDENT]: [

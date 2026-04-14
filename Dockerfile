@@ -17,7 +17,7 @@ WORKDIR /var/www/html
 COPY backend/composer.json backend/composer.lock* ./
 COPY backend/.env.production .env
 
-RUN composer install --no-dev --no-interaction --prefer-dist
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts
 
 COPY backend/ .
 

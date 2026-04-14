@@ -10,31 +10,24 @@ class CorsMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Handle preflight OPTIONS request directly
+        // Handle preflight OPTIONS
         if ($request->isMethod('OPTIONS')) {
-            return response('', 200, $this->getCorsHeaders($request));
+            return response('', 200, $this->headers);
         }
 
         $response = $next($request);
 
-        // Add CORS headers to response
-        foreach ($this->getCorsHeaders($request) as $key => $value) {
+        foreach ($this->headers as $key => $value) {
             $response->header($key, $value);
         }
 
         return $response;
     }
 
-    private function getCorsHeaders(Request $request): array
-    {
-        $origin = $request->headers->get('Origin');
-
-        return [
-            'Access-Control-Allow-Origin' => $origin ?: '*',
-            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Authorization, Content-Type, X-Requested-With, Accept',
-            'Access-Control-Allow-Credentials' => 'true',
-            'Access-Control-Max-Age' => '86400',
-        ];
-    }
+    private $headers = [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers' => 'Authorization, Content-Type, X-Requested-With, Accept',
+        'Access-Control-Max-Age' => '86400',
+    ];
 }

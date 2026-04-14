@@ -18,6 +18,15 @@ use App\Http\Controllers\Functions\ScheduleController;
 use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
+// CORS preflight handler
+Route::options('{any}', function () {
+    return response('', 200, [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers' => 'Authorization, Content-Type, X-Requested-With, Accept',
+    ]);
+})->where('any', '.*');
+
 // Health check route
 Route::get('/', function () {
     return response()->json([

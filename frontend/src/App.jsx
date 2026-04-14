@@ -22,6 +22,7 @@ import Users from "./pages/Users/Users";
 import UserDetail from "./pages/Users/UserDetail";
 import Reports from "./pages/Reports/Reports";
 import DeanDashboard from "./pages/Dean/DeanDashboard";
+import SecretaryDashboard from "./pages/Secretary/SecretaryDashboard";
 import ProfilingReport from "./pages/Dean/ProfilingReport";
 import CurriculumManagement from "./pages/Dean/CurriculumManagement";
 import CourseManagement from "./pages/Dean/CourseManagement";
@@ -262,7 +263,7 @@ function App() {
               path="/secretary/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
-                  <DeanDashboard />
+                  <SecretaryDashboard />
                 </ProtectedRoute>
               }
             />

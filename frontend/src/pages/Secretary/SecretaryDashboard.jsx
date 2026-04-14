@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../services';
-import '../../styles/Dean/DeanDashboard.css';
+import { useAuth } from '../../context/AuthContext';
+import '../../styles/Secretary/SecretaryDashboard.css';
 
-export default function DeanDashboard() {
-  // ── Cached query — staleTime: Infinity, never auto-refetches ──
+export default function SecretaryDashboard() {
+  const { user } = useAuth();
+
   const { data: summary = {}, isLoading } = useQuery({
-    queryKey: ['dean-summary'],
+    queryKey: ['secretary-summary'],
     queryFn: async () => {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
@@ -14,40 +16,30 @@ export default function DeanDashboard() {
     staleTime: Infinity,
   });
 
-  // Reuse the dean-report cache for GWA distribution (shares cache with Reports Overview)
-  const { data: report = {} } = useQuery({
-    queryKey: ['dean-report'],
-    queryFn: async () => {
-      const res = await analyticsService.getDeanReport();
-      return res.ok ? (res.data ?? {}) : {};
-    },
-    staleTime: Infinity,
-  });
-
-  const distribution = useMemo(() => report.distribution ?? [], [report]);
-
   const {
-    total_students      = 0,
-    total_faculty       = 0,
-    active_violations   = 0,
-    total_awards        = 0,
-    dept_avg_gwa        = 0,
-    top_students        = [],
-    recent_violations   = [],
-    chart_data          = [],
-    pending_accounts    = 0,
+    total_students = 0,
+    total_faculty = 0,
+    active_violations = 0,
+    total_awards = 0,
+    pending_accounts = 0,
     pending_verifications = 0,
+    top_students = [],
+    faculty_workload = [],
+    recent_awards = [],
   } = summary;
 
-  // pending_approvals = pending accounts + pending verifications
   const pendingApprovalsCount = pending_accounts + pending_verifications;
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour >= 12 && hour < 18) return 'Good afternoon, Dean';
-    if (hour >= 18 || hour < 5)  return 'Good evening, Dean';
-    return 'Good morning, Dean';
-  }, []);
+    const prefix = hour >= 12 && hour < 18
+      ? 'Good afternoon, '
+      : (hour >= 18 || hour < 5)
+        ? 'Good evening, '
+        : 'Good morning, ';
+    const name = (user?.name || 'Secretary').trim();
+    return `${prefix}${name}`;
+  }, [user?.name]);
 
   const stats = useMemo(() => [
     {
@@ -69,13 +61,13 @@ export default function DeanDashboard() {
       iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
     },
     {
-      label: 'Dept. Avg GWA',
-      value: dept_avg_gwa > 0 ? Number(dept_avg_gwa).toFixed(2) : 'N/A',
-      delta: 'Target: 1.75',
-      deltaClass: dept_avg_gwa > 0 && dept_avg_gwa <= 1.75 ? 'positive' : 'warning',
-      fill: dept_avg_gwa > 0 ? Math.max(0, Math.min(100, (3 - dept_avg_gwa) / (3 - 1) * 100)) + '%' : '0%',
-      iconBg: '#f5f3ff', iconColor: '#8b5cf6',
-      iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+      label: 'Pending Approvals',
+      value: pendingApprovalsCount.toString(),
+      delta: 'Awaiting review',
+      deltaClass: pendingApprovalsCount > 0 ? 'warning' : 'positive',
+      fill: pendingApprovalsCount > 0 ? '60%' : '0%',
+      iconBg: '#fff7ed', iconColor: '#f97316',
+      iconPath: '<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
     },
     {
       label: 'With Violations',
@@ -95,7 +87,7 @@ export default function DeanDashboard() {
       iconBg: '#fffbeb', iconColor: '#f59e0b',
       iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
     },
-  ], [total_students, total_faculty, dept_avg_gwa, active_violations, total_awards]);
+  ], [total_students, total_faculty, pendingApprovalsCount, active_violations, total_awards]);
 
   if (isLoading) {
     return (
@@ -109,9 +101,7 @@ export default function DeanDashboard() {
   }
 
   return (
-    <div className="dashboard-home">
-
-      {/* HERO BANNER */}
+    <div className="dashboard-home secretary-dashboard-home">
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
         <div className="hero-bg-shape shape-2"></div>
@@ -122,7 +112,7 @@ export default function DeanDashboard() {
               Academic Year 2026-2027 · 2nd Semester
             </p>
             <h2 className="hero-greeting">{greeting} 👋</h2>
-            <p className="dean-hero-desc">
+            <p className="secretary-hero-desc">
               You have <strong>{pendingApprovalsCount} pending approvals</strong> and{' '}
               <strong>{active_violations} student violations</strong> requiring attention this week.
             </p>
@@ -148,7 +138,6 @@ export default function DeanDashboard() {
         </div>
       </div>
 
-      {/* STATS GRID */}
       <div className="dean-stats-grid">
         {stats.map((stat) => (
           <div
@@ -173,49 +162,48 @@ export default function DeanDashboard() {
         ))}
       </div>
 
-      {/* BOTTOM GRID */}
       <div className="bottom-grid">
-
-        {/* GWA DISTRIBUTION */}
         <div className="card chart-card">
           <div className="card-header">
             <div>
-              <h3 className="card-title">GWA Distribution</h3>
-              <p className="card-sub">Students per GWA bracket</p>
+              <h3 className="card-title">Faculty Workload</h3>
+              <p className="card-sub">Quick overview of teaching load</p>
             </div>
-            <a href="/dean/performance" className="card-link">Full report →</a>
+            <a href="/secretary/faculty-workload" className="card-link">View all →</a>
           </div>
           <div className="distribution-list">
-            {distribution.length === 0 ? (
-              <p style={{ color: '#b89f90', fontStyle: 'italic', fontSize: 13 }}>No GWA data recorded yet.</p>
-            ) : distribution.map((d, i) => (
+            {faculty_workload.length === 0 ? (
+              <p style={{ color: '#b89f90', fontStyle: 'italic', fontSize: 13 }}>No workload data available.</p>
+            ) : faculty_workload.map((f, i) => (
               <div key={i} className="dist-item">
-                <div className="dist-item-meta">
-                  <span className="dist-item-range">{d.range}</span>
-                  <span className="dist-item-desc">{d.desc}</span>
+                <div className="dist-item-meta" style={{ width: 170 }}>
+                  <span className="dist-item-range">{f.name}</span>
+                  <span className="dist-item-desc">{f.department}</span>
                 </div>
                 <div className="dist-item-bar-wrap">
                   <div className="dist-item-bar">
-                    <div className="dist-item-fill" style={{ width: d.pct + '%', background: d.color }} />
+                    <div
+                      className="dist-item-fill"
+                      style={{ width: Math.min(100, (Number(f.subjects) || 0) / 10 * 100) + '%', background: '#FF6B1A' }}
+                    />
                   </div>
                 </div>
-                <div className="dist-item-stats">
-                  <span style={{ color: d.color, fontWeight: 700 }}>{d.count}</span>
-                  <span className="dist-item-pct">{d.pct}%</span>
+                <div className="dist-item-stats" style={{ width: 72 }}>
+                  <span style={{ color: '#FF6B1A', fontWeight: 700 }}>{f.subjects}</span>
+                  <span className="dist-item-pct">{f.students} std</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* TOP STUDENTS */}
         <div className="card">
           <div className="card-header">
             <div>
               <h3 className="card-title">Top Performing Students</h3>
               <p className="card-sub">Ranked by GWA · current semester</p>
             </div>
-            <a href="#" className="card-link">View all →</a>
+            <a href="/secretary/student-accounts" className="card-link">View all →</a>
           </div>
           <div className="student-list">
             {top_students.map((s, i) => (
@@ -238,44 +226,34 @@ export default function DeanDashboard() {
           </div>
         </div>
 
-        {/* VIOLATIONS */}
         <div className="card">
           <div className="card-header">
             <div>
-              <h3 className="card-title">Student Violations</h3>
-              <p className="card-sub">Active cases this semester</p>
+              <h3 className="card-title">Awards & Recognition</h3>
+              <p className="card-sub">Recently approved recognitions</p>
             </div>
-            <a href="#" className="card-link">View all →</a>
+            <a href="/secretary/awards" className="card-link">View all →</a>
           </div>
-          <div className="violation-list">
-            {recent_violations.map((v, i) => (
-              <div key={i} className="violation-row">
-                <div className="violation-avatar" style={{ background: v.color }}>
-                  {v.name.charAt(0)}
+          <div className="student-list">
+            {recent_awards.map((a, i) => (
+              <div key={i} className="student-row">
+                <div className="student-avatar" style={{ background: a.color }}>
+                  {a.student.charAt(0)}
                 </div>
-                <div className="violation-info">
-                  <p className="violation-name">{v.name}</p>
-                  <p className="violation-type">{v.type}</p>
+                <div className="student-info">
+                  <p className="student-name">{a.student}</p>
+                  <p className="student-course">{a.award}</p>
                 </div>
-                <span className={`violation-badge ${v.severityClass}`}>{v.severity}</span>
+                <span className="student-tag tag-green">Approved</span>
               </div>
             ))}
-            {recent_violations.length === 0 && (
-              <div className="empty-state-msg">No active student violations.</div>
+            {recent_awards.length === 0 && (
+              <div className="empty-state-msg">No recent approved awards yet.</div>
             )}
           </div>
-          {active_violations > 2 && (
-            <div className="violation-alert">
-              <svg viewBox="0 0 16 16" fill="none">
-                <path d="M8 5v4M8 11.5v.5M2.5 14h11a1 1 0 00.87-1.5l-5.5-9.5a1 1 0 00-1.74 0l-5.5 9.5A1 1 0 002.5 14z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-              </svg>
-              <span>{active_violations - 2} more cases need review</span>
-              <button onClick={() => window.location.href = '/violations'}>Review Now →</button>
-            </div>
-          )}
         </div>
-
       </div>
     </div>
   );
 }
+

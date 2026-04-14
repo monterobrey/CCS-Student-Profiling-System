@@ -62,6 +62,7 @@ class AnalyticsService
 
         $facultyWorkload = Faculty::with(['department'])
             ->withCount(['schedules as subjects'])
+            ->orderByDesc('subjects')
             ->limit(4)
             ->get()
             ->map(function($f) {
@@ -90,6 +91,20 @@ class AnalyticsService
                     'student' => $a->student->first_name . ' ' . $a->student->last_name,
                     'achievement' => $a->awardName,
                     'color' => '#' . substr(md5($a->id), 0, 6)
+                ];
+            });
+
+        $recentAwards = AcademicAward::with('student')
+            ->where('status', 'approved')
+            ->latest('approved_at')
+            ->limit(4)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'student' => $a->student ? ($a->student->first_name . ' ' . $a->student->last_name) : 'Unknown',
+                    'award' => $a->awardName,
+                    'date' => $a->approved_at ? $a->approved_at->toDateString() : null,
+                    'color' => '#' . substr(md5($a->id), 0, 6),
                 ];
             });
 
@@ -131,7 +146,8 @@ class AnalyticsService
                                       NonAcademicActivity::where('status', 'pending')->count(),
             'account_requests' => $accountRequests,
             'faculty_workload' => $facultyWorkload,
-            'pending_achievements' => $pendingAchievements
+            'pending_achievements' => $pendingAchievements,
+            'recent_awards' => $recentAwards
         ];
     }
 

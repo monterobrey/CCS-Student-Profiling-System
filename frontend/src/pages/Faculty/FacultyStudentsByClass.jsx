@@ -57,11 +57,11 @@ export default function FacultyStudentsByClass() {
     [subjects]
   );
 
-  const miniStats = useMemo(() => [
-    { label: 'Students Handled', value: students.length, color: '#3b82f6' },
-    { label: 'Programs', value: programs.length, color: '#8b5cf6' },
-    { label: 'Sections', value: sections.length, color: '#FF6B1A' },
-    { label: 'Subjects', value: subjectOptions.length, color: '#16a34a' },
+  const stats = useMemo(() => [
+    { label: 'Students Handled', value: students.length, color: 'blue', iconPath: <><path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></> },
+    { label: 'Programs', value: programs.length, color: 'purple', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1M6 13v-3a1 1 0 011-1h4a1 1 0 011-1v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
+    { label: 'Sections', value: sections.length, color: 'orange', iconPath: <><path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></> },
+    { label: 'Subjects', value: subjectOptions.length, color: 'green', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
   ], [students.length, programs.length, sections.length, subjectOptions.length]);
 
   const getColor = (id) => COLORS[id % COLORS.length];
@@ -72,7 +72,7 @@ export default function FacultyStudentsByClass() {
   };
 
   return (
-    <div className="page faculty-students-page">
+    <div className="faculty-page">
       <div className="page-header">
         <div>
           <h2 className="page-title">My Students</h2>
@@ -82,17 +82,15 @@ export default function FacultyStudentsByClass() {
         </div>
       </div>
 
-      <div className="mini-stats">
-        {miniStats.map((stat, idx) => (
-          <div className={`mini-stat stat-${['blue', 'purple', 'orange', 'green'][idx]}`} key={stat.label}>
-            <div className="mini-stat-icon" style={{ color: stat.color }}>
-              <svg viewBox="0 0 20 20" fill="none">
-                <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+      <div className="student-stats">
+        {stats.map((stat, idx) => (
+          <div key={idx} className={`stat-card ${stat.color}`}>
+            <div className={`stat-icon-wrapper ${stat.color}`}>
+              <svg viewBox="0 0 20 20" fill="none">{stat.iconPath}</svg>
             </div>
-            <div className="mini-stat-info">
-              <span className="mini-stat-value" style={{ color: stat.color }}>{stat.value}</span>
-              <span className="mini-stat-label">{stat.label}</span>
+            <div className="stat-info">
+              <span className="stat-number">{stat.value}</span>
+              <span className="stat-label">{stat.label}</span>
             </div>
           </div>
         ))}

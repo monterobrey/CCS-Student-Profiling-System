@@ -368,7 +368,7 @@
   background: var(--color-background-danger, #fcebeb);
 }
 
-.text-right { text-align: right; }
+.text-center { text-align: center; }
 
 .modal-footer {
   padding: 14px 24px;

@@ -1,12 +1,21 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { archiveService } from '../../services';
-import '../../styles/Dean/ArchiveManagement.css';
+import styles from '../../styles/Dean/ArchiveManagement.module.css';
 
 const ArchiveManagement = () => {
+  const cx = (...classKeys) =>
+    classKeys
+      .filter(Boolean)
+      .map((k) => styles[k])
+      .filter(Boolean)
+      .join(' ');
+
   const [activeTab, setActiveTab] = useState('students');
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [search, setSearch] = useState('');
+  const [toast, setToast] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: archivedData, isLoading: loading } = useQuery({
@@ -36,6 +45,11 @@ const ArchiveManagement = () => {
     setShowRestoreModal(true);
   };
 
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3500);
+  };
+
   const restoreMutation = useMutation({
     mutationFn: ({ id, type }) => archiveService.restoreAccount(id, type),
     onSuccess: async (res) => {
@@ -43,7 +57,10 @@ const ArchiveManagement = () => {
       setShowRestoreModal(false);
       setSelectedItem(null);
       await queryClient.invalidateQueries({ queryKey: ['archive-accounts'] });
-      alert('Account restored successfully.');
+      showToast('success', 'Account restored successfully.');
+    },
+    onError: (err) => {
+      showToast('error', err?.message || 'Failed to restore account.');
     },
   });
 
@@ -55,13 +72,35 @@ const ArchiveManagement = () => {
         type: activeTab === 'students' ? 'student' : 'faculty',
       });
     } catch (err) {
-      alert(err?.message || 'Failed to restore account.');
+      // handled by mutation onError + fallback
+      showToast('error', err?.message || 'Failed to restore account.');
     }
   };
   const currentData = useMemo(
     () => (activeTab === 'students' ? students : faculty),
     [activeTab, students, faculty]
   );
+
+  const filteredData = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return currentData;
+    return currentData.filter((item) => {
+      const name = `${item.first_name || ''} ${item.last_name || ''}`.toLowerCase();
+      const email = (item.user?.email || '').toLowerCase();
+      const studentNo = (item.student_number || item.user?.student_number || '').toLowerCase();
+      const dept = (item.department?.department_name || '').toLowerCase();
+      const program = (item.program?.program_code || '').toLowerCase();
+      const position = (item.position || '').toLowerCase();
+      return (
+        name.includes(q) ||
+        email.includes(q) ||
+        studentNo.includes(q) ||
+        dept.includes(q) ||
+        program.includes(q) ||
+        position.includes(q)
+      );
+    });
+  }, [currentData, search]);
 
   /* avatar background colours — cycles through a warm palette */
   const avatarColors = [
@@ -77,36 +116,38 @@ const ArchiveManagement = () => {
   };
 
   return (
-    <div className="archive-page">
+    <div className={styles['archive-page']}>
+
+      {toast && <div className={cx('toast', `toast-${toast.type}`)}>{toast.message}</div>}
 
       {/* ── HEADER ── */}
-      <div className="page-header">
-        <div className="header-left">
-          <h2 className="page-title">Archive Management</h2>
-          <p className="page-sub">View and restore archived student and faculty accounts.</p>
+      <div className={styles['page-header']}>
+        <div className={styles['header-left']}>
+          <h2 className={styles['page-title']}>Archive Management</h2>
+          <p className={styles['page-sub']}>View and restore archived student and faculty accounts.</p>
         </div>
-        <div className="header-stats">
-          <div className="stat-pill">
-            <span className="pill-label">Archived Students</span>
-            <span className="pill-value">{students.length}</span>
+        <div className={styles['header-stats']}>
+          <div className={styles['stat-pill']}>
+            <span className={styles['pill-label']}>Archived Students</span>
+            <span className={styles['pill-value']}>{students.length}</span>
           </div>
-          <div className="stat-pill">
-            <span className="pill-label">Archived Faculty</span>
-            <span className="pill-value">{faculty.length}</span>
+          <div className={styles['stat-pill']}>
+            <span className={styles['pill-label']}>Archived Faculty</span>
+            <span className={styles['pill-value']}>{faculty.length}</span>
           </div>
         </div>
       </div>
 
       {/* ── TABS ── */}
-      <div className="archive-tabs pcard">
+      <div className={cx('archive-tabs', 'pcard')}>
         <button
-          className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
+          className={cx('tab-btn', activeTab === 'students' && 'active')}
           onClick={() => setActiveTab('students')}
         >
           Student Accounts
         </button>
         <button
-          className={`tab-btn ${activeTab === 'faculty' ? 'active' : ''}`}
+          className={cx('tab-btn', activeTab === 'faculty' && 'active')}
           onClick={() => setActiveTab('faculty')}
         >
           Faculty Accounts
@@ -114,15 +155,31 @@ const ArchiveManagement = () => {
       </div>
 
       {/* ── TABLE ── */}
-      <div className="archive-list pcard">
+      <div className={cx('archive-list', 'pcard')}>
+        <div className={styles['table-toolbar']}>
+          <div className={styles['search-wrap']}>
+            <svg viewBox="0 0 18 18" fill="none">
+              <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              placeholder={activeTab === 'students' ? 'Search student name, email, number…' : 'Search faculty name, email, department…'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className={styles['results-pill']}>
+            Showing <strong>{filteredData.length}</strong> of {currentData.length}
+          </div>
+        </div>
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner" />
+          <div className={styles['loading-state']}>
+            <div className={styles.spinner} />
             <p>Loading archived accounts…</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
+          <div className={styles['table-container']}>
+            <table className={styles['data-table']}>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -130,30 +187,30 @@ const ArchiveManagement = () => {
                   <th>{activeTab === 'students' ? 'Program' : 'Position'}</th>
                   <th>Archived By</th>
                   <th>Archived At</th>
-                  <th className="text-right">Actions</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {currentData.map((item, idx) => (
+                {filteredData.map((item, idx) => (
                   <tr key={item.id}>
                     <td>
-                      <div className="user-cell">
-                        <div className="u-avatar" style={getAvatarStyle(idx)}>
+                      <div className={styles['user-cell']}>
+                        <div className={styles['u-avatar']} style={getAvatarStyle(idx)}>
                           {(item.first_name?.[0] || '?').toUpperCase()}
                         </div>
                         <div>
-                          <p className="u-name">{item.first_name} {item.last_name}</p>
-                          <p className="u-sub">{item.user?.email || 'No email'}</p>
+                          <p className={styles['u-name']}>{item.first_name} {item.last_name}</p>
+                          <p className={styles['u-sub']}>{item.user?.email || 'No email'}</p>
                         </div>
                       </div>
                     </td>
                     <td>
                       {activeTab === 'students'
-                        ? (item.student_number || 'N/A')
+                        ? (item.user?.student_number || item.student_number || 'N/A')
                         : (item.department?.department_name || 'N/A')}
                     </td>
                     <td>
-                      <span className="type-badge">
+                      <span className={styles['type-badge']}>
                         {activeTab === 'students'
                           ? (item.program?.program_code || 'N/A')
                           : (item.position || 'N/A')}
@@ -161,20 +218,20 @@ const ArchiveManagement = () => {
                     </td>
                     <td>
                       {item.archiver ? (
-                        <div className="archiver-info">
-                          <span className="archiver-name">
+                        <div className={styles['archiver-info']}>
+                          <span className={styles['archiver-name']}>
                             {item.archiver.name || item.archiver.email}
                           </span>
-                          <span className="archiver-email">{item.archiver.email}</span>
+                          <span className={styles['archiver-email']}>{item.archiver.email}</span>
                         </div>
                       ) : (
-                        <span className="na-text">System</span>
+                        <span className={styles['na-text']}>System</span>
                       )}
                     </td>
                     <td>{formatDate(item.deleted_at)}</td>
-                    <td className="actions-cell">
+                    <td className={styles['actions-cell']}>
                       <button
-                        className="restore-btn"
+                        className={styles['restore-btn']}
                         onClick={() => confirmRestore(item)}
                         title="Restore Account"
                       >
@@ -192,10 +249,12 @@ const ArchiveManagement = () => {
                     </td>
                   </tr>
                 ))}
-                {currentData.length === 0 && (
+                {filteredData.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="empty-row">
-                      No archived {activeTab} found.
+                    <td colSpan="6" className={styles['empty-row']}>
+                      {search.trim()
+                        ? `No archived ${activeTab} match “${search.trim()}”.`
+                        : `No archived ${activeTab} found.`}
                     </td>
                   </tr>
                 )}
@@ -208,28 +267,28 @@ const ArchiveManagement = () => {
       {/* ── RESTORE MODAL ── */}
       {showRestoreModal && (
         <div
-          className="modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowRestoreModal(false); }}
+          className={styles['modal-overlay']}
+          onClick={(e) => { if (!restoreMutation.isPending && e.target === e.currentTarget) setShowRestoreModal(false); }}
         >
-          <div className="modal modal-sm">
-            <div className="modal-header">
+          <div className={cx('modal', 'modal-sm')}>
+            <div className={styles['modal-header']}>
               <h3>Restore Account</h3>
-              <button className="close-btn" onClick={() => setShowRestoreModal(false)}>×</button>
+              <button className={styles['close-btn']} onClick={() => setShowRestoreModal(false)} disabled={restoreMutation.isPending}>×</button>
             </div>
-            <div className="modal-body">
+            <div className={styles['modal-body']}>
               <p>
                 Are you sure you want to restore the account of{' '}
                 <strong>{selectedItem?.first_name} {selectedItem?.last_name}</strong>?
               </p>
-              <p className="modal-help">
+              <p className={styles['modal-help']}>
                 This will move the account back to the active list and allow the user to log in again.
               </p>
             </div>
-            <div className="modal-footer">
-              <button className="ghost-btn" onClick={() => setShowRestoreModal(false)}>
+            <div className={styles['modal-footer']}>
+              <button className={styles['ghost-btn']} onClick={() => setShowRestoreModal(false)} disabled={restoreMutation.isPending}>
                 Cancel
               </button>
-              <button className="primary-btn" onClick={restoreAccount} disabled={restoreMutation.isPending}>
+              <button className={styles['primary-btn']} onClick={restoreAccount} disabled={restoreMutation.isPending}>
                 {restoreMutation.isPending ? 'Restoring…' : 'Restore Account'}
               </button>
             </div>

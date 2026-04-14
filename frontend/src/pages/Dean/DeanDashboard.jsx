@@ -12,7 +12,20 @@ export default function DeanDashboard() {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
     },
+    staleTime: Infinity,
   });
+
+  // Reuse the dean-report cache for GWA distribution (shares cache with Reports Overview)
+  const { data: report = {} } = useQuery({
+    queryKey: ['dean-report'],
+    queryFn: async () => {
+      const res = await analyticsService.getDeanReport();
+      return res.ok ? (res.data ?? {}) : {};
+    },
+    staleTime: Infinity,
+  });
+
+  const distribution = useMemo(() => report.distribution ?? [], [report]);
 
   const {
     total_students      = 0,
@@ -160,33 +173,35 @@ export default function DeanDashboard() {
       {/* BOTTOM GRID */}
       <div className="bottom-grid">
 
-        {/* CHART */}
+        {/* GWA DISTRIBUTION */}
         <div className="card chart-card">
           <div className="card-header">
             <div>
-              <h3 className="card-title">Academic Performance Trends</h3>
-              <p className="card-sub">Average GWA per semester</p>
+              <h3 className="card-title">GWA Distribution</h3>
+              <p className="card-sub">Students per GWA bracket</p>
             </div>
-            <a href="#" className="card-link">Full report →</a>
+            <a href="/dean/performance" className="card-link">Full report →</a>
           </div>
-          <div className="chart-bars">
-            {chart_data.map((bar, i) => (
-              <div key={i} className="chart-bar-col">
-                <div className="chart-bar-wrap">
-                  <div
-                    className={`chart-bar-fill ${i === chart_data.length - 1 ? 'current' : ''}`}
-                    style={{ height: bar.pct + '%' }}
-                  >
-                    <span className="chart-tooltip">{bar.sem}: {bar.gwa}</span>
+          <div className="distribution-list">
+            {distribution.length === 0 ? (
+              <p style={{ color: '#b89f90', fontStyle: 'italic', fontSize: 13 }}>No GWA data recorded yet.</p>
+            ) : distribution.map((d, i) => (
+              <div key={i} className="dist-item">
+                <div className="dist-item-meta">
+                  <span className="dist-item-range">{d.range}</span>
+                  <span className="dist-item-desc">{d.desc}</span>
+                </div>
+                <div className="dist-item-bar-wrap">
+                  <div className="dist-item-bar">
+                    <div className="dist-item-fill" style={{ width: d.pct + '%', background: d.color }} />
                   </div>
                 </div>
-                <span className="chart-bar-label">{bar.sem}</span>
+                <div className="dist-item-stats">
+                  <span style={{ color: d.color, fontWeight: 700 }}>{d.count}</span>
+                  <span className="dist-item-pct">{d.pct}%</span>
+                </div>
               </div>
             ))}
-          </div>
-          <div className="chart-legend">
-            <span className="legend-dot current"></span><span className="legend-text">Current sem</span>
-            <span className="legend-dot"></span><span className="legend-text">Previous</span>
           </div>
         </div>
 

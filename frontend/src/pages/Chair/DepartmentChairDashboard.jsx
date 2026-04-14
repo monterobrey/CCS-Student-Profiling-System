@@ -1,72 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { analyticsService } from '../../services';
 import '../../styles/Chair/DepartmentChairDashboard.css';
 
 const ChairDashboard = () => {
   const navigate = useNavigate();
-  const [user] = useState({ name: 'Chair' });
 
-  const [loading, setLoading] = useState(true);
-
-  const [chairStats, setChairStats] = useState({
-    totalStudents: 0,
-    totalFaculty: 0,
-    avgGwa: '0.00',
-    activeViolations: 0,
-    pendingAwards: 0
+  const { data: summaryData = {}, isLoading } = useQuery({
+    queryKey: ['dean-summary'],
+    queryFn: async () => {
+      const res = await analyticsService.getDeanSummary();
+      return res.ok ? (res.data ?? {}) : {};
+    },
+    staleTime: Infinity,
   });
 
-  const [chairTopStudents, setChairTopStudents] = useState([]);
+  // GWA distribution scoped to chair's program (reuses academic-performance cache)
+  const { data: perfData = {} } = useQuery({
+    queryKey: ['academic-performance'],
+    queryFn: async () => {
+      const res = await analyticsService.getAcademicPerformance();
+      return res.ok ? (res.data ?? {}) : {};
+    },
+    staleTime: Infinity,
+  });
 
-  const [chairPendingAwards, setChairPendingAwards] = useState([]);
+  const distribution = useMemo(() => perfData.distribution ?? [], [perfData]);
 
-  const [chairChartData, setChairChartData] = useState([]);
+  const chairStats = useMemo(() => ({
+    totalStudents:    summaryData.total_students      ?? 0,
+    totalFaculty:     summaryData.total_faculty       ?? 0,
+    avgGwa:           summaryData.dept_avg_gwa ? Number(summaryData.dept_avg_gwa).toFixed(2) : '0.00',
+    activeViolations: summaryData.active_violations   ?? 0,
+    pendingAwards:    summaryData.pending_verifications ?? 0,
+  }), [summaryData]);
 
-  const [stats, setStats] = useState([]);
+  const chairTopStudents  = useMemo(() => summaryData.top_students ?? [], [summaryData]);
+  const chairPendingAwards = useMemo(() =>
+    (summaryData.pending_achievements ?? []).map(a => ({
+      student: a.student, award: a.achievement, color: a.color,
+    })), [summaryData]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/analytics/summary');
-        const data = response.data;
-        
-        setChairStats({
-          totalStudents: data.total_students,
-          totalFaculty: data.total_faculty,
-          avgGwa: data.dept_avg_gwa.toFixed(2),
-          activeViolations: data.active_violations,
-          pendingAwards: data.pending_verifications
-        });
+  const stats = useMemo(() => [
+    { label: 'Total Students',    value: chairStats.totalStudents.toString(),    delta: 'Enrolled',      deltaClass: 'positive', fill: '100%', iconBg: '#fff5ef', iconColor: '#FF6B1A', route: '/students',        iconPath: '<path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
+    { label: 'Total Faculty',     value: chairStats.totalFaculty.toString(),     delta: 'Active',        deltaClass: 'positive', fill: '100%', iconBg: '#eff6ff', iconColor: '#3b82f6', route: '/faculty',         iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
+    { label: 'Dept Avg GWA',      value: chairStats.avgGwa,                      delta: 'This semester', deltaClass: 'positive', fill: '75%',  iconBg: '#f5f3ff', iconColor: '#8b5cf6', route: '/chair/performance',iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { label: 'Active Violations', value: chairStats.activeViolations.toString(), delta: 'This semester', deltaClass: 'negative', fill: '20%',  iconBg: '#fff1f2', iconColor: '#ef4444', route: '/chair/violations', iconPath: '<path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
+    { label: 'Pending Awards',    value: chairStats.pendingAwards.toString(),    delta: 'To approve',   deltaClass: 'warning',  fill: '35%',  iconBg: '#fffbeb', iconColor: '#f59e0b', route: '/chair/awards',     iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' },
+  ], [chairStats]);
 
-        setChairTopStudents(data.top_students);
-        setChairPendingAwards(data.pending_achievements.map(a => ({
-          student: a.student,
-          award: a.achievement,
-          color: a.color
-        })));
-        setChairChartData(data.chart_data);
-
-        setStats([
-          { label: 'Total Students', value: data.total_students.toString(), delta: 'Enrolled', deltaClass: 'positive', fill: '100%', iconBg: '#fff5ef', iconColor: '#FF6B1A', route: '/students', iconPath: '<path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
-          { label: 'Total Faculty', value: data.total_faculty.toString(), delta: 'Active', deltaClass: 'positive', fill: '100%', iconBg: '#eff6ff', iconColor: '#3b82f6', route: '/faculty', iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1M6 13v-3a1 1 0 011-1h4a1 1 0 011-1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
-          { label: 'Dept Avg GWA', value: data.dept_avg_gwa.toFixed(2), delta: 'This semester', deltaClass: 'positive', fill: '75%', iconBg: '#f5f3ff', iconColor: '#8b5cf6', route: '/chair/performance', iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' },
-          { label: 'Active Violations', value: data.active_violations.toString(), delta: 'This semester', deltaClass: 'negative', fill: '20%', iconBg: '#fff1f2', iconColor: '#ef4444', route: '/chair/violations', iconPath: '<path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
-          { label: 'Pending Awards', value: data.pending_verifications.toString(), delta: 'To approve', deltaClass: 'warning', fill: '35%', iconBg: '#fffbeb', iconColor: '#f59e0b', route: '/chair/awards', iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' }
-        ]);
-      } catch (err) {
-        console.error('Failed to fetch chair summary:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <div className="faculty-page">Loading...</div>;
-  }
+  if (isLoading) return <div className="faculty-page"><div className="dash-loading"><div className="spinner-lg"></div><p>Loading dashboard...</p></div></div>;
 
   return (
     <div className="faculty-page">
@@ -76,7 +60,7 @@ const ChairDashboard = () => {
         <div className="hero-body">
           <div className="hero-left">
             <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
-            <h2 className="hero-greeting">Good morning, {user.name} 👋</h2>
+            <h2 className="hero-greeting">Good morning, Chair 👋</h2>
             <p className="hero-desc">
               Department avg GWA is <strong>{chairStats.avgGwa}</strong>. 
               You have <strong>{chairStats.pendingAwards} awards</strong> awaiting approval and <strong>{chairStats.activeViolations} active violations</strong> this semester.
@@ -131,32 +115,35 @@ const ChairDashboard = () => {
       </div>
 
       <div className="bottom-grid">
+        {/* GWA DISTRIBUTION — scoped to chair's program */}
         <div className="card chart-card">
           <div className="card-header">
             <div>
-              <h3 className="card-title">Academic Performance Trends</h3>
-              <p className="card-sub">Department avg GWA per semester</p>
+              <h3 className="card-title">GWA Distribution</h3>
+              <p className="card-sub">Students per GWA bracket · your program</p>
             </div>
-            <Link to="/chair/performance" className="card-link">Full report →</Link>
+            <Link to="/department-chair/performance" className="card-link">Full report →</Link>
           </div>
-          <div className="chart-bars">
-            {chairChartData.map((bar, i) => (
-              <div className="chart-bar-col" key={i}>
-                <div className="chart-bar-wrap">
-                  <div 
-                    className={`chart-bar-fill ${i === chairChartData.length - 1 ? 'current' : ''}`} 
-                    style={{ height: `${bar.pct}%` }}
-                  >
-                    <span className="chart-tooltip">{bar.sem}: {bar.gwa}</span>
+          <div className="distribution-list">
+            {distribution.length === 0 ? (
+              <p style={{ color: '#b89f90', fontStyle: 'italic', fontSize: 13 }}>No GWA data recorded yet.</p>
+            ) : distribution.map((d, i) => (
+              <div key={i} className="dist-item">
+                <div className="dist-item-meta">
+                  <span className="dist-item-range">{d.range}</span>
+                  <span className="dist-item-desc">{d.desc}</span>
+                </div>
+                <div className="dist-item-bar-wrap">
+                  <div className="dist-item-bar">
+                    <div className="dist-item-fill" style={{ width: d.pct + '%', background: d.color }} />
                   </div>
                 </div>
-                <span className="chart-bar-label">{bar.sem}</span>
+                <div className="dist-item-stats">
+                  <span style={{ color: d.color, fontWeight: 700 }}>{d.count}</span>
+                  <span className="dist-item-pct">{d.pct}%</span>
+                </div>
               </div>
             ))}
-          </div>
-          <div className="chart-legend">
-            <span className="legend-dot current"></span><span className="legend-text">Current sem</span>
-            <span className="legend-dot"></span><span className="legend-text">Previous</span>
           </div>
         </div>
 

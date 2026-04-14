@@ -127,6 +127,7 @@ const { role } = useAuth();
         ]},
         { name: "My Activities", items: [
           { path: "awards", meta: { title: "My Achievements", icon: "awards" } },
+          { path: "affiliations", meta: { title: "Affiliations", icon: "profile" } },
         ]},
       ],
     };

@@ -42,6 +42,7 @@ import StudentAwards from "./pages/Student/StudentAwards";
 import StudentProfile from "./pages/Student/StudentProfile";
 import StudentViolations from "./pages/Student/StudentViolations";
 import StudentSchedule from "./pages/Student/StudentSchedule";
+import StudentAffiliations from "./pages/Student/StudentAffiliations";
 
 function App() {
   return (
@@ -384,6 +385,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/affiliations"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentAffiliations />
                 </ProtectedRoute>
               }
             />

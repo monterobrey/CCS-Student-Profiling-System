@@ -15,6 +15,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www/html
 
 COPY backend/composer.json backend/composer.lock* ./
+COPY backend/.env.production .env
+
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 COPY backend/ .

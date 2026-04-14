@@ -56,7 +56,12 @@ export default function CourseManagement() {
     const matchesSearch =
       c.course_code.toLowerCase().includes(search.toLowerCase()) ||
       c.course_name.toLowerCase().includes(search.toLowerCase());
-    const matchesProgram = !filterProgram || c.program_id == filterProgram;
+
+    // Match against primary program_id OR any curriculum program
+    const matchesProgram = !filterProgram || 
+      c.program_id == filterProgram ||
+      c.curriculum_programs?.some(p => p.id == filterProgram);
+
     return matchesSearch && matchesProgram;
   }), [courses, search, filterProgram]);
 

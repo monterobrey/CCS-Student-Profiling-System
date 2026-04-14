@@ -40,7 +40,7 @@ class CourseService
             'lab_units'     => $data['lab_units'] ?? 0,
             'units'         => $data['units'],
             'prerequisites' => $data['prerequisites'] ?? null,
-        ])->load(['program', 'department']);
+        ])->load(['program', 'department', 'curriculumPrograms']);
     }
 
     /**
@@ -65,7 +65,7 @@ class CourseService
             'prerequisites' => $data['prerequisites'] ?? null,
         ]);
 
-        return $course->load(['program', 'department']);
+        return $course->load(['program', 'department', 'curriculumPrograms']);
     }
 
     /**

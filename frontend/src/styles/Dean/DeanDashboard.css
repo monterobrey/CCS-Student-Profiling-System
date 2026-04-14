@@ -41,6 +41,16 @@
   gap: 24px;
 }
 
+.hero-left {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.hero-desc {
+  text-align: left;
+}
+
 .hero-eyebrow {
   display: flex;
   align-items: center;
@@ -170,51 +180,63 @@
   margin-top: 2px;
 }
 
-.stats-grid {
+.dean-stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+  /* Keep all 5 stats in one row on desktop */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.stat-card {
+.dashboard-home .dean-stats-grid .dean-stat-card {
   background: #fff;
   border: 1px solid #f0e8e0;
+  border-top-width: 3px;
+  border-top-style: solid;
   border-radius: 16px;
-  padding: 18px 18px 14px;
+  padding: 14px 14px 12px;
   transition: all 0.2s;
+  min-width: 0;
+  display: block;
 }
 
-.stat-card.clickable {
+.dashboard-home .dean-stats-grid .dean-stat-card.clickable {
   cursor: pointer;
 }
 
-.stat-card.clickable:hover {
+.dashboard-home .dean-stats-grid .dean-stat-card.clickable:hover {
   border-color: #FF6B1A;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(255, 107, 26, 0.1);
 }
 
-.stat-top {
+.dashboard-home .dean-stats-grid .dean-stat-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 14px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
-.stat-label {
-  font-size: 10px;
-  font-weight: 600;
+.dashboard-home .dean-stats-grid .dean-stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 700;
   color: #9a8070;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  line-height: 1.4;
-  max-width: 80px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.stat-icon {
-  width: 34px;
-  height: 34px;
+.dean-stat-icon {
+  width: 30px;
+  height: 30px;
   border-radius: 9px;
   display: flex;
   align-items: center;
@@ -222,44 +244,53 @@
   flex-shrink: 0;
 }
 
-.stat-icon svg { width: 16px; height: 16px; }
+.dean-stat-icon svg { width: 15px; height: 15px; }
 
-.stat-bottom {
+.dashboard-home .dean-stats-grid .dean-stat-bottom {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
-.stat-value {
+.dashboard-home .dean-stats-grid .dean-stat-value {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #1a0a00;
   line-height: 1;
 }
 
-.stat-delta {
-  font-size: 10px;
+.dean-stat-delta {
+  font-size: 9px;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 5px;
   white-space: nowrap;
 }
 
-.stat-delta.positive { background: #f0fdf4; color: #16a34a; }
-.stat-delta.negative { background: #fff1f2; color: #e11d48; }
-.stat-delta.warning { background: #fff5ef; color: #c94000; }
+@media (max-width: 1200px) {
+  /* Wrap earlier on smaller screens */
+  .dean-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
-.stat-bar {
+@media (max-width: 900px) {
+  .dean-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.dean-stat-delta.positive { background: #f0fdf4; color: #16a34a; }
+.dean-stat-delta.negative { background: #fff1f2; color: #e11d48; }
+.dean-stat-delta.warning { background: #fff5ef; color: #c94000; }
+
+.dean-stat-bar {
   height: 3px;
   background: #f0e8e0;
   border-radius: 2px;
   overflow: hidden;
 }
 
-.stat-bar-fill {
+.dean-stat-bar-fill {
   height: 100%;
   border-radius: 2px;
   transition: width 1s ease;
@@ -543,7 +574,7 @@
 }
 
 @media (max-width: 1200px) {
-  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .dean-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bottom-grid { grid-template-columns: 1fr 1fr; }
 }
 
@@ -556,7 +587,7 @@
   .hero-right { width: 100%; }
   .hero-greeting { font-size: 22px; }
   .hero-desc { max-width: 100%; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dean-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bottom-grid { grid-template-columns: 1fr; }
 }
 
@@ -568,11 +599,16 @@
   .hero-btn-ghost { width: 100%; justify-content: center; }
   .hero-right { flex-direction: column; }
   .hero-stat-card { width: 100%; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-card { padding: 12px; }
-  .stat-value { font-size: 22px; }
+  .dean-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .dashboard-home .dean-stats-grid .dean-stat-card { padding: 12px; }
+  .dashboard-home .dean-stats-grid .dean-stat-value { font-size: 22px; }
   .bottom-grid { gap: 12px; }
   .card { padding: 16px; border-radius: 16px; }
+}
+
+@media (max-width: 420px) {
+  .dean-stats-grid { grid-template-columns: 1fr; }
+  .dashboard-home .dean-stats-grid .dean-stat-card { padding: 14px 14px 12px; }
 }
 
 /* GWA DISTRIBUTION in dashboard */

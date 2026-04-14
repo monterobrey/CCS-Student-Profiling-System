@@ -150,21 +150,25 @@ export default function DeanDashboard() {
       </div>
 
       {/* STATS GRID */}
-      <div className="stats-grid">
+      <div className="dean-stats-grid">
         {stats.map((stat) => (
-          <div key={stat.label} className="stat-card">
-            <div className="stat-top">
-              <span className="stat-label">{stat.label}</span>
-              <div className="stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
+          <div
+            key={stat.label}
+            className="dean-stat-card"
+            style={{ borderTop: `3px solid ${stat.iconColor}` }}
+          >
+            <div className="dean-stat-top">
+              <div className="dean-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
                 <svg viewBox="0 0 18 18" fill="none" dangerouslySetInnerHTML={{ __html: stat.iconPath }} />
               </div>
             </div>
-            <div className="stat-bottom">
-              <span className="stat-value">{stat.value}</span>
-              <span className={`stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
+            <div className="dean-stat-bottom">
+              <span className="dean-stat-value">{stat.value}</span>
+              <span className={`dean-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
-            <div className="stat-bar">
-              <div className="stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }} />
+            <span className="dean-stat-label">{stat.label}</span>
+            <div className="dean-stat-bar">
+              <div className="dean-stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }} />
             </div>
           </div>
         ))}

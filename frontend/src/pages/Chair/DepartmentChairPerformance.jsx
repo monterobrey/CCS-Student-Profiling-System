@@ -224,19 +224,21 @@ export default function DepartmentChairPerformance() {
             <span className="pcard-sub">{data?.total_with_gwa ?? 0} students with GWA recorded</span>
           </div>
           <div className="pcard-body">
-            <div className="dist-list">
+            <div className="distribution-list">
               {dist.map((d, i) => (
-                <div className="dist-row" key={i}>
-                  <div className="dist-meta">
-                    <span className="dist-range">{d.range}</span>
-                    <span className="dist-desc">{d.desc}</span>
+                <div className="dist-item" key={i}>
+                  <div className="dist-item-meta">
+                    <span className="dist-item-range">{d.range}</span>
+                    <span className="dist-item-desc">{d.desc}</span>
                   </div>
-                  <div className="dist-bar-wrap">
-                    <div className="dist-bar" style={{ width: d.pct + "%", background: d.color }} />
+                  <div className="dist-item-bar-wrap">
+                    <div className="dist-item-bar">
+                      <div className="dist-item-fill" style={{ width: d.pct + "%", background: d.color }} />
+                    </div>
                   </div>
-                  <div className="dist-stats">
-                    <span className="dist-count" style={{ color: d.color }}>{d.count}</span>
-                    <span className="dist-pct">{d.pct}%</span>
+                  <div className="dist-item-stats">
+                    <span style={{ color: d.color, fontWeight: 700 }}>{d.count}</span>
+                    <span className="dist-item-pct">{d.pct}%</span>
                   </div>
                 </div>
               ))}

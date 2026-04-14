@@ -355,3 +355,15 @@
   font-weight: 800;
   color: #FF6B1A;
 }
+
+/* GWA Distribution — matches dashboard style */
+.distribution-list { display: flex; flex-direction: column; gap: 12px; }
+.dist-item { display: flex; align-items: center; gap: 12px; }
+.dist-item-meta { width: 130px; flex-shrink: 0; }
+.dist-item-range { font-size: 12px; font-weight: 700; color: #1a0a00; display: block; }
+.dist-item-desc { font-size: 11px; color: #b89f90; }
+.dist-item-bar-wrap { flex: 1; }
+.dist-item-bar { height: 8px; background: #f0e8e0; border-radius: 4px; overflow: hidden; }
+.dist-item-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.dist-item-stats { display: flex; flex-direction: column; align-items: flex-end; width: 44px; flex-shrink: 0; font-size: 13px; }
+.dist-item-pct { font-size: 10px; color: #b89f90; }

@@ -61,36 +61,121 @@
 }
 
 /* Summary Row */
-.subjects-summary {
+.mini-stats {
   display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
-.mini-card-outline {
-  flex: 1;
+.mini-stat {
   background: #fff;
   border: 1px solid #f0e8e0;
   border-radius: 14px;
-  padding: 16px 20px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.mini-stat:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+.mini-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fcfaf8;
+  flex-shrink: 0;
+}
+
+.mini-stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mini-stat-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.mini-label {
+.mini-stat-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mini-stat-label {
+  font-size: 11px;
+  color: #9a8070;
+  margin-top: 2px;
+}
+
+.summary-card {
+  background: #fff;
+  border: 1px solid #f0e8e0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-label {
   font-size: 10px;
   font-weight: 700;
-  color: #b89f90;
+  color: #9a8070;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
 }
 
-.mini-value {
+.summary-value {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 800;
-  color: #3d1500;
+  color: #1a0a00;
+  line-height: 1;
+}
+
+.summary-sub {
+  font-size: 11px;
+  color: #9a8070;
+  margin-top: 2px;
+}
+
+.summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 /* Empty State Styling */

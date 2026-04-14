@@ -1,3 +1,6 @@
+
+
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Outfit:wght@400;500;600&display=swap');
 
 .faculty-violation-page {
@@ -46,46 +49,66 @@
 .faculty-violation-page .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 24px;
 }
 
 .faculty-violation-page .mini-card {
   background: #fff;
-  padding: 18px;
-  border-radius: 14px;
   border: 1px solid #f0e8e0;
-  border-top: 3px solid transparent;
+  border-radius: 14px;
+  padding: 18px 20px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 14px;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s;
 }
-.faculty-violation-page .mini-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+.faculty-violation-page .mini-card:hover { 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+  transform: translateY(-2px);
+}
 
-.faculty-violation-page .mini-card.accent-orange { border-top-color: #FF6B1A; }
-.faculty-violation-page .mini-card.accent-red    { border-top-color: #ef4444; }
-.faculty-violation-page .mini-card.accent-amber  { border-top-color: #f59e0b; }
-.faculty-violation-page .mini-card.accent-blue   { border-top-color: #3b82f6; }
+.faculty-violation-page .mini-card.accent-orange { border-top: 3px solid #FF6B1A; }
+.faculty-violation-page .mini-card.accent-red    { border-top: 3px solid #ef4444; }
+.faculty-violation-page .mini-card.accent-amber  { border-top: 3px solid #f59e0b; }
+.faculty-violation-page .mini-card.accent-blue   { border-top: 3px solid #3b82f6; }
+
+.faculty-violation-page .card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .faculty-violation-page .card-icon {
-  font-size: 18px;
-  background: #fafafa;
-  padding: 10px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
+.faculty-violation-page .mini-card.accent-orange .card-icon { background: #fff5ef; }
+.faculty-violation-page .mini-card.accent-red .card-icon { background: #fef2f2; }
+.faculty-violation-page .mini-card.accent-amber .card-icon { background: #fffbeb; }
+.faculty-violation-page .mini-card.accent-blue .card-icon { background: #eff6ff; }
+.faculty-violation-page .card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
 .faculty-violation-page .card-value {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   display: block;
   color: #1a0a00;
+  line-height: 1;
 }
 .faculty-violation-page .card-label {
-  font-size: 11px;
-  color: #9a8070;
+  font-size: 10px;
   font-weight: 700;
+  color: #9a8070;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -107,8 +130,8 @@
 /* SEARCH INPUT */
 .faculty-violation-page .search-container input {
   width: 100%;
-  height: 100%; /* IMPORTANT */
-  padding: 0 14px 0 36px; /* remove vertical padding */
+  height: 100%;
+  padding: 0 14px 0 40px;
   border-radius: 12px;
   border: transparent;
   outline: none;
@@ -127,12 +150,19 @@
 /* SEARCH ICON CENTER FIX */
 .faculty-violation-page .search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
   pointer-events: none;
-  color: #b89f90;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.faculty-violation-page .search-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* FILTERS */
@@ -272,6 +302,7 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  position: relative;
 }
 
 .faculty-violation-page .modal-wide { width: 560px; }
@@ -289,9 +320,11 @@
 
 .faculty-violation-page .modal-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  text-align: center;
+  position: relative;
 }
 
 .faculty-violation-page .modal-header h3 {
@@ -299,6 +332,14 @@
   font-size: 17px;
   font-weight: 800;
   color: #1a0a00;
+  text-align: center;
+  width: 100%;
+}
+
+.faculty-violation-page .modal-header .close-x {
+  position: absolute;
+  top: 15px;
+  right: 15px;
 }
 
 .faculty-violation-page .close-x {
@@ -498,7 +539,7 @@
 .faculty-violation-page .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
 /* Detail Modal */
-.faculty-violation-page .detail-group   { margin-bottom: 14px; }
+.faculty-violation-page .detail-group   { margin-bottom: 14px; text-align: center; }
 .faculty-violation-page .detail-group label {
   font-size: 11px;
   font-weight: 800;
@@ -506,8 +547,10 @@
   text-transform: uppercase;
   display: block;
   margin-bottom: 3px;
+  text-align: center;
+  width: 100%;
 }
-.faculty-violation-page .detail-group p { font-size: 14px; color: #1a0a00; margin: 0; }
+.faculty-violation-page .detail-group p { font-size: 14px; color: #1a0a00; margin: 0; text-align: center; }
 
 .faculty-violation-page .detail-row-inline {
   display: flex;
@@ -528,6 +571,7 @@
   border: 1px solid #f2e7df;
   border-radius: 10px;
   padding: 10px 12px;
+  text-align: center;
 }
 
 .faculty-violation-page .detail-card label {
@@ -538,12 +582,14 @@
   letter-spacing: 0.4px;
   display: block;
   margin-bottom: 3px;
+  text-align: center;
 }
 
 .faculty-violation-page .detail-card p {
   margin: 0;
   font-size: 13px;
   color: #1a0a00;
+  text-align: center;
 }
 
 .faculty-violation-page .detail-sub {
@@ -551,6 +597,7 @@
   margin-top: 3px;
   font-size: 11px;
   color: #9a8070;
+  text-align: center;
 }
 
 .faculty-violation-page .desc-box {
@@ -561,6 +608,7 @@
   font-size: 14px;
   color: #4a3a30;
   line-height: 1.6;
+  text-align: center;
 }
 
 /* Spinner */

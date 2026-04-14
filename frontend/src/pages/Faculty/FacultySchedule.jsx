@@ -79,13 +79,16 @@ const FacultySchedule = () => {
     "Untitled Subject";
 
   const subjectPalettes = [
-    { bg: "#eff6ff", border: "#60a5fa", code: "#1d4ed8", text: "#1e3a8a", meta: "#1e40af" },
-    { bg: "#f0fdf4", border: "#4ade80", code: "#15803d", text: "#14532d", meta: "#166534" },
-    { bg: "#faf5ff", border: "#c084fc", code: "#7e22ce", text: "#581c87", meta: "#6b21a8" },
-    { bg: "#fff7ed", border: "#fb923c", code: "#c2410c", text: "#7c2d12", meta: "#9a3412" },
-    { bg: "#fef2f2", border: "#f87171", code: "#b91c1c", text: "#7f1d1d", meta: "#991b1b" },
-    { bg: "#ecfeff", border: "#22d3ee", code: "#0e7490", text: "#164e63", meta: "#155e75" },
-    { bg: "#fefce8", border: "#facc15", code: "#a16207", text: "#713f12", meta: "#854d0e" },
+    { bg: "#dbeafe", border: "#3b82f6", code: "#1d4ed8", text: "#1e40af", meta: "#3b82f6", icon: "#2563eb" },
+    { bg: "#dcfce7", border: "#22c55e", code: "#15803d", text: "#166534", meta: "#22c55e", icon: "#16a34a" },
+    { bg: "#f3e8ff", border: "#a855f7", code: "#7e22ce", text: "#6b21a8", meta: "#a855f7", icon: "#9333ea" },
+    { bg: "#ffedd5", border: "#fb923c", code: "#c2410c", text: "#9a3412", meta: "#fb923c", icon: "#ea580c" },
+    { bg: "#fee2e2", border: "#ef4444", code: "#b91c1c", text: "#991b1b", meta: "#ef4444", icon: "#dc2626" },
+    { bg: "#cffafe", border: "#06b6d4", code: "#0e7490", text: "#155e75", meta: "#06b6d4", icon: "#0891b2" },
+    { bg: "#fef9c3", border: "#eab308", code: "#a16207", text: "#713f12", meta: "#eab308", icon: "#ca8a04" },
+    { bg: "#fce7f3", border: "#ec4899", code: "#be185d", text: "#831843", meta: "#ec4899", icon: "#db2777" },
+    { bg: "#e0e7ff", border: "#6366f1", code: "#4338ca", text: "#3730a3", meta: "#6366f1", icon: "#4f46e5" },
+    { bg: "#d1fae5", border: "#14b8a6", code: "#0f766e", text: "#115e59", meta: "#14b8a6", icon: "#0d9488" },
   ];
 
   const getSubjectPalette = (schedule) => {
@@ -111,7 +114,12 @@ const FacultySchedule = () => {
       <div className="stats-grid">
 
         <div className="stat-card stat-card-blue">
-          <div className="stat-icon stat-icon-blue"></div>
+          <div className="stat-icon stat-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
           <div className="stat-content">
             <span className="stat-number stat-number-blue">{stats.total}</span>
             <span className="stat-label">TOTAL CLASSES</span>
@@ -119,7 +127,14 @@ const FacultySchedule = () => {
         </div>
 
         <div className="stat-card stat-card-green">
-          <div className="stat-icon stat-icon-green"></div>
+          <div className="stat-icon stat-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
           <div className="stat-content">
             <span className="stat-number stat-number-green">{stats.today}</span>
             <span className="stat-label">TODAY'S CLASSES</span>
@@ -127,7 +142,12 @@ const FacultySchedule = () => {
         </div>
 
         <div className="stat-card stat-card-purple">
-          <div className="stat-icon stat-icon-purple"></div>
+          <div className="stat-icon stat-icon-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
           <div className="stat-content">
             <span className="stat-number">{stats.upcoming}</span>
             <span className="stat-label">UPCOMING</span>
@@ -135,7 +155,12 @@ const FacultySchedule = () => {
         </div>
 
         <div className="stat-card stat-card-orange">
-          <div className="stat-icon stat-icon-orange"></div>
+          <div className="stat-icon stat-icon-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2">
+              <path d="M12 2v10"/>
+              <path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>
+            </svg>
+          </div>
           <div className="stat-content">
             <span className="stat-number stat-number-orange">{stats.morning}</span>
             <span className="stat-label">MORNING</span>
@@ -143,7 +168,19 @@ const FacultySchedule = () => {
         </div>
 
         <div className="stat-card stat-card-red">
-          <div className="stat-icon stat-icon-red"></div>
+          <div className="stat-icon stat-icon-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
           <div className="stat-content">
             <span className="stat-number stat-number-red">{stats.afternoon}</span>
             <span className="stat-label">AFTERNOON</span>
@@ -197,8 +234,13 @@ const FacultySchedule = () => {
                             borderColor: palette?.border,
                           }}
                         >
-                          <div className="subject-chip-code" style={{ color: palette?.code }}>
-                            {schedule.course?.course_code || "SUBJECT"}
+                          <div className="subject-chip-header">
+                            <svg className="subject-chip-icon" viewBox="0 0 16 16" fill="none" stroke={palette?.icon} strokeWidth="1.5">
+                              <path d="M2 4.5A1.5 1.5 0 013.5 3H12.5A1.5 1.5 0 0114 4.5v10a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 012 14.5v-10z"/>
+                            </svg>
+                            <div className="subject-chip-code" style={{ color: palette?.code }}>
+                              {schedule.course?.course_code || "SUBJECT"}
+                            </div>
                           </div>
                           <div className="subject-chip-name" style={{ color: palette?.text }}>
                             {subjectName}
@@ -245,7 +287,7 @@ const FacultySchedule = () => {
                     <th>Student Number</th>
                     <th>Name</th>
                     <th>Status</th>
-                    <th className="text-right">Actions</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -268,7 +310,7 @@ const FacultySchedule = () => {
                             {student.status || "Active"}
                           </span>
                         </td>
-                        <td className="text-right">
+                        <td>
                           <button className="report-btn" type="button">
                             Report violation
                           </button>

@@ -1,3 +1,6 @@
+
+
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
 
 .faculty-page {
@@ -63,6 +66,14 @@
   height: 44px;
   border-radius: 10px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.faculty-page .stat-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .faculty-page .stat-icon-blue { background: #eff6ff; }
@@ -155,6 +166,19 @@
   line-height: 1.25;
 }
 
+.subject-chip-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.subject-chip-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .subject-chip-block {
   position: absolute;
   top: 2px;
@@ -169,7 +193,6 @@
 .subject-chip-code {
   font-size: 12px;
   font-weight: 700;
-  margin-bottom: 3px;
 }
 
 .subject-chip-name {
@@ -304,6 +327,11 @@
   border-bottom: 0.5px solid var(--color-border-tertiary, #e5e5e5);
 }
 
+.students-table th:last-child,
+.students-table td:last-child {
+  text-align: center;
+}
+
 .students-table td {
   padding: 12px 24px;
   border-bottom: 0.5px solid var(--color-border-tertiary, #e5e5e5);
@@ -367,8 +395,6 @@
 .report-btn:hover {
   background: var(--color-background-danger, #fcebeb);
 }
-
-.text-right { text-align: right; }
 
 .modal-footer {
   padding: 14px 24px;

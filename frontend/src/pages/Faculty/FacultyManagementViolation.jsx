@@ -116,10 +116,10 @@ const FacultyViolationManager = () => {
   }, [students, selectedStudentIds]);
 
   const stats = useMemo(() => [
-    { label: 'Filed by Me',     value: violations.length,                                           color: 'orange', icon: '📝' },
-    { label: 'Major Cases',     value: violations.filter(v => v.severity === 'Major').length,        color: 'red',    icon: '🚫' },
-    { label: 'Awaiting Action', value: violations.filter(v => v.status === 'Pending').length,        color: 'amber',  icon: '⏳' },
-    { label: 'Resolved',        value: violations.filter(v => v.status === 'Resolved').length,       color: 'blue',   icon: '✅' },
+    { label: 'Filed by Me',     value: violations.length,                                           color: 'orange', icon: <svg viewBox='0 0 20 20' fill='none' stroke='#FF6B1A' strokeWidth='1.5'><path d='M4 4h12v12H4zM4 9h6M9 4v5'/></svg> },
+    { label: 'Major Cases',     value: violations.filter(v => v.severity === 'Major').length,        color: 'red',    icon: <svg viewBox='0 0 20 20' fill='none' stroke='#ef4444' strokeWidth='1.5'><path d='M3 6l7 7 7-7M10 3v14'/></svg> },
+    { label: 'Awaiting Action', value: violations.filter(v => v.status === 'Pending').length,        color: 'amber',  icon: <svg viewBox='0 0 20 20' fill='none' stroke='#f59e0b' strokeWidth='1.5'><circle cx='10' cy='10' r='8'/><path d='M10 5v5l3 3'/></svg> },
+    { label: 'Resolved',        value: violations.filter(v => v.status === 'Resolved').length,       color: 'blue',   icon: <svg viewBox='0 0 20 20' fill='none' stroke='#3b82f6' strokeWidth='1.5'><circle cx='10' cy='10' r='8'/><path d='M6 10l3 3 5-6'/></svg> },
   ], [violations]);
 
   const handleFormChange = (e) => {
@@ -194,11 +194,11 @@ const FacultyViolationManager = () => {
       <div className="stats-row">
         {stats.map((stat, i) => (
           <div key={i} className={`mini-card accent-${stat.color}`}>
-            <div className="card-icon">{stat.icon}</div>
             <div className="card-info">
               <span className="card-value">{stat.value}</span>
               <span className="card-label">{stat.label}</span>
             </div>
+            <div className="card-icon">{stat.icon}</div>
           </div>
         ))}
       </div>
@@ -206,7 +206,9 @@ const FacultyViolationManager = () => {
       {/* Toolbar */}
       <div className="table-actions">
         <div className="search-container">
-          <span className="search-icon">🔍</span>
+          <svg className="search-icon" viewBox="0 0 18 18" fill="none">
+            <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#b89f90" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
           <input
             type="text"
             placeholder="Search by student name, section, or violation type…"

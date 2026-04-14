@@ -1,8 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+
+/* ── Root & Page ─────────────────────────────────────────── */
 .page {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  font-family: "Outfit", sans-serif;
+  font-family: 'Outfit', sans-serif;
+  min-height: 100%;
+  flex: 1;
+  background: #fcfaf8;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .page-header {
@@ -12,30 +20,36 @@
 }
 
 .page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #1a0a00;
+  margin: 0;
 }
 
 .page-sub {
   font-size: 13px;
   color: #b89f90;
   margin-top: 4px;
+  margin-bottom: 0;
 }
 
+/* ── Button ─────────────────────────────────────────────── */
 .btn-primary {
-  background: #ff6b1a;
+  background: #FF6B1A;
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
+  font-family: 'Outfit', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-primary:hover {
   background: #e55a0f;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -45,6 +59,7 @@
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
+  font-family: 'Outfit', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -53,11 +68,13 @@
   background: #e0d8d0;
 }
 
+/* ── Filter Tabs ──────────────────────────────────────── */
 .filter-tabs {
   display: flex;
   gap: 8px;
-  background: #f8f6f4;
+  background: #fff;
   padding: 6px;
+  border: 1px solid #f0e8e0;
   border-radius: 12px;
   width: fit-content;
 }
@@ -68,17 +85,24 @@
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
   color: #6b5b50;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.filter-tab.active {
-  background: white;
+.filter-tab:hover {
   color: #1a0a00;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+.filter-tab.active {
+  background: #FF6B1A;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 26, 0.25);
+}
+
+/* ── Awards List ────────────────────────────────────────── */
 .awards-list {
   display: flex;
   flex-direction: column;
@@ -87,19 +111,29 @@
 
 .empty-state {
   text-align: center;
-  padding: 48px;
+  padding: 60px 20px;
+  background: #fff;
+  border: 1px dashed #f0e8e0;
+  border-radius: 16px;
   color: #9a8070;
   font-size: 14px;
 }
 
+/* ── Award Card ────────────────────────────────────────── */
 .ach-card {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: white;
+  background: #fff;
   border: 1px solid #f0e8e0;
   border-radius: 16px;
   padding: 16px 20px;
+  transition: all 0.2s;
+}
+
+.ach-card:hover {
+  border-color: #FF6B1A;
+  box-shadow: 0 4px 12px rgba(255, 107, 26, 0.08);
 }
 
 .ach-icon {
@@ -115,6 +149,7 @@
 
 .ach-info {
   flex: 1;
+  min-width: 0;
 }
 
 .ach-title {
@@ -127,19 +162,20 @@
 .ach-student {
   font-size: 14px;
   color: #6b5b50;
-  margin: 2px 0;
+  margin: 2px 0 0 0;
 }
 
 .ach-meta {
   font-size: 12px;
   color: #9a8070;
-  margin: 0;
+  margin: 2px 0 0 0;
 }
 
 .ach-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .cat-badge {
@@ -150,10 +186,12 @@
 }
 
 .ach-status {
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .ach-status.as-pending {
@@ -171,37 +209,41 @@
   color: #ef4444;
 }
 
+/* ── Modal ──────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modal {
-  background: white;
+  background: #fff;
   border-radius: 20px;
   width: 100%;
   max-width: 480px;
-  padding: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0e8e0;
 }
 
 .modal-header h3 {
   margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 18px;
+  font-weight: 700;
   color: #1a0a00;
 }
 
@@ -211,6 +253,18 @@
   font-size: 24px;
   color: #9a8070;
   cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.modal-close:hover {
+  color: #1a0a00;
+}
+
+/* ── Form ─────────────────────────────────────────────── */
+.modal form {
+  padding: 24px;
 }
 
 .form-group {
@@ -230,29 +284,66 @@
 .form-group textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #e0d8d0;
+  border: 1px solid #f0e8e0;
   border-radius: 10px;
   font-size: 14px;
   color: #1a0a00;
   background: #faf9f8;
-  font-family: inherit;
+  font-family: 'Outfit', sans-serif;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #ff6b1a;
+  border-color: #FF6B1A;
   background: white;
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
+  min-height: 100px;
+}
+
+.form-group select {
+  cursor: pointer;
+  appearance: auto;
 }
 
 .modal-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 24px;
+  padding: 16px 24px;
+  background: #fcfaf8;
+  border-top: 1px solid #f0e8e0;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .filter-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .ach-card {
+    flex-wrap: wrap;
+  }
+  
+  .ach-right {
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 12px;
+    border-top: 1px solid #f0e8e0;
+    margin-top: 8px;
+  }
 }

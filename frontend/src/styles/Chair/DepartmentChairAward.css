@@ -1,157 +1,325 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  font-family: "Outfit", sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Outfit:wght@400;500;600&display=swap');
+
+.chair-award-page {
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
 }
 
-.page-header {
+/* Header */
+.chair-award-page .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
+.chair-award-page .title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
   color: #1a0a00;
+  margin: 0;
 }
 
-.page-sub {
-  font-size: 13px;
+.chair-award-page .subtitle {
+  font-size: 14px;
   color: #b89f90;
   margin-top: 4px;
 }
 
-.filter-tabs {
-  display: flex;
-  gap: 6px;
-  background: #faf8f6;
-  padding: 6px;
-  border-radius: 14px;
-  border: 1px solid #f0e8e0;
-  width: fit-content;
+/* Stats Row */
+.chair-award-page .stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.filter-tab {
+.chair-award-page .mini-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid #f0e8e0;
+  border-top: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: box-shadow 0.2s;
+}
+
+.chair-award-page .mini-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+
+.chair-award-page .mini-card.accent-blue { border-top-color: #3b82f6; }
+.chair-award-page .mini-card.accent-amber { border-top-color: #f59e0b; }
+.chair-award-page .mini-card.accent-green { border-top-color: #22c55e; }
+.chair-award-page .mini-card.accent-red { border-top-color: #ef4444; }
+
+.chair-award-page .card-icon {
+  background: #fafafa;
+  padding: 10px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.chair-award-page .card-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  display: block;
+  color: #1a0a00;
+}
+
+.chair-award-page .card-label {
+  font-size: 11px;
+  color: #9a8070;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Toolbar */
+.chair-award-page .table-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.chair-award-page .search-input {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #f0e8e0;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: #1a0a00;
+  background: #fff;
+  min-width: 250px;
+  transition: border-color 0.2s;
+}
+
+.chair-award-page .search-input:focus {
+  border-color: #FF6B1A;
+}
+
+.chair-award-page .search-input::placeholder {
+  color: #b89f90;
+}
+
+/* Tabs */
+.chair-award-page .filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: #faf8f6;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #f0e8e0;
+}
+
+.chair-award-page .filter-tab {
   padding: 8px 16px;
   border: none;
   background: none;
-  border-radius: 9px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   color: #9a8070;
   cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s;
 }
 
-.filter-tab.active {
+.chair-award-page .filter-tab:hover { color: #1a0a00; }
+
+.chair-award-page .filter-tab.active {
   background: #1a0a00;
   color: #fff;
 }
 
-.awards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ach-card {
+/* Table */
+.chair-award-page .table-wrapper {
   background: #fff;
   border: 1px solid #f0e8e0;
   border-radius: 16px;
-  padding: 18px 22px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  overflow: hidden;
 }
 
-.ach-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+.chair-award-page .award-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chair-award-page .award-table thead tr {
+  background: #faf8f6;
+}
+
+.chair-award-page .award-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f0e8e0;
+}
+
+.chair-award-page .award-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f5ebe0;
+  font-size: 13px;
+  color: #1a0a00;
+}
+
+.chair-award-page .award-table tr:hover {
+  background: #fffbf9;
+}
+
+.chair-award-page .award-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Award Cell */
+.chair-award-page .award-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chair-award-page .award-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.ach-info {
-  flex: 1;
-}
-
-.ach-title {
-  font-size: 14px;
+.chair-award-page .award-name {
   font-weight: 600;
 }
 
-.ach-student {
-  font-size: 12px;
+/* Student Cell */
+.chair-award-page .student-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chair-award-page .student-name {
+  font-weight: 600;
+}
+
+.chair-award-page .student-course {
+  font-size: 11px;
   color: #9a8070;
 }
 
-.ach-meta {
+/* Category Badge */
+.chair-award-page .cat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+/* Status Pill */
+.chair-award-page .status-pill {
   font-size: 11px;
-  color: #b89f90;
-}
-
-.cat-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 9px;
+  font-weight: 600;
+  padding: 5px 10px;
   border-radius: 6px;
+  text-transform: capitalize;
 }
 
-.ach-status {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
-}
-
-.as-pending {
+.chair-award-page .status-pill.pending {
   background: #fffbeb;
   color: #d97706;
 }
 
-.as-approved {
+.chair-award-page .status-pill.approved {
   background: #f0fdf4;
   color: #16a34a;
 }
 
-.as-rejected {
+.chair-award-page .status-pill.rejected {
   background: #fff1f2;
   color: #e11d48;
 }
 
-.ach-actions {
+/* Text Muted */
+.chair-award-page .text-muted {
+  color: #9a8070;
+}
+
+/* Action Buttons */
+.chair-award-page .action-buttons {
   display: flex;
   gap: 8px;
 }
 
-.approve-btn {
-  background: #16a34a;
-  color: white;
+.chair-award-page .btn-approve {
+  background: #22c55e;
+  color: #fff;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 8px;
-  cursor: pointer;
-}
-
-.reject-btn {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.ach-resolved {
   font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s;
+}
+
+.chair-award-page .btn-approve:hover {
+  background: #16a34a;
+}
+
+.chair-award-page .btn-reject {
+  background: #fff;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s;
+}
+
+.chair-award-page .btn-reject:hover {
+  background: #fef2f2;
+}
+
+/* Resolved Text */
+.chair-award-page .resolved-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chair-award-page .resolved-text.approved {
+  color: #16a34a;
+}
+
+.chair-award-page .resolved-text.rejected {
+  color: #dc2626;
+}
+
+/* Empty State */
+.chair-award-page .empty-msg {
+  text-align: center;
+  padding: 40px;
   color: #9a8070;
 }
 
-.empty-state {
+/* Loader */
+.chair-award-page .page-loader {
   text-align: center;
-  padding: 50px;
-  color: #b89f90;
+  padding: 60px;
+  color: #9a8070;
+  font-size: 14px;
 }

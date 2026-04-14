@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { facultyService } from '../../services';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -81,6 +82,7 @@ function getAvatarColor(name = '') {
 /* ─── Main component ─────────────────────────────────────────────── */
 
 export default function FacultySubjects() {
+  const navigate = useNavigate();
   const [searchQuery,   setSearchQuery]   = useState('');
   const [activeSubject, setActiveSubject] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
@@ -147,6 +149,15 @@ export default function FacultySubjects() {
 
   const openRoster  = (card) => { setActiveSubject(card); setStudentSearch(''); };
   const closeRoster = ()     => { setActiveSubject(null); setStudentSearch(''); };
+
+  const reportViolationForStudent = (student) => {
+    navigate('/faculty/violations', {
+      state: {
+        preselectStudentId: student?.id,
+        source: 'faculty-subjects',
+      },
+    });
+  };
 
   /* ── Render ── */
   return (
@@ -282,12 +293,13 @@ export default function FacultySubjects() {
                     <th>Section</th>
                     <th>Year</th>
                     <th>Program</th>
+                    <th>Violation</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRoster.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="roster-empty">No students match your search.</td>
+                      <td colSpan={6} className="roster-empty">No students match your search.</td>
                     </tr>
                   ) : (
                     filteredRoster.map(st => {
@@ -307,6 +319,19 @@ export default function FacultySubjects() {
                           <td><span className="section-tag">{st.section?.section_name ?? '—'}</span></td>
                           <td className="cell-muted">{st.year_level ? `${st.year_level} Year` : '—'}</td>
                           <td className="cell-muted">{st.program?.program_code ?? '—'}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="report-violation-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                reportViolationForStudent(st);
+                              }}
+                              title="Report a violation for this student"
+                            >
+                              Report
+                            </button>
+                          </td>
                         </tr>
                       );
                     })

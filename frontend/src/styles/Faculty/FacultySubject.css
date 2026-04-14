@@ -497,6 +497,34 @@
 
 .roster-table tbody tr:hover td { background: #fffaf8; }
 
+.report-violation-btn {
+  background: #fff;
+  border: 1.5px solid #f0e8e0;
+  color: #ff6b1a;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.report-violation-btn:hover {
+  border-color: #ff6b1a;
+  background: #fffaf8;
+  transform: translateY(-1px);
+}
+
+.report-violation-btn:active {
+  transform: translateY(0);
+}
+
+.report-violation-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .roster-empty {
   text-align: center;
   padding: 40px !important;

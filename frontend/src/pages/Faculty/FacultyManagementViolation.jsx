@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { facultyService } from '../../services';
 import styles from '../../styles/Faculty/FacultyManagementViolation.module.css';
@@ -25,6 +26,9 @@ const EMPTY_FORM = {
 const FacultyViolationManager = () => {
   const cx = (...names) => names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(' ');
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [studentDropdownOpen, setStudentDropdownOpen] = useState(false);
@@ -36,6 +40,8 @@ const FacultyViolationManager = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const studentDropdownRef = useRef(null);
   const queryClient = useQueryClient();
+
+  const prefillConsumedRef = useRef(false);
 
   const violationsQuery = useQuery({
     queryKey: ['faculty-violations'],
@@ -77,6 +83,27 @@ const FacultyViolationManager = () => {
 
   const violations = violationsQuery.data || [];
   const students = studentsQuery.data || [];
+
+  // If navigated from Subjects page, auto-open "Report Violation" and preselect student.
+  useEffect(() => {
+    if (prefillConsumedRef.current) return;
+    const preselectStudentId = location.state?.preselectStudentId;
+    if (!preselectStudentId) return;
+    if (!students.length) return;
+
+    const idNum = Number(preselectStudentId);
+    const exists = students.some((s) => Number(s.id) === idNum);
+    if (!exists) return;
+
+    prefillConsumedRef.current = true;
+    resetForm();
+    setSelectedStudentIds([idNum]);
+    setShowReportModal(true);
+    setStudentDropdownOpen(false);
+
+    // Clear navigation state so it doesn't re-trigger on refresh/back.
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate, students]);
 
   useEffect(() => {
     const onClickOutside = (event) => {

@@ -18,8 +18,9 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 COPY backend/ .
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN php artisan key:generate --force
-RUN php artisan config:cache
+RUN php artisan config:clear
+RUN php artisan route:clear
+RUN php artisan cache:clear
 
 EXPOSE 8080
 

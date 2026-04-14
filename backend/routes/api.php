@@ -18,6 +18,15 @@ use App\Http\Controllers\Functions\ScheduleController;
 use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
+// Health check route
+Route::get('/', function () {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'CCS Student Profiling System API',
+        'version' => '1.0.0'
+    ]);
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

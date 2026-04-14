@@ -28,6 +28,7 @@ import CourseManagement from "./pages/Dean/CourseManagement";
 import PerformanceOverview from "./pages/Dean/PerformanceOverview";
 import FacultyManagement from "./pages/Shared/FacultyManagement";
 import ViolationsList from "./pages/Shared/ViolationsList";
+import AwardsList from "./pages/Shared/AwardsList";
 import StudentManagement from "./pages/Shared/StudentManagement";
 import FacultyWorkloadPage from "./pages/Shared/FacultyWorkloadPage";
 import Settings from "./pages/Shared/Settings";
@@ -142,6 +143,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
                   <ArchiveManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dean/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <AwardsList />
                 </ProtectedRoute>
               }
             />
@@ -294,6 +303,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <FacultyWorkloadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <AwardsList />
                 </ProtectedRoute>
               }
             />

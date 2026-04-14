@@ -19,5 +19,6 @@ export { analyticsService } from './analyticsService';
 export { curriculumService } from './curriculumService';
 export { profilingService } from './profilingService';
 export { violationService } from './violationService';
+export { awardService } from './awardService';
 export { scheduleService } from './scheduleService';
 export { archiveService } from './archiveService';

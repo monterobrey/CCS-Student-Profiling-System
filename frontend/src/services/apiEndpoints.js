@@ -81,6 +81,16 @@ export const API_ENDPOINTS = {
     DELETE: (id) => `/schedules/${id}`,
     CURRICULUM_COURSES: "/curriculum-courses",
   },
+  AWARDS: {
+    LIST:          "/awards",
+    GIVE:          "/awards",
+    APPROVE:       (id) => `/awards/${id}/approve`,
+    REJECT:        (id) => `/awards/${id}/reject`,
+    FACULTY_LIST:  "/faculty/awards",
+    FACULTY_GIVE:  "/faculty/awards",
+    STUDENT_LIST:  "/student/awards",
+    STUDENT_APPLY: "/student/awards",
+  },
 };
 
 export default API_ENDPOINTS;

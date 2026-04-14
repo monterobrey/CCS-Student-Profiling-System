@@ -1,12 +1,5 @@
 {
   "build": {
-    "builder": "laravel/buildpacker",
-    "buildCommand": "php /build/bootstrap.php",
-    "startCommand": "php /start.php"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "builder": "DOCKERFILE"
   }
 }

@@ -1,11 +1,24 @@
-FROM oven/laravel:php8.2-fpm
+FROM php:8.2-fpm
 
-RUN rm -rf /var/www/html/var/cache/* /var/www/html/var/log/*
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath
 
-COPY --chown=laravel:laravel . /var/www/html
+WORKDIR /var/www/html
 
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+COPY composer.json composer.lock* ./
+RUN composer install --no-dev --no-interaction --optimize-autoloader
+
+COPY . .
+
+RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["sh", "/start.sh"]
+CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,8 +1,15 @@
 import React, { useMemo, useState } from "react";
-import "../../styles/Faculty/FacultySchedule.css";
+import styles from "../../styles/Faculty/FacultySchedule.module.css";
 import { useFacultySchedule, useSectionStudents } from "../../hooks/useFacultySchedule";
 
 const FacultySchedule = () => {
+  const cx = (...classKeys) =>
+    classKeys
+      .filter(Boolean)
+      .map((k) => styles[k])
+      .filter(Boolean)
+      .join(" ");
+
   const [selectedSection, setSelectedSection] = useState(null);
   const { data: schedules = [] } = useFacultySchedule();
   const { data: students = [], isLoading: loadingStudents } = useSectionStudents(selectedSection?.section_id);
@@ -95,78 +102,109 @@ const FacultySchedule = () => {
   };
 
   return (
-    <div className="faculty-page">
+    <div className={styles["faculty-page"]}>
  
       {/* Header */}
-      <div className="page-header">
+      <div className={styles["page-header"]}>
         <div>
-          <h2 className="page-title">My Teaching Schedule</h2>
-          <p className="page-sub">
+          <h2 className={styles["page-title"]}>My Teaching Schedule</h2>
+          <p className={styles["page-sub"]}>
             View your assigned courses and enrolled students.
           </p>
         </div>
       </div>
  
       {/* Stats Cards */}
-      <div className="stats-grid">
+      <div className={styles["stats-grid"]}>
 
-        <div className="stat-card stat-card-blue">
-          <div className="stat-icon stat-icon-blue"></div>
-          <div className="stat-content">
-            <span className="stat-number stat-number-blue">{stats.total}</span>
-            <span className="stat-label">TOTAL CLASSES</span>
+        <div className={cx("stat-card", "stat-card-blue")}>
+          <div className={cx("stat-icon", "stat-icon-blue")} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M6 10h12M8 14h8M10 18h4" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-blue")}>{stats.total}</span>
+            <span className={styles["stat-label"]}>TOTAL CLASSES</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card-green">
-          <div className="stat-icon stat-icon-green"></div>
-          <div className="stat-content">
-            <span className="stat-number stat-number-green">{stats.today}</span>
-            <span className="stat-label">TODAY'S CLASSES</span>
+        <div className={cx("stat-card", "stat-card-green")}>
+          <div className={cx("stat-icon", "stat-icon-green")} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8 7V3m8 4V3M5 10h14M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-green")}>{stats.today}</span>
+            <span className={styles["stat-label"]}>TODAY'S CLASSES</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card-purple">
-          <div className="stat-icon stat-icon-purple"></div>
-          <div className="stat-content">
-            <span className="stat-number">{stats.upcoming}</span>
-            <span className="stat-label">UPCOMING</span>
+        <div className={cx("stat-card", "stat-card-purple")}>
+          <div className={cx("stat-icon", "stat-icon-purple")} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 8v5l3 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={styles["stat-number"]}>{stats.upcoming}</span>
+            <span className={styles["stat-label"]}>UPCOMING</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card-orange">
-          <div className="stat-icon stat-icon-orange"></div>
-          <div className="stat-content">
-            <span className="stat-number stat-number-orange">{stats.morning}</span>
-            <span className="stat-label">MORNING</span>
+        <div className={cx("stat-card", "stat-card-orange")}>
+          <div className={cx("stat-icon", "stat-icon-orange")} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v3" strokeWidth="2" strokeLinecap="round" />
+              <path d="M12 18v3" strokeWidth="2" strokeLinecap="round" />
+              <path d="M4.22 4.22l2.12 2.12" strokeWidth="2" strokeLinecap="round" />
+              <path d="M17.66 17.66l2.12 2.12" strokeWidth="2" strokeLinecap="round" />
+              <path d="M3 12h3" strokeWidth="2" strokeLinecap="round" />
+              <path d="M18 12h3" strokeWidth="2" strokeLinecap="round" />
+              <path d="M4.22 19.78l2.12-2.12" strokeWidth="2" strokeLinecap="round" />
+              <path d="M17.66 6.34l2.12-2.12" strokeWidth="2" strokeLinecap="round" />
+              <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-orange")}>{stats.morning}</span>
+            <span className={styles["stat-label"]}>MORNING</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card-red">
-          <div className="stat-icon stat-icon-red"></div>
-          <div className="stat-content">
-            <span className="stat-number stat-number-red">{stats.afternoon}</span>
-            <span className="stat-label">AFTERNOON</span>
+        <div className={cx("stat-card", "stat-card-red")}>
+          <div className={cx("stat-icon", "stat-icon-red")} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3a9 9 0 1 0 9 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 7v6l4 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M21 12a9 9 0 0 0-9-9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-red")}>{stats.afternoon}</span>
+            <span className={styles["stat-label"]}>AFTERNOON</span>
           </div>
         </div>
 
       </div>
  
       {/* Calendar */}
-      <div className="calendar-card">
-        <div className="calendar-wrapper">
-          <div className="calendar-grid">
+      <div className={styles["calendar-card"]}>
+        <div className={styles["calendar-wrapper"]}>
+          <div className={styles["calendar-grid"]}>
 
             {/* Header */}
-            <div className="time-header"></div>
+            <div className={styles["time-header"]}></div>
             {days.map((day) => (
-              <div key={day} className="day-header">{day}</div>
+              <div key={day} className={styles["day-header"]}>{day}</div>
             ))}
 
             {/* Time Grid */}
             {slotRanges.map((slot, i) => (
               <React.Fragment key={i}>
-                <div className="time-label">{slot.label}</div>
+                <div className={styles["time-label"]}>{slot.label}</div>
                 {days.map((day, j) => {
                   const schedule = getScheduleForCell(day, slot);
                   const isStartSlot = isScheduleStartSlot(schedule, slot);
@@ -176,7 +214,10 @@ const FacultySchedule = () => {
                   return (
                     <div
                       key={j}
-                      className={`grid-cell ${schedule && !isStartSlot ? "grid-cell-continuation" : ""}`}
+                      className={cx(
+                        "grid-cell",
+                        schedule && !isStartSlot && "grid-cell-continuation"
+                      )}
                       onClick={() => schedule && setSelectedSection(schedule)}
                       style={{
                         backgroundColor: schedule && isStartSlot ? palette?.bg : undefined,
@@ -190,23 +231,23 @@ const FacultySchedule = () => {
                     >
                       {schedule && isStartSlot && (
                         <div
-                          className="subject-chip subject-chip-block"
+                          className={cx("subject-chip", "subject-chip-block")}
                           style={{
                             height: `calc(${slotSpan} * 35px - 4px)`,
                             backgroundColor: palette?.bg,
                             borderColor: palette?.border,
                           }}
                         >
-                          <div className="subject-chip-code" style={{ color: palette?.code }}>
+                          <div className={styles["subject-chip-code"]} style={{ color: palette?.code }}>
                             {schedule.course?.course_code || "SUBJECT"}
                           </div>
-                          <div className="subject-chip-name" style={{ color: palette?.text }}>
+                          <div className={styles["subject-chip-name"]} style={{ color: palette?.text }}>
                             {subjectName}
                           </div>
-                          <div className="subject-chip-meta" style={{ color: palette?.meta }}>
+                          <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
                             {schedule.section?.section_name || "No Section"}
                           </div>
-                          <div className="subject-chip-meta" style={{ color: palette?.meta }}>
+                          <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
                             {schedule.room || "TBA"}
                           </div>
                         </div>
@@ -223,23 +264,23 @@ const FacultySchedule = () => {
  
       {/* Modal */}
       {selectedSection && (
-        <div className="modal-overlay" onClick={() => setSelectedSection(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header-styled">
-              <div className="modal-title-info">
-                <div className="modal-course-badge">Course</div>
+        <div className={styles["modal-overlay"]} onClick={() => setSelectedSection(null)}>
+          <div className={styles["modal-content"]} onClick={(e) => e.stopPropagation()}>
+            <div className={styles["modal-header-styled"]}>
+              <div className={styles["modal-title-info"]}>
+                <div className={styles["modal-course-badge"]}>Course</div>
                 <h3>{selectedSection?.course?.course_code || ""}</h3>
-                <p className="modal-subtitle">{selectedSection?.section?.section_name || ""}</p>
+                <p className={styles["modal-subtitle"]}>{selectedSection?.section?.section_name || ""}</p>
               </div>
-              <button className="close-btn" onClick={() => setSelectedSection(null)}>
+              <button className={styles["close-btn"]} onClick={() => setSelectedSection(null)}>
                 &times;
               </button>
             </div>
 
-            <div className="modal-student-count">{students.length} enrolled students</div>
+            <div className={styles["modal-student-count"]}>{students.length} enrolled students</div>
 
-            <div className="modal-body-styled">
-              <table className="students-table">
+            <div className={styles["modal-body-styled"]}>
+              <table className={styles["students-table"]}>
                 <thead>
                   <tr>
                     <th>Student Number</th>
@@ -259,11 +300,14 @@ const FacultySchedule = () => {
                   ) : (
                     students.map((student) => (
                       <tr key={student.id}>
-                        <td className="student-num">{student.user?.student_number || student.student_number || "N/A"}</td>
+                        <td className={styles["student-num"]}>{student.user?.student_number || student.student_number || "N/A"}</td>
                         <td>{student.user?.name || `${student.user?.first_name || ""} ${student.user?.last_name || ""}`.trim() || "N/A"}</td>
                         <td>
-                          <span className={`status-badge ${student.status === "Inactive" ? "status-inactive" : "status-active"}`}>
-                            <span className="dot" />
+                          <span className={cx(
+                            "status-badge",
+                            student.status === "Inactive" ? "status-inactive" : "status-active"
+                          )}>
+                            <span className={styles.dot} />
                             {student.status || "Active"}
                           </span>
                         </td>
@@ -274,8 +318,8 @@ const FacultySchedule = () => {
               </table>
             </div>
 
-            <div className="modal-footer">
-              <button className="modal-close-footer-btn" onClick={() => setSelectedSection(null)}>
+            <div className={styles["modal-footer"]}>
+              <button className={styles["modal-close-footer-btn"]} onClick={() => setSelectedSection(null)}>
                 Close
               </button>
             </div>

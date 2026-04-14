@@ -63,6 +63,9 @@
   height: 44px;
   border-radius: 10px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .faculty-page .stat-icon-blue { background: #eff6ff; }
@@ -70,6 +73,18 @@
 .faculty-page .stat-icon-purple { background: #faf5ff; }
 .faculty-page .stat-icon-orange { background: #fff7ed; }
 .faculty-page .stat-icon-red { background: #fef2f2; }
+
+.faculty-page .stat-icon-blue { color: #3b82f6; }
+.faculty-page .stat-icon-green { color: #22c55e; }
+.faculty-page .stat-icon-purple { color: #a855f7; }
+.faculty-page .stat-icon-orange { color: #f97316; }
+.faculty-page .stat-icon-red { color: #ef4444; }
+
+.faculty-page .stat-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
 
 .faculty-page .stat-content {
   display: flex;
@@ -181,6 +196,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }

@@ -12,12 +12,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-COPY composer.json composer.lock* ./
+COPY backend/composer.json backend/composer.lock* ./
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
-COPY . .
+COPY backend/ .
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN php artisan key:generate --force
+RUN php artisan config:cache
 
 EXPOSE 8080
 

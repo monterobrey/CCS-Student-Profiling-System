@@ -211,3 +211,18 @@
 .wl-full { background: #fff1f2; color: #e11d48; }
 .wl-normal { background: #fffbeb; color: #d97706; }
 .wl-light { background: #f0fdf4; color: #16a34a; }
+
+.no-subjects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 22px;
+  font-size: 12px;
+  color: #b89f90;
+  font-style: italic;
+}
+
+.no-subjects svg {
+  color: #d4c4b8;
+  flex-shrink: 0;
+}

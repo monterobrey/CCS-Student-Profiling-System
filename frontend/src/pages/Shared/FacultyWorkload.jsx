@@ -18,6 +18,7 @@ export default function FacultyWorkload() {
       const res = await facultyService.getAll();
       return res.ok ? (res.data ?? []) : [];
     },
+    staleTime: Infinity,
   });
 
   // Transform + derive workload data from cached faculty
@@ -168,7 +169,12 @@ export default function FacultyWorkload() {
                   </div>
                 ))}
                 {f.subjects.length === 0 && (
-                  <p className="no-subjects">No subjects assigned.</p>
+                  <div className="no-subjects">
+                    <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    No subjects assigned
+                  </div>
                 )}
               </div>
 

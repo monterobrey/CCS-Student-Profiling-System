@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../services';
@@ -6,6 +6,91 @@ import '../../styles/Chair/DepartmentChairDashboard.css';
 
 const ChairDashboard = () => {
   const navigate = useNavigate();
+
+  // AppLayout uses an inner scroll container. For the chair dashboard only,
+  // switch to browser scrolling and restore on unmount.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+    const dashboardRoot = document.querySelector('.dashboard-root');
+    const mainArea = document.querySelector('.main-area');
+    const content = document.querySelector('main.content');
+    const sidebar = document.querySelector('.sidebar');
+
+    const prev = {
+      htmlOverflow: html?.style.overflow,
+      bodyOverflow: body?.style.overflow,
+      rootOverflow: root?.style.overflow,
+      dashboardRootOverflow: dashboardRoot?.style.overflow,
+      dashboardRootHeight: dashboardRoot?.style.height,
+      dashboardRootMinHeight: dashboardRoot?.style.minHeight,
+      mainAreaOverflow: mainArea?.style.overflow,
+      contentOverflow: content?.style.overflow,
+      contentOverflowY: content?.style.overflowY,
+      contentMaxHeight: content?.style.maxHeight,
+      sidebarPosition: sidebar?.style.position,
+      sidebarTop: sidebar?.style.top,
+      sidebarHeight: sidebar?.style.height,
+      sidebarAlignSelf: sidebar?.style.alignSelf,
+      sidebarOverflowY: sidebar?.style.overflowY,
+    };
+
+    if (html) html.style.overflow = 'auto';
+    if (body) body.style.overflow = 'auto';
+    if (root) root.style.overflow = 'visible';
+
+    if (dashboardRoot) {
+      dashboardRoot.style.overflow = 'visible';
+      dashboardRoot.style.height = 'auto';
+      dashboardRoot.style.minHeight = '100vh';
+    }
+
+    if (mainArea) mainArea.style.overflow = 'visible';
+
+    if (content) {
+      content.style.overflow = 'visible';
+      content.style.overflowY = 'visible';
+      content.style.maxHeight = 'none';
+    }
+
+    // Keep sidebar pinned while using browser scroll
+    if (sidebar) {
+      sidebar.style.position = 'sticky';
+      sidebar.style.top = '0';
+      sidebar.style.height = '100vh';
+      sidebar.style.alignSelf = 'flex-start';
+      sidebar.style.overflowY = 'auto';
+    }
+
+    return () => {
+      if (html) html.style.overflow = prev.htmlOverflow ?? '';
+      if (body) body.style.overflow = prev.bodyOverflow ?? '';
+      if (root) root.style.overflow = prev.rootOverflow ?? '';
+
+      if (dashboardRoot) {
+        dashboardRoot.style.overflow = prev.dashboardRootOverflow ?? '';
+        dashboardRoot.style.height = prev.dashboardRootHeight ?? '';
+        dashboardRoot.style.minHeight = prev.dashboardRootMinHeight ?? '';
+      }
+
+      if (mainArea) mainArea.style.overflow = prev.mainAreaOverflow ?? '';
+
+      if (content) {
+        content.style.overflow = prev.contentOverflow ?? '';
+        content.style.overflowY = prev.contentOverflowY ?? '';
+        content.style.maxHeight = prev.contentMaxHeight ?? '';
+      }
+
+      if (sidebar) {
+        sidebar.style.position = prev.sidebarPosition ?? '';
+        sidebar.style.top = prev.sidebarTop ?? '';
+        sidebar.style.height = prev.sidebarHeight ?? '';
+        sidebar.style.alignSelf = prev.sidebarAlignSelf ?? '';
+        sidebar.style.overflowY = prev.sidebarOverflowY ?? '';
+      }
+    };
+  }, []);
 
   const { data: summaryData = {}, isLoading } = useQuery({
     queryKey: ['dean-summary'],
@@ -50,10 +135,10 @@ const ChairDashboard = () => {
     { label: 'Pending Awards',    value: chairStats.pendingAwards.toString(),    delta: 'To approve',   deltaClass: 'warning',  fill: '35%',  iconBg: '#fffbeb', iconColor: '#f59e0b', route: '/chair/awards',     iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' },
   ], [chairStats]);
 
-  if (isLoading) return <div className="faculty-page"><div className="dash-loading"><div className="spinner-lg"></div><p>Loading dashboard...</p></div></div>;
+  if (isLoading) return <div className="chair-dashboard-home"><div className="dash-loading"><div className="spinner-lg"></div><p>Loading dashboard...</p></div></div>;
 
   return (
-    <div className="faculty-page">
+    <div className="chair-dashboard-home">
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
         <div className="hero-bg-shape shape-2"></div>
@@ -90,25 +175,26 @@ const ChairDashboard = () => {
         </div>
       </div>
 
-      <div className="stats-grid">
+      <div className="chair-stats-grid">
         {stats.map((stat) => (
           <div 
             key={stat.label} 
-            className={`stat-card ${stat.route ? 'clickable' : ''}`}
+            className={`chair-stat-card ${stat.route ? 'clickable' : ''}`}
             onClick={() => stat.route && navigate(stat.route)}
+            style={{ borderTop: `3px solid ${stat.iconColor}` }}
           >
-            <div className="stat-top">
-              <span className="stat-label">{stat.label}</span>
-              <div className="stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
+            <div className="chair-stat-top">
+              <div className="chair-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
                 <svg viewBox="0 0 18 18" fill="none" dangerouslySetInnerHTML={{ __html: stat.iconPath }} />
               </div>
             </div>
-            <div className="stat-bottom">
-              <span className="stat-number">{stat.value}</span>
-              <span className={`stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
+            <div className="chair-stat-bottom">
+              <span className="chair-stat-value">{stat.value}</span>
+              <span className={`chair-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
-            <div className="stat-bar">
-              <div className="stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
+            <span className="chair-stat-label">{stat.label}</span>
+            <div className="chair-stat-bar">
+              <div className="chair-stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
             </div>
           </div>
         ))}

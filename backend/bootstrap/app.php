@@ -15,10 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'cors' => \Fruitcake\Cors\HandleCors::class,
+            'cors' => \App\Http\Middleware\CorsMiddleware::class,
         ]);
         
-        $middleware->append(\Fruitcake\Cors\HandleCors::class);
+        $middleware->api(\App\Http\Middleware\CorsMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

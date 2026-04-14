@@ -268,7 +268,7 @@ const FacultySchedule = () => {
                             {student.status || "Active"}
                           </span>
                         </td>
-                        <td className="text-right">
+                        <td className="text-center">
                           <button className="report-btn" type="button">
                             Report violation
                           </button>

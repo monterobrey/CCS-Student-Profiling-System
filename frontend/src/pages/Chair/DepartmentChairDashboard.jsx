@@ -65,11 +65,11 @@ const ChairDashboard = () => {
   }, []);
 
   if (loading) {
-    return <div className="dashboard-home">Loading...</div>;
+    return <div className="faculty-page">Loading...</div>;
   }
 
   return (
-    <div className="dashboard-home">
+    <div className="faculty-page">
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
         <div className="hero-bg-shape shape-2"></div>
@@ -120,7 +120,7 @@ const ChairDashboard = () => {
               </div>
             </div>
             <div className="stat-bottom">
-              <span className="stat-value">{stat.value}</span>
+              <span className="stat-number">{stat.value}</span>
               <span className={`stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
             <div className="stat-bar">

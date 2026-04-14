@@ -54,7 +54,7 @@ const FacultyDashboard = () => {
   }, []);
 
   return (
-    <div className="dashboard-home">
+    <div className="faculty-page">
       {/* Hero Banner - Matches your screenshot height and wide layout */}
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
@@ -94,7 +94,7 @@ const FacultyDashboard = () => {
               </div>
             </div>
             <div className="stat-bottom">
-              <span className="stat-value">{stat.value}</span>
+              <span className="stat-number">{stat.value}</span>
               <span className={`stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
             <div className="stat-bar"><div className="stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div></div>

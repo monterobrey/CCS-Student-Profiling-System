@@ -5,14 +5,14 @@
 .page-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #1a0a00; }
 .page-sub { font-size: 13px; color: #b89f90; margin-top: 4px; }
 .header-actions { display: flex; gap: 12px; }
-.primary-btn { display: flex; align-items: center; gap: 7px; background: #FF6B1A; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.primary-btn { display: flex; align-items: center; gap: 7px; background: #FF6B1A; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
 .primary-btn:hover:not(:disabled) { background: #e85500; }
 .primary-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 .primary-btn svg { width: 15px; height: 15px; }
 .ghost-btn { display: flex; align-items: center; gap: 7px; background: #fff; color: #1a0a00; border: 1.5px solid #f0e8e0; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
 .ghost-btn:hover { border-color: #FF6B1A; color: #FF6B1A; }
 .ghost-btn svg { width: 15px; height: 15px; }
-.danger-btn { background: #ef4444; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.danger-btn { background: #ef4444; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; }
 
 .mini-stats { display: flex; gap: 16px; }
 .mini-stat-card { background: #fff; border: 1px solid #f0e8e0; border-radius: 12px; flex: 1; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }

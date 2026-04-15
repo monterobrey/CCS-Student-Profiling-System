@@ -109,6 +109,18 @@ export default function ScheduleManagement() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  // ── Auto-select BSIT 1st Year by default ────────────────────────────────
+  useEffect(() => {
+    if (programs.length > 0 && !filterProgram && !cachedFilters?.filterProgram) {
+      const bsit = programs.find(p => p.program_code === "BSIT");
+      if (bsit) {
+        setFilterProgram(bsit.id);
+        setFilterYear("1");
+        persistFilters({ filterProgram: bsit.id, filterYear: "1" });
+      }
+    }
+  }, [programs, filterProgram, cachedFilters]);
+
   // ── Derived: filtered sections (tabs) ────────────────────────────────────
 
   const filteredSections = useMemo(() => {

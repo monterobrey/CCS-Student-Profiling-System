@@ -97,9 +97,8 @@ const { role } = useAuth();
           { path: "violations", meta: { title: "Record Violation", icon: "violations" } },
           { path: "awards", meta: { title: "Recommend Awards", icon: "awards" } }
         ]},
-        { name: "Account Settings", items: [
-          { path: "settings", meta: { title: "My Profile", icon: "profile" } },
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Settings", items: [
+          { path: "settings", meta: { title: "My Profile", icon: "profile" } }
         ]},
       ],
       [ROLES.SECRETARY]: [

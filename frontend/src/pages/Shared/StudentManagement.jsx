@@ -90,7 +90,7 @@ export default function StudentManagement() {
   };
 
   // derived from cached students + url param
-  const viewingStudent = id ? students.find(s => s.id == id) ?? null : null;
+  const viewingStudent = id ? students.find(s => s.id === id) ?? null : null;
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -128,7 +128,7 @@ export default function StudentManagement() {
     return students
       .filter(s => {
         const matchProgram = !filterProgram || s.program?.program_code === filterProgram;
-        const matchYear    = !filterYear    || s.year_level == filterYear;
+        const matchYear    = !filterYear    || s.year_level === filterYear;
         return matchProgram && matchYear;
       })
       .map(s => s.section?.section_name)
@@ -140,7 +140,7 @@ export default function StudentManagement() {
   const filteredFormSections = useMemo(() => {
     if (!form.program_id || !form.year_level) return [];
     return sections.filter(sec =>
-      sec.program_id == form.program_id && sec.year_level == form.year_level
+      sec.program_id === form.program_id && sec.year_level === form.year_level
     );
   }, [sections, form.program_id, form.year_level]);
 
@@ -155,7 +155,7 @@ export default function StudentManagement() {
 
       const matchSearch  = !search        || fullName.includes(search.toLowerCase()) || email.includes(search.toLowerCase()) || studNum.includes(search.toLowerCase());
       const matchProgram = !filterProgram || progCode === filterProgram;
-      const matchYear    = !filterYear    || s.year_level == filterYear;
+      const matchYear    = !filterYear    || s.year_level === filterYear;
       const matchSection = !filterSection || secName === filterSection;
       const matchStatus  = !filterStatus  || status === filterStatus;
 

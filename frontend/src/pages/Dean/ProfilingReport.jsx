@@ -212,7 +212,7 @@ export default function ProfilingReport() {
                   <select name="section_id" value={filters.section_id} onChange={handleChange}>
                     <option value="">All Sections</option>
                     {sections
-                      .filter(s => !filters.program_id || s.program_id == filters.program_id)
+                      .filter(s => !filters.program_id || s.program_id === filters.program_id)
                       .map(s => (
                         <option key={s.id} value={s.id}>{s.section_name}</option>
                       ))}

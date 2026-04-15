@@ -66,8 +66,8 @@ export default function CourseManagement() {
 
     // Match against primary program_id OR any curriculum program
     const matchesProgram = !filterProgram || 
-      c.program_id == filterProgram ||
-      c.curriculum_programs?.some(p => p.id == filterProgram);
+      c.program_id === filterProgram ||
+      c.curriculum_programs?.some(p => p.id === filterProgram);
 
     return matchesSearch && matchesProgram;
   }), [courses, search, filterProgram]);
@@ -77,9 +77,9 @@ export default function CourseManagement() {
   =========================== */
 
   const getYearSuffix = (y) => {
-    if (y == 1) return "st";
-    if (y == 2) return "nd";
-    if (y == 3) return "rd";
+    if (y === 1) return "st";
+    if (y === 2) return "nd";
+    if (y === 3) return "rd";
     return "th";
   };
 

@@ -62,8 +62,8 @@ export function mapStudentProfileFromApi(data) {
     email: data.user?.email ?? data.email ?? "—",
     course_name: data.program?.program_name ?? data.program?.name ?? "—",
     section_name: data.section?.section_name ?? data.section?.name ?? "Unassigned",
-    year_level: data.year_level != null ? String(data.year_level) : "—",
-    gwa: data.gwa != null ? String(data.gwa) : "0.00",
+    year_level: data.year_level !== null ? String(data.year_level) : "—",
+    gwa: data.gwa !== null ? String(data.gwa) : "0.00",
   };
 
   const address = data.address ? parseAddressString(data.address) : emptyAddress();

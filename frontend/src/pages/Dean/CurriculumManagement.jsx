@@ -95,7 +95,7 @@ export default function CurriculumManagement() {
     let filtered = [...curriculum];
 
     if (filterYear !== "all") {
-      filtered = filtered.filter(item => item.year_level == filterYear);
+      filtered = filtered.filter(item => item.year_level === filterYear);
     }
 
     if (curriculumSearch.trim()) {
@@ -129,9 +129,9 @@ export default function CurriculumManagement() {
   =========================== */
 
   const getYearSuffix = (y) => {
-    if (y == 1) return "st";
-    if (y == 2) return "nd";
-    if (y == 3) return "rd";
+    if (y === 1) return "st";
+    if (y === 2) return "nd";
+    if (y === 3) return "rd";
     return "th";
   };
 

@@ -126,7 +126,7 @@ export default function ScheduleManagement() {
   const filteredSections = useMemo(() => {
     if (!filterProgram || !filterYear) return [];
     return sections
-      .filter((s) => s.program_id == filterProgram && s.year_level == filterYear)
+      .filter((s) => s.program_id === filterProgram && s.year_level === filterYear)
       .sort((a, b) => a.section_name.localeCompare(b.section_name));
   }, [sections, filterProgram, filterYear]);
 
@@ -138,7 +138,7 @@ export default function ScheduleManagement() {
       return;
     }
     // If cached section is still in the filtered list, keep it; otherwise pick first
-    const stillValid = filteredSections.some((s) => s.id == activeSectionId);
+    const stillValid = filteredSections.some((s) => s.id === activeSectionId);
     if (!stillValid) {
       const first = filteredSections[0].id;
       setActiveSectionId(first);
@@ -163,10 +163,10 @@ export default function ScheduleManagement() {
 
     return Object.values(grouped)
       .filter((item) => {
-        if (activeSectionId) return item.section_id == activeSectionId;
+        if (activeSectionId) return item.section_id === activeSectionId;
         const sec = item.section;
-        if (filterProgram && sec?.program_id != filterProgram) return false;
-        if (filterYear    && sec?.year_level  != filterYear)   return false;
+        if (filterProgram && sec?.program_id !== filterProgram) return false;
+        if (filterYear    && sec?.year_level  !== filterYear)   return false;
         return true;
       })
       .sort((a, b) =>
@@ -245,7 +245,7 @@ export default function ScheduleManagement() {
         setAssignForm({ faculty_id: "" });
         setAssignError("");
         // Update cache directly — no refetch needed
-        const assignedFaculty = faculty.find((f) => f.id == assignForm.faculty_id);
+        const assignedFaculty = faculty.find((f) => f.id === assignForm.faculty_id);
         queryClient.setQueryData(["schedules"], (old = []) =>
           old.map((s) =>
             s.section_id === selectedSchedule.section_id &&
@@ -366,7 +366,7 @@ export default function ScheduleManagement() {
             {filteredSections.map((sec) => (
               <button
                 key={sec.id}
-                className={`section-tab ${activeSectionId == sec.id ? "active" : ""}`}
+                className={`section-tab ${activeSectionId === sec.id ? "active" : ""}`}
                 onClick={() => { setActiveSectionId(sec.id); persistFilters({ activeSectionId: sec.id }); }}
               >
                 {sec.section_name}

@@ -102,7 +102,7 @@ export default function FacultyManagement() {
   };
 
   // derived from cache + url param
-  const viewingFaculty = id ? faculty.find(f => f.id == id) ?? null : null;
+  const viewingFaculty = id ? faculty.find(f => f.id === id) ?? null : null;
 
   /* ===========================
      DERIVED DATA
@@ -120,7 +120,7 @@ export default function FacultyManagement() {
       const email       = f.user?.email?.toLowerCase() || '';
       const status      = f.user?.status || '';
       const matchSearch   = !search         || fullName.includes(search.toLowerCase()) || email.includes(search.toLowerCase());
-      const matchDept     = !filterDept     || f.department_id == filterDept;
+      const matchDept     = !filterDept     || f.department_id === filterDept;
       const matchPosition = !filterPosition || f.position === filterPosition;
       const matchStatus   = !filterStatus   || status === filterStatus;
       return matchSearch && matchDept && matchPosition && matchStatus;

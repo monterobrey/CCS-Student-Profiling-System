@@ -1,11 +1,27 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../../context/AuthContext';
 import { analyticsService } from '../../services';
 import '../../styles/Chair/DepartmentChairDashboard.css';
 
 const ChairDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
+
+  const displayName = useMemo(() => {
+    if (!user) return 'Chair';
+    if (user.first_name) return user.first_name;
+    if (user.name) return user.name.split(' ')[0];
+    return 'Chair';
+  }, [user]);
 
   // AppLayout uses an inner scroll container. For the chair dashboard only,
   // switch to browser scrolling and restore on unmount.
@@ -145,8 +161,8 @@ const ChairDashboard = () => {
         <div className="hero-body">
           <div className="hero-left">
             <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
-            <h2 className="hero-greeting">Good morning, Chair 👋</h2>
-            <p className="hero-desc">
+            <h2 className="hero-greeting">{greeting}, {displayName} 👋</h2>
+            <p className="chair-hero-desc">
               Department avg GWA is <strong>{chairStats.avgGwa}</strong>. 
               You have <strong>{chairStats.pendingAwards} awards</strong> awaiting approval and <strong>{chairStats.activeViolations} active violations</strong> this semester.
             </p>

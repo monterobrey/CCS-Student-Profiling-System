@@ -16,7 +16,14 @@ const FacultyDashboard = () => {
     { label: 'Violation reports', count: 0, color: '#ef4444' }
   ]);
   const [subjects, setSubjects] = useState([]);
-  
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    const prefix = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const name = user?.first_name || (user?.name ? user.name.split(' ')[0] : 'Professor');
+    return `${prefix}, ${name}`;
+  }, [user]);
+
   const [stats, setStats] = useState([
     { label: 'My Subjects', value: '0', delta: 'This semester', deltaClass: 'positive', fill: '0%', iconBg: '#fff5ef', iconColor: '#FF6B1A', route: '/faculty/subjects', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
     { label: 'Total Students', value: '0', delta: 'Enrolled', deltaClass: 'positive', fill: '0%', iconBg: '#eff6ff', iconColor: '#3b82f6', route: '/faculty/students', iconPath: <><path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
@@ -61,7 +68,7 @@ const FacultyDashboard = () => {
         <div className="hero-body">
           <div className="hero-left">
             <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
-            <h2 className="hero-greeting">Good morning, {user?.name || user?.first_name || 'Professor'} 👋</h2>
+            <h2 className="hero-greeting">{greeting} 👋</h2>
             <p className="faculty-hero-desc">You have <strong>{facultyStats.totalSubjects} subjects</strong> this semester with <strong>{facultyStats.totalStudents} enrolled students</strong> across all your classes.</p>
             <div className="hero-actions">
               <Link to="/faculty/schedule" className="hero-btn-primary">My Schedule</Link>

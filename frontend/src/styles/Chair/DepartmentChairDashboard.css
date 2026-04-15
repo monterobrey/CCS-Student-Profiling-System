@@ -97,7 +97,7 @@
   margin-bottom: 8px;
 }
 
-.chair-dashboard-home .hero-desc {
+.chair-dashboard-home .chair-hero-desc {
   color: rgba(255, 255, 255, 0.7);
   font-size: 13.5px;
   max-width: 400px;
@@ -106,7 +106,7 @@
   text-align: left;
 }
 
-.chair-dashboard-home .hero-desc strong {
+.chair-dashboard-home .chair-hero-desc strong {
   color: #fff;
   font-weight: 500;
 }
@@ -589,7 +589,7 @@
   .chair-dashboard-home .hero-greeting {
     font-size: 22px;
   }
-  .chair-dashboard-home .hero-desc {
+  .chair-dashboard-home .chair-hero-desc {
     max-width: 100%;
   }
   .chair-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

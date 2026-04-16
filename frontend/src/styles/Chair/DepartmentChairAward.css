@@ -1,20 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+
 .page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   font-family: "Outfit", sans-serif;
 }
 
-.page-header {
+/* Isolated Header to prevent global gradient bugs */
+.award-header-clean {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  background: transparent !important;
+  background-image: none !important;
 }
 
 .page-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #1a0a00;
+  margin: 0;
 }
 
 .page-sub {
@@ -23,25 +30,44 @@
   margin-top: 4px;
 }
 
+/* --- Controls Row (Tabs + Search) --- */
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
 .filter-tabs {
   display: flex;
   gap: 6px;
-  background: #faf8f6;
+  background: #ffffff;
   padding: 6px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid #f0e8e0;
   width: fit-content;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .filter-tab {
   padding: 8px 16px;
   border: none;
   background: none;
-  border-radius: 9px;
+  border-radius: 8px;
   font-size: 13px;
+  font-family: inherit;
   font-weight: 600;
   color: #9a8070;
   cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-tab:hover {
+  color: #1a0a00;
 }
 
 .filter-tab.active {
@@ -49,77 +75,184 @@
   color: #fff;
 }
 
+.tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.filter-tab:not(.active) .tab-count {
+  background: #f0e8e0;
+  color: #a38d82;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #a38d82;
+}
+
+.search-clear:hover {
+  color: #1a0a00;
+}
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #f0e8e0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 280px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.search-wrap input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  color: #1a0a00;
+}
+
+.search-wrap input::placeholder {
+  color: #b89f90;
+}
+
+/* --- Awards Data Table Layout --- */
+.awards-table-container {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0e8e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
 .awards-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.ach-card {
-  background: #fff;
-  border: 1px solid #f0e8e0;
-  border-radius: 16px;
-  padding: 18px 22px;
+.ach-header {
+  background: #fdfaf8;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ach-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
+  gap: 16px;
+  padding: 16px 24px;
+  align-items: center;
+  border-bottom: 1px solid #f9f7f5;
+  transition: background-color 0.2s;
+   transition: all 0.2s;
+}
+
+.ach-row:hover {
+  background-color: #fdfcfb;
+  transform: translateY(-1px);
+}
+
+.ach-row:last-child {
+  border-bottom: none;
+}
+
+.ach-col {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ach-info-col {
+  flex-direction: row;
   align-items: center;
   gap: 14px;
 }
 
 .ach-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  background: #fff8eb;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.ach-info {
-  flex: 1;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .ach-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;
-  font-weight: 600;
-}
-
-.ach-student {
-  font-size: 12px;
-  color: #9a8070;
+  font-weight: 700;
+  color: #1a0a00;
+  margin: 0 0 2px 0;
 }
 
 .ach-meta {
   font-size: 11px;
+  color: #a38d82;
+  margin: 0;
+}
+
+.ach-student-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a3f35;
+  margin: 0 0 2px 0;
+}
+
+.ach-student-prog {
+  font-size: 11px;
+  color: #9a8070;
+  background: #f0e8e0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  width: fit-content;
+  margin: 0;
+}
+
+.ach-date {
+  font-size: 13px;
+  color: #4a3f35;
+  margin: 0 0 2px 0;
+}
+
+.ach-reason {
+  font-size: 11px;
   color: #b89f90;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  margin: 0;
 }
 
-.cat-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
-}
-
+/* --- Status Badges --- */
 .ach-status {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 6px;
+  width: fit-content;
+  border: 1px solid transparent;
 }
 
-.as-pending {
-  background: #fffbeb;
-  color: #d97706;
-}
+.as-pending { background: #fffbeb; color: #d97706; }
+.as-approved { background: #f0fdf4; color: #16a34a; }
+.as-rejected { background: #fff1f2; color: #e11d48; }
 
-.as-approved {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-
-.as-rejected {
-  background: #fff1f2;
-  color: #e11d48;
+/* --- Action Buttons --- */
+.action-col {
+  align-items: flex-end;
 }
 
 .ach-actions {
@@ -127,31 +260,89 @@
   gap: 8px;
 }
 
-.approve-btn {
-  background: #16a34a;
-  color: white;
-  border: none;
+/* Modern Ghost Buttons for Actions */
+.btn-approve {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid transparent;
   padding: 6px 12px;
   border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-.reject-btn {
-  background: #ef4444;
-  color: white;
-  border: none;
+.btn-approve:hover {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.btn-reject {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid transparent;
   padding: 6px 12px;
   border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reject:hover {
+  background: #e11d48;
+  color: #ffffff;
 }
 
 .ach-resolved {
   font-size: 12px;
-  color: #9a8070;
+  color: #a38d82;
+  font-style: italic;
+  padding-right: 8px;
 }
+
+/* General button styling for headers/modals */
+.btn-primary {
+  background: #FF6B1A;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: #e65c12; }
+
+.btn-secondary {
+  background: transparent;
+  color: #4a3f35;
+  border: 1px solid #d4c4b8;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover { background: #f9f7f5; }
 
 .empty-state {
   text-align: center;
   padding: 50px;
   color: #b89f90;
+  font-style: italic;
 }
+
+.empty-state span {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+}
+

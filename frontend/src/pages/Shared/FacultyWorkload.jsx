@@ -8,9 +8,12 @@ const COLORS = ['#FF6B1A', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444'
 const getColor = (id) => COLORS[id % COLORS.length];
 
 export default function FacultyWorkload() {
-  const [search,     setSearch]     = useState('');
+  const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [filterLoad, setFilterLoad] = useState('');
+  
+  // State to control the schedule modal
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
 
   const { data: facultyData = [], isLoading } = useQuery({
     queryKey: ['faculty'],
@@ -26,6 +29,7 @@ export default function FacultyWorkload() {
     const schedules = f.schedules || [];
     const seen = new Set();
     let totalUnits = 0;
+    
     schedules.forEach(s => {
       const key = `${s.course_id}-${s.section_id}`;
       if (!seen.has(key)) {
@@ -50,17 +54,18 @@ export default function FacultyWorkload() {
         uniqueSections.set(s.section_id, s.section?.students_count || 0);
       }
     });
+    
     const totalStudents = [...uniqueSections.values()].reduce((sum, c) => sum + c, 0);
 
     return {
-      id:           f.id,
-      name:         `${f.last_name}, ${f.first_name}`,
-      department:   f.department?.department_name || 'N/A',
-      position:     f.position || 'Faculty',
-      units:        totalUnits,
+      id:            f.id,
+      name:          `${f.last_name}, ${f.first_name}`,
+      department:    f.department?.department_name || 'N/A',
+      position:      f.position || 'Faculty',
+      units:         totalUnits,
       subjects,
       totalStudents,
-      color:        getColor(f.id),
+      color:         getColor(f.id),
     };
   }), [facultyData]);
 
@@ -80,11 +85,11 @@ export default function FacultyWorkload() {
   const miniStats = useMemo(() => {
     const withSchedules = faculty.filter(f => f.subjects.length > 0);
     return [
-      { label: 'Total Faculty',  value: faculty.length,                                              color: '#FF6B1A' },
-      { label: 'Full Load',      value: withSchedules.filter(f => f.units >= 18).length,             color: '#ef4444' },
+      { label: 'Total Faculty',  value: faculty.length,                                      color: '#FF6B1A' },
+      { label: 'Full Load',      value: withSchedules.filter(f => f.units >= 18).length,     color: '#ef4444' },
       { label: 'Normal Load',    value: withSchedules.filter(f => f.units >= 12 && f.units < 18).length, color: '#f59e0b' },
       { label: 'Light Load',     value: withSchedules.filter(f => f.units > 0 && f.units < 12).length, color: '#16a34a' },
-      { label: 'Total Subjects', value: faculty.reduce((a, f) => a + f.subjects.length, 0),          color: '#8b5cf6' },
+      { label: 'Total Subjects', value: faculty.reduce((a, f) => a + f.subjects.length, 0),  color: '#8b5cf6' },
     ];
   }, [faculty]);
 
@@ -111,12 +116,20 @@ export default function FacultyWorkload() {
         ))}
       </div>
 
-      {/* Toolbar */}
+      {/* Enhanced Toolbar */}
       <div className="table-toolbar">
         <div className="search-wrap">
-          <svg viewBox="0 0 18 18" fill="none"><path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          <input type="text" placeholder="Search by name or department..." value={search} onChange={e => setSearch(e.target.value)} />
+          <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+            <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#9a8070" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Search by name or department..." 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+          />
         </div>
+        <div className="toolbar-divider"></div>
         <div className="filter-group">
           <select value={filterDept} onChange={e => setFilterDept(e.target.value)}>
             <option value="">All Departments</option>
@@ -131,7 +144,7 @@ export default function FacultyWorkload() {
         </div>
       </div>
 
-      {/* Faculty Cards */}
+      {/* Faculty Cards Grid */}
       {isLoading ? (
         <div className="loading-overlay">
           <div className="spinner-lg"></div>
@@ -140,10 +153,12 @@ export default function FacultyWorkload() {
       ) : (
         <div className="faculty-grid">
           {filtered.length === 0 && (
-            <p style={{ color: '#b89f90', fontStyle: 'italic', padding: '1rem' }}>No faculty members found.</p>
+            <p style={{ color: '#b89f90', fontStyle: 'italic', padding: '1rem', gridColumn: '1 / -1' }}>
+              No faculty members found.
+            </p>
           )}
           {filtered.map((f) => (
-            <div className="faculty-card" key={f.id}>
+            <div className="faculty-card interactive" key={f.id} onClick={() => setSelectedFaculty(f)}>
               <div className="fc-header">
                 <div className="fc-avatar" style={{ background: f.color }}>
                   {f.name.charAt(0)}
@@ -159,25 +174,6 @@ export default function FacultyWorkload() {
                 </div>
               </div>
 
-              <div className="fc-subjects">
-                {f.subjects.map((subj) => (
-                  <div className="fc-subject-row" key={`${subj.code}-${subj.section}`}>
-                    <span className="subj-code">{subj.code}</span>
-                    <span className="subj-name">{subj.name}</span>
-                    <span className="subj-section">{subj.section}</span>
-                    <span className="subj-sched">{subj.schedule}</span>
-                  </div>
-                ))}
-                {f.subjects.length === 0 && (
-                  <div className="no-subjects">
-                    <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    No subjects assigned
-                  </div>
-                )}
-              </div>
-
               <div className="fc-footer">
                 <span className="fc-students">{f.totalStudents} students total</span>
                 <span className={`workload-badge ${getBadgeClass(f.units)}`}>
@@ -186,6 +182,45 @@ export default function FacultyWorkload() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Schedule Modal */}
+      {selectedFaculty && (
+        <div className="modal-overlay" onClick={() => setSelectedFaculty(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h3>{selectedFaculty.name}'s Schedule</h3>
+                <p>{selectedFaculty.units} Total Units Assigned</p>
+              </div>
+              <button className="modal-close" onClick={() => setSelectedFaculty(null)}>✕</button>
+            </div>
+            
+            <div className="modal-body">
+              {selectedFaculty.subjects.length > 0 ? (
+                <div className="calendar-ui">
+                  {selectedFaculty.subjects.map((subj) => (
+                    <div className="calendar-row" key={`${subj.code}-${subj.section}`}>
+                      <div className="cal-time">
+                        <span className="cal-day">{subj.schedule.split(' ')[0]}</span>
+                        <span className="cal-hours">{subj.schedule.substring(subj.schedule.indexOf(' ') + 1)}</span>
+                      </div>
+                      <div className="cal-details">
+                        <span className="cal-code">{subj.code}</span>
+                        <span className="cal-name">{subj.name}</span>
+                        <span className="cal-section">Sec: {subj.section}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-subjects-modal">
+                   No subjects assigned for this semester.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

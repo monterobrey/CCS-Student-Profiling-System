@@ -440,138 +440,169 @@ export default function ScheduleManagement() {
         </div>
       )}
 
-      {/* ── ADD SCHEDULE MODAL ── */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>New Schedule</h3>
-              <button className="modal-close" onClick={() => setShowAddModal(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="field">
-                <label>Section</label>
-                <select value={form.section_id} onChange={(e) => setForm({ ...form, section_id: e.target.value, course_id: "" })}>
-                  <option value="">Select section</option>
-                  {sections.map((s) => (
-                    <option key={s.id} value={s.id}>{s.section_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Course {!form.section_id && <span className="field-hint">(select a section first)</span>}</label>
-                <select value={form.course_id} onChange={(e) => setForm({ ...form, course_id: e.target.value })} disabled={!form.section_id}>
-                  <option value="">Select course</option>
-                  {curriculumCourses.map((c) => (
-                    <option key={c.id} value={c.id}>{c.course_code} — {c.course_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field-row">
-                <div className="field">
-                  <label>Type</label>
-                  <select value={form.class_type} onChange={(e) => setForm({ ...form, class_type: e.target.value })}>
-                    <option value="lec">Lecture</option>
-                    <option value="lab">Laboratory</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Day</label>
-                  <select value={form.dayOfWeek} onChange={(e) => setForm({ ...form, dayOfWeek: e.target.value })}>
-                    {DAY_ORDER.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="field-row">
-                <div className="field">
-                  <label>Start Time</label>
-                  <input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} />
-                </div>
-                <div className="field">
-                  <label>End Time</label>
-                  <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} />
-                </div>
-              </div>
-              <div className="field">
-                <label>Room</label>
-                <input type="text" placeholder="e.g. Room 101" value={form.room}
-                  onChange={(e) => setForm({ ...form, room: e.target.value })} />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="outline-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
-              <button className="primary-btn" onClick={saveSchedule} disabled={saving}>
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
+{/* ── ADD SCHEDULE MODAL ── */}
+{showAddModal && (
+  <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+    <div className="modal modal-add" onClick={(e) => e.stopPropagation()}>
+
+      {/* HEADER */}
+      <div className="modal-header">
+        <div className="modal-header-left">
+          <div className="modal-header-icon">
+            <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+              <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M6 2v2M12 2v2M2 7h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              <path d="M6 10h2M10 10h2M6 13h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h3>New Schedule Entry</h3>
+            <p className="modal-subtitle">Add a class schedule for a section</p>
           </div>
         </div>
-      )}
+        <button className="modal-close" onClick={() => setShowAddModal(false)}>✕</button>
+      </div>
 
-      {/* ── AUTO-GENERATE MODAL ── */}
-      {showAutoModal && (
-        <div className="modal-overlay" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Auto-Generate Schedules</h3>
-              <button className="modal-close" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>✕</button>
-            </div>
-            <div className="modal-body">
-              <p className="modal-hint">
-                This will generate schedules for all sections of the selected program and year level
-                based on the curriculum. Existing schedules for those sections will be replaced.
-              </p>
-              <div className="field">
-                <label>Program</label>
-                <select value={autoForm.program_id} onChange={(e) => { setAutoForm({ ...autoForm, program_id: e.target.value }); setAutoConflicts([]); }}>
-                  <option value="">Select program</option>
-                  {programs.map((p) => (
-                    <option key={p.id} value={p.id}>{p.program_code} — {p.program_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Year Level</label>
-                <select value={autoForm.year_level} onChange={(e) => { setAutoForm({ ...autoForm, year_level: e.target.value }); setAutoConflicts([]); }}>
-                  {["1","2","3","4"].map((y) => (
-                    <option key={y} value={y}>{y}{y==="1"?"st":y==="2"?"nd":y==="3"?"rd":"th"} Year</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Semester</label>
-                <select value={autoForm.semester} onChange={(e) => { setAutoForm({ ...autoForm, semester: e.target.value }); setAutoConflicts([]); }}>
-                  <option value="1st">1st Semester</option>
-                  <option value="2nd">2nd Semester</option>
-                  <option value="Summer">Summer</option>
-                </select>
-              </div>
+      {/* BODY */}
+      <div className="modal-body">
 
-              {autoConflicts.length > 0 && (
-                <div className="conflict-box">
-                  <div className="conflict-header">
-                    <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM10 6v4M10 14h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span>Scheduling Conflicts Detected</span>
-                  </div>
-                  <ul className="conflict-list">
-                    {autoConflicts.map((c, i) => <li key={i}>{c}</li>)}
-                  </ul>
-                  <p className="conflict-note">Adjust the curriculum or resolve conflicts manually before retrying.</p>
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="outline-btn" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>Cancel</button>
-              <button className="primary-btn" onClick={handleAutoGenerate} disabled={generating}>
-                {generating ? "Generating..." : "Generate"}
-              </button>
-            </div>
+        <div className="form-section-label">Class Details</div>
+
+        <div className="field">
+          <label>Section <span className="req">*</span></label>
+          <select
+            value={form.section_id}
+            onChange={(e) => setForm({ ...form, section_id: e.target.value, course_id: "" })}
+          >
+            <option value="">Select section</option>
+            {sections.map((s) => (
+              <option key={s.id} value={s.id}>{s.section_name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field">
+          <label>
+            Course <span className="req">*</span>
+            {!form.section_id && <span className="field-hint"> — select a section first</span>}
+          </label>
+          <select
+            value={form.course_id}
+            onChange={(e) => setForm({ ...form, course_id: e.target.value })}
+            disabled={!form.section_id}
+          >
+            <option value="">Select course</option>
+            {curriculumCourses.map((c) => (
+              <option key={c.id} value={c.id}>{c.course_code} — {c.course_name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field">
+          <label>Type <span className="req">*</span></label>
+          <div className="type-toggle">
+            <button
+              type="button"
+              className={`type-btn ${form.class_type === "lec" ? "type-btn-lec" : ""}`}
+              onClick={() => setForm({ ...form, class_type: "lec" })}
+            >
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                <rect x="2" y="2" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M5 14h6M8 12v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Lecture
+            </button>
+            <button
+              type="button"
+              className={`type-btn ${form.class_type === "lab" ? "type-btn-lab" : ""}`}
+              onClick={() => setForm({ ...form, class_type: "lab" })}
+            >
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                <path d="M6 2v5L3 13h10L10 7V2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M5.5 2h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Laboratory
+            </button>
           </div>
         </div>
-      )}
 
+        <div className="form-section-label" style={{ marginTop: 4 }}>Schedule</div>
+
+        <div className="field">
+          <label>Day <span className="req">*</span></label>
+          <div className="day-pills">
+            {DAY_ORDER.map((d) => (
+              <button
+                key={d}
+                type="button"
+                className={`day-pill ${form.dayOfWeek === d ? "day-pill-active" : ""}`}
+                onClick={() => setForm({ ...form, dayOfWeek: d })}
+              >
+                {DAY_SHORT[d]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="field-row">
+          <div className="field">
+            <label>Start Time <span className="req">*</span></label>
+            <input
+              type="time"
+              value={form.startTime}
+              onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>End Time <span className="req">*</span></label>
+            <input
+              type="time"
+              value={form.endTime}
+              onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Room <span className="req">*</span></label>
+          <input
+            type="text"
+            placeholder="e.g. Room 101"
+            value={form.room}
+            onChange={(e) => setForm({ ...form, room: e.target.value })}
+          />
+        </div>
+
+        {form.section_id && form.course_id && form.room && (
+          <div className="modal-hint" style={{ marginTop: 2 }}>
+            <svg viewBox="0 0 16 16" fill="none" width="13" height="13" style={{ flexShrink: 0, marginTop: 1 }}>
+              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            You can add more days for this course after saving by creating another entry with the same course and type.
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="modal-footer">
+        <button className="outline-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
+        <button className="primary-btn" onClick={saveSchedule} disabled={saving}>
+          {saving ? (
+            <><span className="spinner-sm"></span> Saving...</>
+          ) : (
+            <>
+              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Save Schedule
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* ── ASSIGN FACULTY MODAL ── */}
       {showAssignModal && selectedSchedule && (
         <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>

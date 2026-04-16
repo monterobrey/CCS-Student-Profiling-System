@@ -21,6 +21,7 @@ export default function DepartmentChairAward() {
   const queryClient = useQueryClient();
 
   const [activeTab,    setActiveTab]    = useState("pending");
+  const [search,       setSearch]       = useState(""); // NEW: Search state
   const [showModal,    setShowModal]    = useState(false);
   const [rejectId,     setRejectId]     = useState(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -57,10 +58,28 @@ export default function DepartmentChairAward() {
   const formatDate = (d) =>
     d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
-  const filteredAwards = useMemo(() =>
-    activeTab === "all" ? awards : awards.filter(a => a.status === activeTab),
-    [awards, activeTab]
-  );
+  // NEW: Filtering logic now includes search text
+  const filteredAwards = useMemo(() => {
+    let result = awards;
+    
+    // 1. Filter by Tab
+    if (activeTab !== "all") {
+      result = result.filter(a => a.status === activeTab);
+    }
+    
+    // 2. Filter by Search input
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(a => 
+        a.awardName?.toLowerCase().includes(q) ||
+        a.student?.first_name?.toLowerCase().includes(q) ||
+        a.student?.last_name?.toLowerCase().includes(q) ||
+        a.student?.program?.program_code?.toLowerCase().includes(q)
+      );
+    }
+    
+    return result;
+  }, [awards, activeTab, search]);
 
   const counts = useMemo(() => ({
     all:      awards.length,
@@ -148,8 +167,8 @@ export default function DepartmentChairAward() {
 
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
-      {/* HEADER */}
-      <div className="page-header">
+      {/* HEADER (Renamed class to avoid the global dark banner bug) */}
+      <div className="award-header-clean">
         <div>
           <h2 className="page-title">Award Approvals</h2>
           <p className="page-sub">Review, approve, and give awards to students in your department.</p>
@@ -159,61 +178,131 @@ export default function DepartmentChairAward() {
         </button>
       </div>
 
-      {/* TABS */}
-      <div className="filter-tabs">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            className={`filter-tab ${activeTab === t.key ? "active" : ""}`}
-            onClick={() => setActiveTab(t.key)}
-          >
-            {t.label}
-            {counts[t.key] > 0 && <span className="tab-count">{counts[t.key]}</span>}
-          </button>
-        ))}
+      {/* CONTROLS: Tabs & Search */}
+      <div className="controls-row">
+        <div className="filter-tabs">
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              className={`filter-tab ${activeTab === t.key ? "active" : ""}`}
+              onClick={() => setActiveTab(t.key)}
+            >
+              {t.label}
+              {counts[t.key] > 0 && <span className="tab-count">{counts[t.key]}</span>}
+            </button>
+          ))}
+        </div>
+
+          <div className="search-wrap">
+            <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
+              <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#a38d82" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+
+            <input 
+              type="text" 
+              placeholder="Search student or award..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+              {search && (
+            <button className="search-clear" onClick={() => setSearch("")}>
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* LIST */}
+      {/* LIST / DATA TABLE */}
       {isLoading ? (
         <div className="loading-state"><div className="spinner" /><p>Loading awards...</p></div>
       ) : (
-        <div className="awards-list">
+        <div className="awards-table-container">
+
+          {/* TABLE HEADER */}
+          <div className="ach-row ach-header">
+            <div className="ach-col">Award</div>
+            <div className="ach-col">Student</div>
+            <div className="ach-col">Date</div>
+            <div className="ach-col">Status</div>
+            <div className="ach-col action-col">Action</div>
+          </div>
+
           {filteredAwards.length === 0 ? (
-            <div className="empty-state">No awards in this category.</div>
+            <div className="empty-state">
+              <p>No awards found.</p>
+              <span>Try adjusting filters or search.</span>
+            </div>
           ) : (
-            filteredAwards.map(a => (
-              <div className="ach-card" key={a.id}>
-                <div className="ach-icon">⭐</div>
-                <div className="ach-info">
-                  <p className="ach-title">{a.awardName}</p>
-                  <p className="ach-student">
-                    {a.student?.first_name} {a.student?.last_name} · {a.student?.program?.program_code}
-                  </p>
-                  <p className="ach-meta">
-                    {a.applied_by
-                      ? `Given by ${a.recommender?.name ?? "Admin"}`
-                      : "Student application"
-                    } · {formatDate(a.date_received)}
-                  </p>
-                  {a.action_taken && (
-                    <p className="ach-reason">Reason: {a.action_taken}</p>
-                  )}
-                </div>
-                <div className="ach-right">
-                  <span className={`ach-status as-${a.status}`}>{a.status}</span>
-                  {a.status === "pending" && (
-                    <div className="ach-actions">
-                      <button className="approve-btn" onClick={() => handleApprove(a.id)}>Approve</button>
-                      <button className="reject-btn" onClick={() => { setRejectId(a.id); setRejectReason(""); }}>Reject</button>
+            <div className="awards-list">
+              {filteredAwards.map(a => (
+                <div className="ach-row" key={a.id}>
+                  
+                  {/* Award Info */}
+                  <div className="ach-col ach-info-col">
+                    <div className="ach-icon">⭐</div>
+                    <div>
+                      <p className="ach-title">{a.awardName}</p>
+                      <p className="ach-meta">
+                        {a.applied_by ? `Recommender: ${a.recommender?.name ?? "Admin"}` : "Student Application"}
+                      </p>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Student */}
+                  <div className="ach-col">
+                    <p className="ach-student-name">
+                      {a.student?.first_name} {a.student?.last_name}
+                    </p>
+                    <p className="ach-student-prog">
+                      {a.student?.program?.program_code}
+                    </p>
+                  </div>
+
+                  {/* Date */}
+                  <div className="ach-col">
+                    <p className="ach-date">{formatDate(a.date_received)}</p>
+                    {a.action_taken && (
+                      <p className="ach-reason" title={a.action_taken}>
+                        Note: {a.action_taken}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Status */}
+                  <div className="ach-col">
+                    <span className={`ach-status as-${a.status}`}>
+                      {a.status}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="ach-col action-col">
+                    {a.status === "pending" ? (
+                      <div className="ach-actions">
+                        <button className="btn-approve" onClick={() => handleApprove(a.id)}>
+                          Approve
+                        </button>
+                        <button className="btn-reject" onClick={() => {
+                          setRejectId(a.id);
+                          setRejectReason("");
+                        }}>
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="ach-resolved">Resolved</span>
+                    )}
+                  </div>
+
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       )}
 
+      {/* MODALS (Keep exactly as they were, they are fine!) */}
       {/* GIVE AWARD MODAL */}
       {showModal && (
         <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
@@ -292,7 +381,7 @@ export default function DepartmentChairAward() {
             </div>
             <div className="modal-footer">
               <button className="btn-secondary" onClick={() => setRejectId(null)}>Cancel</button>
-              <button className="reject-btn" onClick={handleReject}>Confirm Reject</button>
+              <button className="btn-reject" onClick={handleReject}>Confirm Reject</button>
             </div>
           </div>
         </div>

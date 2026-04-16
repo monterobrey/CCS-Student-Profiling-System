@@ -85,12 +85,22 @@ export default function DepartmentChairPerformance() {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Department Reports</h2>
-          <p className="page-sub">Academic performance, enrollment, and behavioral metrics for your department.</p>
-        </div>
-      </div>
+<div className="page-header">
+  <div className="page-header-left">
+    <div className="page-header-badge">Academic Report</div>
+    <h2 className="page-title">Department Reports</h2>
+    <p className="page-sub">Academic performance, enrollment, and behavioral metrics for your department.</p>
+  </div>
+  <div className="page-header-actions">
+    <button className="print-btn">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8" rx="1"/>
+      </svg>
+      Print Report
+    </button>
+  </div>
+</div>
 
       {/* ── Summary Cards ── */}
       <div className="summary-grid">

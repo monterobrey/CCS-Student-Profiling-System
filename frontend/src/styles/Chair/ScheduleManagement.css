@@ -5,7 +5,6 @@
   gap: 24px;
   font-family: "Outfit", sans-serif;
 }
-
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -357,4 +356,171 @@
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
+}
+
+/* ── Enhanced Add Modal ── */
+.modal-add {
+  max-width: 500px;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff5ef;
+  color: #ff6b1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.modal-subtitle {
+  font-size: 12px;
+  color: #b89f90;
+  margin-top: 2px;
+}
+
+/* ── Form section label (divider) ── */
+.form-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #c9b5a5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #f0e8e0;
+}
+
+/* ── Required star ── */
+.req {
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* ── Type toggle buttons ── */
+.type-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid #e8ddd6;
+  background: #fff;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.type-btn:hover {
+  border-color: #ccc;
+  color: #444;
+}
+
+.type-btn-lec {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.type-btn-lab {
+  background: #f0fdf4;
+  border-color: #16a34a;
+  color: #15803d;
+  font-weight: 600;
+}
+
+/* ── Day pills ── */
+.day-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.day-pill {
+  padding: 7px 13px;
+  border-radius: 20px;
+  border: 1px solid #e8ddd6;
+  background: #fff;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: #888;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+  min-width: 40px;
+  text-align: center;
+}
+
+.day-pill:hover {
+  border-color: #ff6b1a;
+  color: #ff6b1a;
+}
+
+.day-pill-active {
+  background: #ff6b1a;
+  border-color: #ff6b1a;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── Save spinner ── */
+.spinner-sm {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Primary btn flex (for icon+text) ── */
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Modal hint flex fix ── */
+.modal-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
 }

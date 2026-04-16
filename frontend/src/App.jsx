@@ -5,7 +5,6 @@ import ProtectedRoute, { DeanRoute } from "./components/ProtectedRoute";
 
 import StudentLogin from "./pages/Auth/login/StudentLogin";
 import FacultyLogin from "./pages/Auth/login/FacultyLogin";
-import Landing from "./pages/Auth/login/Landing";
 import ActivateAccount from "./pages/Auth/activate/ActivateAccount";
 import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultySchedule from "./pages/Faculty/FacultySchedule";
@@ -51,7 +50,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Navigate to="/faculty/login" replace />} />
           <Route path="/students/login" element={<StudentLogin />} />
           <Route path="/faculty/login" element={<FacultyLogin />} />
           <Route path="/activate" element={<ActivateAccount />} />

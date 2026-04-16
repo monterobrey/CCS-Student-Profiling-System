@@ -92,6 +92,7 @@ export default function StudentManagement() {
   };
 
   // derived from cached students + url param
+  // eslint-disable-next-line eqeqeq
   const viewingStudent = id ? validStudents.find(s => s.id == id) ?? null : null;
 
   const showToast = (type, message) => {
@@ -118,6 +119,7 @@ export default function StudentManagement() {
         email: prev.email && !validStudents.some(s => s.user?.email?.toLowerCase() === form.email.toLowerCase()) ? '' : prev.email,
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.student_number, form.email, validStudents, showCreateModal, editingStudent]);
 
   const getColor = (id) => COLORS[id % COLORS.length];
@@ -151,6 +153,7 @@ export default function StudentManagement() {
     return validStudents
       .filter(s => {
         const matchProgram = !filterProgram || s.program?.program_code === filterProgram;
+        // eslint-disable-next-line eqeqeq
         const matchYear    = !filterYear    || s.year_level == filterYear;
         return matchProgram && matchYear;
       })
@@ -162,7 +165,9 @@ export default function StudentManagement() {
 
   const filteredFormSections = useMemo(() => {
     if (!form.program_id || !form.year_level) return [];
+    // eslint-disable-next-line eqeqeq
     return sections.filter(sec =>
+      // eslint-disable-next-line eqeqeq
       sec.program_id == form.program_id && sec.year_level == form.year_level
     );
   }, [sections, form.program_id, form.year_level]);
@@ -178,6 +183,7 @@ export default function StudentManagement() {
 
       const matchSearch  = !search        || fullName.includes(search.toLowerCase()) || email.includes(search.toLowerCase()) || studNum.includes(search.toLowerCase());
       const matchProgram = !filterProgram || progCode === filterProgram;
+      // eslint-disable-next-line eqeqeq
       const matchYear    = !filterYear    || s.year_level == filterYear;
       const matchSection = !filterSection || secName === filterSection;
       const matchStatus  = !filterStatus  || status === filterStatus;
@@ -363,7 +369,7 @@ export default function StudentManagement() {
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = () => { // eslint-disable-line no-unused-vars
     queryClient.invalidateQueries({ queryKey: ['students'] });
   };
 

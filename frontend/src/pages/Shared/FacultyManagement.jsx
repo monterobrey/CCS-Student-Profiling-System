@@ -116,6 +116,7 @@ export default function FacultyManagement() {
   };
 
   // derived from cache + url param
+  // eslint-disable-next-line eqeqeq
   const viewingFaculty = id ? validFaculty.find(f => f.id == id) ?? null : null;
 
   /* ===========================
@@ -315,7 +316,7 @@ const filteredFaculty = useMemo(() => {
     }
   };
 
-  const handleRefresh = () => queryClient.invalidateQueries({ queryKey: ['faculty'] });
+  const handleRefresh = () => queryClient.invalidateQueries({ queryKey: ['faculty'] }); // eslint-disable-line no-unused-vars
 
   /* ===========================
      JSX

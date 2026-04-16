@@ -17,7 +17,6 @@ import DepartmentChairPerformance from "./pages/Chair/DepartmentChairPerformance
 import DepartmentChairAward from "./pages/Chair/DepartmentChairAward";
 import ScheduleManagement from "./pages/Chair/ScheduleManagement";
 import SetupPassword from "./pages/Shared/SetupPassword";
-import StudentCurriculum from "./pages/Student/StudentCurriculum";
 
 import Users from "./pages/Users/Users";
 import UserDetail from "./pages/Users/UserDetail";

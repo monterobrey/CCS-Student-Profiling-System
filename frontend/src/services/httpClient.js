@@ -66,6 +66,9 @@ const request = async (endpoint, options = {}) => {
       message: data.message ?? '',
       data: data.data ?? null,
       errors: data.errors ?? null,
+      // Pass through top-level fields from backend (e.g. token, user from auth responses)
+      token: data.token ?? null,
+      user: data.user ?? null,
     };
   } catch (error) {
     console.error('Network error:', error);

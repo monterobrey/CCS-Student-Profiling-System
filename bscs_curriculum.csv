@@ -1,0 +1,55 @@
+program_code,course_code,course_name,lec_units,lab_units,units,prerequisites,year_level,semester
+BSCS,CCS101,Introduction to Computing,2,1,3,none,1,1
+BSCS,CCS102,Computer Programming 1,2,1,3,none,1,1
+BSCS,ETH101,Ethics,3,0,3,none,1,1
+BSCS,MAT101,Mathematics in the Modern World,3,0,3,none,1,1
+BSCS,NSTP1,National Service Training Program 1,3,0,3,none,1,1
+BSCS,PED101,Physical Education 1,2,0,2,none,1,1
+BSCS,PSY100,Understanding the Self,3,0,3,none,1,1
+BSCS,CCS103,Computer Programming 2,2,1,3,CCS102,1,2
+BSCS,CCS104,Discrete Structures 1,3,0,3,MAT101,1,2
+BSCS,CCS106,Social and Professional Issues,3,0,3,ETH101,1,2
+BSCS,COM101,Purposive Communication,3,0,3,none,1,2
+BSCS,CSP101,Analytic Geometry,3,0,3,MAT101,1,2
+BSCS,GAD101,Gender and Development,3,0,3,none,1,2
+BSCS,NSTP2,National Service Training Program 2,3,0,3,NSTP1,1,2
+BSCS,PED102,Physical Education 2,2,0,2,PED101,1,2
+BSCS,CCS107,Data Structures and Algorithms 1,2,1,3,CCS103,2,1
+BSCS,CCS108,Object-Oriented Programming,2,1,3,CCS103,2,1
+BSCS,CSEG1,Game Concepts and Productions,2,1,3,2nd Year Standing,2,1
+BSCS,CSP102,Discrete Structures 2,3,0,3,CCS104,2,1
+BSCS,HIS101,Readings in Philippine History,3,0,3,none,2,1
+BSCS,PED103,Physical Education 3,2,0,2,PED102,2,1
+BSCS,STS101,Science Technology and Society,3,0,3,none,2,1
+BSCS,ACT101,Principles of Accounting,3,0,3,none,2,2
+BSCS,CCS110,Information Management 1,2,1,3,CCS101,2,2
+BSCS,CSEG2,Game Programming 1,2,1,3,CSEG1,2,2
+BSCS,CSP103,Data Structures and Algorithms 2,2,1,3,CCS107,2,2
+BSCS,CSP104,Calculus,3,0,3,"CSP101, CSP102",2,2
+BSCS,CSP105,Algorithms and Complexity,3,0,3,"CCS107, CCS108",2,2
+BSCS,HMN101,Art Appreciation,3,0,3,none,2,2
+BSCS,PED104,Physical Education 4,2,0,2,PED103,2,2
+BSCS,CCS109,System Analysis and Design,3,0,3,CCS101,3,1
+BSCS,CCS112,Applications Development and Emerging Technologies,2,1,3,CCS103,3,1
+BSCS,CCS113,Information Assurance Security,2,1,3,"PED104, HMN101, ACT101, CCS110, CSP103, CSP104, CSP105, CSEG2",3,1
+BSCS,CSEG3,Game Programming 2,2,1,3,CSEG2,3,1
+BSCS,CSP106,Automata Theory and Formal Languages,3,0,3,CSP105,3,1
+BSCS,CSP107,Computer Organization and assembly Language Programming,2,1,3,CSP103,3,1
+BSCS,ENT101,The Entrepreneurial Mind,3,0,3,none,3,1
+BSCS,CSEG4,Game Programming 3 (Pure Labs),0,3,3,CSEG3,3,2
+BSCS,CSP108,Programming Languages,2,1,3,CCS103,3,2
+BSCS,CSP109,Software Engineering 1,2,1,3,CCS109,3,2
+BSCS,CSP110,Numerical Analysis,3,0,3,"CSP106, CSEG3",3,2
+BSCS,CSP111,Thesis 1,3,0,3,"CSP106, CSP107",3,2
+BSCS,RIZ101,Life and Works of Rizal,3,0,3,none,3,2
+BSCS,SOC101,The Contemporary World,3,0,3,none,3,2
+BSCS,TEC101,Technopreneurship,3,0,3,ENT101,3,2
+BSCS,CCS105,Human Computer Interaction 1,2,1,3,CCS101,4,1
+BSCS,CSEG5,Artificial Intelligence for Games,2,1,3,CSEG4,4,1
+BSCS,CSP112,Operating Systems,2,1,3,CSP107,4,1
+BSCS,CSP113,Software Engineering 2,2,1,3,CSP109,4,1
+BSCS,CSP114,Thesis 2,3,0,3,CSP111,4,1
+BSCS,ENV101,Environmental Science,3,0,3,none,4,1
+BSCS,CCS111,Networking and Communication 1,2,1,3,CSP112,4,2
+BSCS,CSEG6,Advance Game Design,2,1,3,CSEG5,4,2
+BSCS,CSP115,CS Practicum (300 hours),0,4,4,CSP111,4,2

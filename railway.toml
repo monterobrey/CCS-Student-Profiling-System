@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-buildCommand = "cd backend && composer install --no-dev --optimize-autoloader && php artisan config:cache && php artisan route:cache && php artisan view:cache"
-
-[deploy]
-startCommand = "cd backend && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
-healthcheckPath = "/up"

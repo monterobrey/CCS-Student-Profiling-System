@@ -54,7 +54,6 @@ const request = async (endpoint, options = {}) => {
 
     // Check if token expired (401 unauthorized)
     if (response.status === 401 && data.message?.includes('Unauthenticated')) {
-      // Clear token and redirect to login
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       window.location.href = '/faculty/login';
@@ -63,7 +62,10 @@ const request = async (endpoint, options = {}) => {
     return {
       status: response.status,
       ok: response.ok,
-      ...data, // Contains: success, message, data, errors, code
+      success: data.success ?? response.ok,
+      message: data.message ?? '',
+      data: data.data ?? null,
+      errors: data.errors ?? null,
     };
   } catch (error) {
     console.error('Network error:', error);

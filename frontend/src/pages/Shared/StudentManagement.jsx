@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, ROLES } from '../../context/AuthContext';
@@ -37,6 +37,8 @@ export default function StudentManagement() {
       return res.ok ? (res.data ?? []) : [];
     },
   });
+
+  const validStudents = useMemo(() => students.filter(s => s && s.id), [students]);
 
   const { data: sections = [] } = useQuery({
     queryKey: ['sections'],
@@ -90,12 +92,33 @@ export default function StudentManagement() {
   };
 
   // derived from cached students + url param
-  const viewingStudent = id ? students.find(s => s.id == id) ?? null : null;
+  const viewingStudent = id ? validStudents.find(s => s.id == id) ?? null : null;
 
   const showToast = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3500);
   };
+
+  useEffect(() => {
+    if (!showCreateModal || editingStudent) return;
+    const newErrors = {};
+    if (form.student_number) {
+      const exists = validStudents.some(s => s.user?.student_number === form.student_number);
+      if (exists) newErrors.student_number = 'This student number is already taken';
+    }
+    if (form.email) {
+      const exists = validStudents.some(s => s.user?.email?.toLowerCase() === form.email.toLowerCase());
+      if (exists) newErrors.email = 'This email is already taken';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(prev => ({ ...prev, ...newErrors }));
+    } else if (formErrors.student_number || formErrors.email) {
+      setFormErrors(prev => ({
+        student_number: prev.student_number && !validStudents.some(s => s.user?.student_number === form.student_number) ? '' : prev.student_number,
+        email: prev.email && !validStudents.some(s => s.user?.email?.toLowerCase() === form.email.toLowerCase()) ? '' : prev.email,
+      }));
+    }
+  }, [form.student_number, form.email, validStudents, showCreateModal, editingStudent]);
 
   const getColor = (id) => COLORS[id % COLORS.length];
 
@@ -117,15 +140,15 @@ export default function StudentManagement() {
   =========================== */
 
   const miniStats = useMemo(() => [
-    { label: 'Total Students', value: students.length,                                                 color: '#3b82f6', iconBg: '#eff6ff'  },
-    { label: 'Active',         value: students.filter(s => s.user?.status === 'active').length,        color: '#16a34a', iconBg: '#f0fdf4'  },
-    { label: 'Pending Setup',  value: students.filter(s => s.user?.status === 'pending').length,       color: '#f97316', iconBg: '#fff7ed'  },
-    { label: 'BSCS',           value: students.filter(s => s.program?.program_code === 'BSCS').length, color: '#8b5cf6', iconBg: '#f5f3ff'  },
-    { label: 'BSIT',           value: students.filter(s => s.program?.program_code === 'BSIT').length, color: '#0891b2', iconBg: '#ecfeff'  },
-  ], [students]);
+    { label: 'Total Students', value: validStudents.length,                                                 color: '#3b82f6', iconBg: '#eff6ff'  },
+    { label: 'Active',         value: validStudents.filter(s => s.user?.status === 'active').length,        color: '#16a34a', iconBg: '#f0fdf4'  },
+    { label: 'Pending Setup',  value: validStudents.filter(s => s.user?.status === 'pending').length,       color: '#f97316', iconBg: '#fff7ed'  },
+    { label: 'BSCS',           value: validStudents.filter(s => s.program?.program_code === 'BSCS').length, color: '#8b5cf6', iconBg: '#f5f3ff'  },
+    { label: 'BSIT',           value: validStudents.filter(s => s.program?.program_code === 'BSIT').length, color: '#0891b2', iconBg: '#ecfeff'  },
+  ], [validStudents]);
 
   const availableSections = useMemo(() => {
-    return students
+    return validStudents
       .filter(s => {
         const matchProgram = !filterProgram || s.program?.program_code === filterProgram;
         const matchYear    = !filterYear    || s.year_level == filterYear;
@@ -133,7 +156,7 @@ export default function StudentManagement() {
       })
       .map(s => s.section?.section_name)
       .filter(Boolean);
-  }, [students, filterProgram, filterYear]);
+  }, [validStudents, filterProgram, filterYear]);
 
   const uniqueSections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections]);
 
@@ -145,8 +168,8 @@ export default function StudentManagement() {
   }, [sections, form.program_id, form.year_level]);
 
   const filteredStudents = useMemo(() => {
-    return students.filter(s => {
-      const fullName   = `${s.last_name}, ${s.first_name} ${s.middle_name || ''}`.toLowerCase();
+    return validStudents.filter(s => {
+      const fullName   = `${s.last_name || ''}, ${s.first_name || ''} ${s.middle_name || ''}`.toLowerCase();
       const email      = s.user?.email?.toLowerCase() || '';
       const studNum    = s.user?.student_number?.toLowerCase() || '';
       const progCode   = s.program?.program_code || '';
@@ -163,11 +186,11 @@ export default function StudentManagement() {
     }).sort((a, b) => {
       if (a.user?.status === 'pending' && b.user?.status !== 'pending') return -1;
       if (a.user?.status !== 'pending' && b.user?.status === 'pending') return 1;
-      const last = a.last_name.localeCompare(b.last_name);
+      const last = (a.last_name || '').localeCompare(b.last_name || '');
       if (last !== 0) return last;
-      return a.first_name.localeCompare(b.first_name);
+      return (a.first_name || '').localeCompare(b.first_name || '');
     });
-  }, [students, search, filterProgram, filterYear, filterSection, filterStatus]);
+  }, [validStudents, search, filterProgram, filterYear, filterSection, filterStatus]);
 
   const totalPages      = Math.ceil(filteredStudents.length / pageSize);
   const paginatedStudents = filteredStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -234,6 +257,13 @@ export default function StudentManagement() {
     if (!form.program_id)     errors.program_id     = 'Required';
     if (!form.year_level)     errors.year_level     = 'Required';
     if (!form.section_id)     errors.section_id     = 'Required';
+    
+    const duplicateStudentNumber = validStudents.some(s => s.user?.student_number === form.student_number);
+    if (duplicateStudentNumber) errors.student_number = 'This student number is already taken';
+    
+    const duplicateEmail = validStudents.some(s => s.user?.email?.toLowerCase() === form.email.toLowerCase());
+    if (duplicateEmail) errors.email = 'This email is already taken';
+    
     if (Object.keys(errors).length) { setFormErrors(errors); return; }
 
     setSaving(true);
@@ -263,16 +293,25 @@ export default function StudentManagement() {
         showToast('success', res.message || (editingStudent ? 'Student updated.' : 'Student created.'));
         setShowCreateModal(false);
 
-        // Update cache directly — no refetch
         queryClient.setQueryData(['students'], (old = []) => {
           if (editingStudent) {
             return old.map(s => s.id === res.data.id ? res.data : s);
           }
           return [...old, res.data];
         });
+      } else if (res.status === 422 && res.errors && typeof res.errors === 'object') {
+        const fieldErrors = {};
+        if (res.errors.student_number) fieldErrors.student_number = Array.isArray(res.errors.student_number) ? res.errors.student_number[0] : res.errors.student_number;
+        if (res.errors.email) fieldErrors.email = Array.isArray(res.errors.email) ? res.errors.email[0] : res.errors.email;
+        if (Object.keys(fieldErrors).length > 0) {
+          setFormErrors(fieldErrors);
+          showToast('error', 'Please fix the errors below.');
+        } else {
+          const firstError = Object.values(res.errors)[0]?.[0] || res.message || 'Failed to save student.';
+          showToast('error', firstError);
+        }
       } else {
-        const firstError = res.errors ? Object.values(res.errors)[0]?.[0] : null;
-        showToast('error', firstError || res.message || 'Failed to save student.');
+        showToast('error', res.message || 'Failed to save student.');
       }
     } catch {
       showToast('error', 'Failed to save student.');

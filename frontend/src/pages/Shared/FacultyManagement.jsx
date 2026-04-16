@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, ROLES } from '../../context/AuthContext';
@@ -35,6 +35,8 @@ export default function FacultyManagement() {
       return res.ok ? (res.data ?? []) : [];
     },
   });
+
+  const validFaculty = useMemo(() => faculty.filter(f => f && f.id), [faculty]);
 
   const { data: departments = [] } = useQuery({
     queryKey: ['departments'],
@@ -87,6 +89,18 @@ export default function FacultyManagement() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  useEffect(() => {
+    if (!showModal || editingFaculty) return;
+    const newErrors = {};
+    if (form.email) {
+      const exists = validFaculty.some(f => f.user?.email?.toLowerCase() === form.email.toLowerCase());
+      if (exists) newErrors.email = 'This email is already taken';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(prev => ({ ...prev, ...newErrors }));
+    }
+  }, [form.email, validFaculty, showModal, editingFaculty]);
+
   const getColor  = (fid) => COLORS[fid % COLORS.length];
   const getResendCount = (fid) => resendCounts[fid] || 0;
 
@@ -102,21 +116,21 @@ export default function FacultyManagement() {
   };
 
   // derived from cache + url param
-  const viewingFaculty = id ? faculty.find(f => f.id == id) ?? null : null;
+  const viewingFaculty = id ? validFaculty.find(f => f.id == id) ?? null : null;
 
   /* ===========================
      DERIVED DATA
   =========================== */
 
   const miniStats = useMemo(() => [
-    { label: 'Total Faculty',  value: faculty.length,                                              color: '#3b82f6', iconBg: '#eff6ff'  },
-    { label: 'Active',         value: faculty.filter(f => f.user?.status === 'active').length,     color: '#16a34a', iconBg: '#f0fdf4'  },
-    { label: 'Pending Setup',  value: faculty.filter(f => f.user?.status === 'pending').length,    color: '#f97316', iconBg: '#f3f4f6'  },
-  ], [faculty]);
+    { label: 'Total Faculty',  value: validFaculty.length,                                              color: '#3b82f6', iconBg: '#eff6ff'  },
+    { label: 'Active',         value: validFaculty.filter(f => f.user?.status === 'active').length,     color: '#16a34a', iconBg: '#f0fdf4'  },
+    { label: 'Pending Setup',  value: validFaculty.filter(f => f.user?.status === 'pending').length,    color: '#f97316', iconBg: '#f3f4f6'  },
+  ], [validFaculty]);
 
-  const filteredFaculty = useMemo(() => {
-    return faculty.filter(f => {
-      const fullName    = `${f.last_name}, ${f.first_name} ${f.middle_name || ''}`.toLowerCase();
+const filteredFaculty = useMemo(() => {
+    return validFaculty.filter(f => {
+      const fullName    = `${f.last_name || ''}, ${f.first_name || ''} ${f.middle_name || ''}`.toLowerCase();
       const email       = f.user?.email?.toLowerCase() || '';
       const status      = f.user?.status || '';
       const matchSearch   = !search         || fullName.includes(search.toLowerCase()) || email.includes(search.toLowerCase());
@@ -127,10 +141,11 @@ export default function FacultyManagement() {
     }).sort((a, b) => {
       if (a.user?.status === 'pending' && b.user?.status !== 'pending') return -1;
       if (a.user?.status !== 'pending' && b.user?.status === 'pending') return 1;
-      const last = a.last_name.localeCompare(b.last_name);
-      return last !== 0 ? last : a.first_name.localeCompare(b.first_name);
+      const last = (a.last_name || '').localeCompare(b.last_name || '');
+      if (last !== 0) return last;
+      return (a.first_name || '').localeCompare(b.first_name || '');
     });
-  }, [faculty, search, filterDept, filterPosition, filterStatus]);
+  }, [validFaculty, search, filterDept, filterPosition, filterStatus]);
 
   const totalPages       = Math.ceil(filteredFaculty.length / pageSize);
   const paginatedFaculty = filteredFaculty.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -188,6 +203,12 @@ export default function FacultyManagement() {
     if (!form.last_name)     errors.last_name     = 'Required';
     if (!form.email)         errors.email         = 'Required';
     if (!form.department_id) errors.department_id = 'Required';
+    
+    if (!editingFaculty && form.email) {
+      const duplicateEmail = validFaculty.some(f => f.user?.email?.toLowerCase() === form.email.toLowerCase());
+      if (duplicateEmail) errors.email = 'This email is already taken';
+    }
+    
     if (Object.keys(errors).length) { setFormErrors(errors); return; }
 
     setSaving(true);
@@ -205,8 +226,19 @@ export default function FacultyManagement() {
           return [...old, res.data];
         });
       } else {
-        const firstError = res.errors ? Object.values(res.errors)[0]?.[0] : null;
-        showToast('error', firstError || res.message || 'Failed to save faculty.');
+        if (res.errors) {
+          const fieldErrors = {};
+          if (res.errors.email) fieldErrors.email = res.errors.email[0];
+          if (Object.keys(fieldErrors).length > 0) {
+            setFormErrors(fieldErrors);
+            showToast('error', 'Please fix the errors below.');
+          } else {
+            const firstError = Object.values(res.errors)[0]?.[0] || res.message || 'Failed to save faculty.';
+            showToast('error', firstError);
+          }
+        } else {
+          showToast('error', res.message || 'Failed to save faculty.');
+        }
       }
     } catch {
       showToast('error', 'Failed to save faculty.');

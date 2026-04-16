@@ -90,7 +90,7 @@ export default function StudentManagement() {
   };
 
   // derived from cached students + url param
-  const viewingStudent = id ? students.find(s => s.id === id) ?? null : null;
+  const viewingStudent = id ? students.find(s => s.id == id) ?? null : null;
 
   const showToast = (type, message) => {
     setToast({ type, message });

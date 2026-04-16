@@ -102,7 +102,7 @@ export default function FacultyManagement() {
   };
 
   // derived from cache + url param
-  const viewingFaculty = id ? faculty.find(f => f.id === id) ?? null : null;
+  const viewingFaculty = id ? faculty.find(f => f.id == id) ?? null : null;
 
   /* ===========================
      DERIVED DATA

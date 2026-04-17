@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth, ROLES } from "../context/AuthContext";
 import "./AppLayout.css";
 import ccsLogo from "../assets/ccs-logo.png";
@@ -25,7 +25,8 @@ const icons = {
   schedule: '<rect x="3" y="4" width="14" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
   archive: '<path d="M4 6h12M4 10h12M4 14h12M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
   awards: '<path d="M10 2l1.8 5.4H18l-4.9 3.6 1.9 5.7L10 13.4l-5 3.3 1.9-5.7L2 7.4h6.2L10 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
-  settings: '<circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'
+  settings: '<circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  logout: '<path d="M13 10H3m0 0l3-3m-3 3l3 3M8 5V4a2 2 0 012-2h5a2 2 0 012 2v12a2 2 0 01-2 2h-5a2 2 0 01-2-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 
 function Icon({ name }) {
@@ -39,7 +40,8 @@ function Icon({ name }) {
 const SECTION_ORDER = ['Overview', 'Profiling', 'Academic', 'Accounts', 'Monitoring', 'Management', 'Settings'];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-const { role } = useAuth();
+const { role, logout } = useAuth();
+  const navigate = useNavigate();
 
   const menuSections = useMemo(() => {
     const roleMenu = {
@@ -65,6 +67,9 @@ const { role } = useAuth();
         { name: "Management", items: [
           { path: "archive", meta: { title: "Archive Management", icon: "archive" } }
         ]},
+        { name: "Account", items: [
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        ]},
       ],
       [ROLES.CHAIR]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -85,6 +90,9 @@ const { role } = useAuth();
         { name: "Monitoring", items: [
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
         ]},
+        { name: "Account", items: [
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        ]},
       ],
       [ROLES.FACULTY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -97,8 +105,11 @@ const { role } = useAuth();
           { path: "violations", meta: { title: "Record Violation", icon: "violations" } },
           { path: "awards", meta: { title: "Recommend Awards", icon: "awards" } }
         ]},
-        { name: "Settings", items: [
-          { path: "settings", meta: { title: "My Profile", icon: "profile" } }
+        { name: "My Profile", items: [
+          { path: "profile", meta: { title: "My Profile", icon: "profile" } }
+        ]},
+        { name: "Account", items: [
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
         ]},
       ],
       [ROLES.SECRETARY]: [
@@ -110,6 +121,9 @@ const { role } = useAuth();
         { name: "Monitoring", items: [
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } },
           { path: "awards", meta: { title: "Awards & Recognition", icon: "awards" } }
+        ]},
+        { name: "Account", items: [
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
         ]},
       ],
       [ROLES.STUDENT]: [
@@ -127,6 +141,9 @@ const { role } = useAuth();
         { name: "My Activities", items: [
           { path: "awards", meta: { title: "My Achievements", icon: "awards" } },
           { path: "affiliations", meta: { title: "Affiliations", icon: "profile" } },
+        ]},
+        { name: "Account", items: [
+          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
         ]},
       ],
     };
@@ -185,6 +202,12 @@ const { role } = useAuth();
         ))}
       </nav>
 
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
+          <Icon name="logout" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+      </div>
       
     </aside>
   );

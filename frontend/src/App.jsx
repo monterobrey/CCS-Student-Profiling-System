@@ -11,6 +11,7 @@ import FacultyManagementViolation from "./pages/Faculty/FacultyManagementViolati
 import FacultySubject from "./pages/Faculty/FacultySubject";
 import FacultyStudentsByClass from "./pages/Faculty/FacultyStudentsByClass";
 import FacultyRecommendAward from "./pages/Faculty/FacultyRecommendAward";
+import FacultyProfile from "./pages/Faculty/FacultyProfile";
 import DepartmentChairDashboard from "./pages/Chair/DepartmentChairDashboard";
 import DepartmentChairPerformance from "./pages/Chair/DepartmentChairPerformance";
 import DepartmentChairAward from "./pages/Chair/DepartmentChairAward";
@@ -539,6 +540,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
                   <FacultyRecommendAward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty/profile"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <FacultyProfile />
                 </ProtectedRoute>
               }
             />

@@ -40,6 +40,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/faculty/violations', [FacultyController::class, 'storeViolation']);
         Route::get('/analytics/faculty', [AnalyticsController::class, 'facultySummary']);
 
+        // Faculty profile (self)
+        Route::get('/faculty/profile', [FacultyController::class, 'myProfile']);
+        Route::put('/faculty/profile', [FacultyController::class, 'updateMyProfile']);
+        Route::post('/faculty/expertise', [FacultyController::class, 'addExpertise']);
+        Route::delete('/faculty/expertise/{id}', [FacultyController::class, 'removeExpertise']);
+
         // Faculty can view awards for their classes and give awards (pending approval)
         Route::get('/faculty/awards',  [AwardController::class, 'index']);
         Route::post('/faculty/awards', [AwardController::class, 'give']);

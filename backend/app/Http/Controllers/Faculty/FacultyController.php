@@ -25,6 +25,70 @@ class FacultyController extends Controller
     }
 
     /**
+     * Get the authenticated faculty's own profile.
+     */
+    public function myProfile(Request $request)
+    {
+        $faculty = $request->user()->faculty->load([
+            'user', 'department', 'program', 'expertise',
+        ]);
+        return ApiResponse::success($faculty);
+    }
+
+    /**
+     * Update the authenticated faculty's own profile.
+     */
+    public function updateMyProfile(Request $request)
+    {
+        $faculty = $request->user()->faculty;
+
+        $validated = $request->validate([
+            'title'          => 'nullable|string|max:50',
+            'middle_name'    => 'nullable|string|max:255',
+            'birthDate'      => 'nullable|date',
+            'contact_number' => 'nullable|string|max:20',
+            'civil_status'   => 'nullable|in:Single,Married,Separated,Widowed',
+            'gender'         => 'nullable|in:Male,Female,Other',
+            'address'        => 'nullable|string|max:500',
+        ]);
+
+        $faculty->update($validated);
+
+        return ApiResponse::success(
+            $faculty->load('user', 'department', 'program', 'expertise'),
+            'Profile updated successfully.'
+        );
+    }
+
+    /**
+     * Add an expertise entry for the authenticated faculty.
+     */
+    public function addExpertise(Request $request)
+    {
+        $validated = $request->validate([
+            'skillName'      => 'required|string|max:100',
+            'skill_category' => 'nullable|string|max:100',
+        ]);
+
+        $faculty = $request->user()->faculty;
+        $expertise = $faculty->expertise()->create($validated);
+
+        return ApiResponse::success($expertise, 'Expertise added.', 201);
+    }
+
+    /**
+     * Remove an expertise entry (must belong to authenticated faculty).
+     */
+    public function removeExpertise(Request $request, $id)
+    {
+        $faculty = $request->user()->faculty;
+        $expertise = $faculty->expertise()->findOrFail($id);
+        $expertise->delete();
+
+        return ApiResponse::success(null, 'Expertise removed.');
+    }
+
+    /**
      * Get students handled by authenticated faculty.
      */
     public function myStudents(Request $request)

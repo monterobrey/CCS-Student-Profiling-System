@@ -40,6 +40,10 @@ export const API_ENDPOINTS = {
     SECTION_STUDENTS: (sectionId) => `/faculty/sections/${sectionId}/students`,
     MY_VIOLATIONS: "/faculty/violations",
     REPORT_VIOLATION: "/faculty/violations",
+    MY_PROFILE: "/faculty/profile",
+    UPDATE_PROFILE: "/faculty/profile",
+    ADD_EXPERTISE: "/faculty/expertise",
+    REMOVE_EXPERTISE: (id) => `/faculty/expertise/${id}`,
   },
   DEPARTMENTS: {
     LIST: "/departments",

@@ -36,7 +36,8 @@ class AnalyticsController extends Controller
 
     /**
      * Get academic performance statistics.
-     * Scoped to the chair's department/program if the user is a department chair.
+     * Scoped strictly to the chair's program_id.
+     * Dean/Secretary get unscoped (full department) data.
      */
     public function academicPerformance(Request $request)
     {
@@ -44,9 +45,26 @@ class AnalyticsController extends Controller
         $departmentId = null;
         $programId    = null;
 
-        if ($user->isDepartmentChair() && $user->faculty) {
-            $departmentId = $user->faculty->department_id;
-            $programId    = $user->faculty->program_id;
+        if ($user->isDepartmentChair()) {
+            // Chair must be scoped to their program only — never fall back to full department
+            $programId = $user->faculty?->program_id ?? null;
+            // If no program assigned yet, return empty data rather than leaking other programs
+            if (!$programId) {
+                return ApiResponse::success([
+                    'summary'             => [],
+                    'distribution'        => [],
+                    'by_program'          => [],
+                    'by_year_level'       => [],
+                    'violations_severity' => [],
+                    'top_students'        => [],
+                    'risk_vs_honors'      => [],
+                    'chart_data'          => [],
+                    'total_students'      => 0,
+                    'total_with_gwa'      => 0,
+                    'scope_label'         => null,
+                    'no_program_assigned' => true,
+                ]);
+            }
         }
 
         $data = $this->analyticsService->getAcademicPerformance($departmentId, $programId);

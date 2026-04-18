@@ -72,12 +72,41 @@ export default function DepartmentChairPerformance() {
   const topStudents  = useMemo(() => data?.top_students        ?? [], [data]);
   const riskVsHonors = useMemo(() => data?.risk_vs_honors      ?? [], [data]);
 
+  const programName  = useMemo(() => {
+    if (data?.scope_label) return data.scope_label;
+    if (byProgram.length === 1) return byProgram[0].name;
+    return null;
+  }, [data, byProgram]);
+
   if (isLoading) {
     return (
       <div className="page">
         <div className="perf-loading">
           <div className="spinner-lg" />
-          <p>Loading department reports...</p>
+          <p>Loading program reports...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (data?.no_program_assigned) {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <div className="page-header-left">
+            <div className="page-header-badge">Academic Report</div>
+            <h2 className="page-title">Program Reports</h2>
+          </div>
+        </div>
+        <div className="pcard" style={{ textAlign: "center", padding: "48px 24px" }}>
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#b89f90" strokeWidth="1.5" style={{ marginBottom: 12 }}>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+          </svg>
+          <p style={{ fontWeight: 600, color: "#1a0a00", marginBottom: 6 }}>No program assigned</p>
+          <p style={{ color: "#b89f90", fontSize: 14 }}>
+            Your faculty account has no program assigned yet. Ask the Dean or Secretary to assign your program in Faculty Management.
+          </p>
         </div>
       </div>
     );
@@ -88,8 +117,13 @@ export default function DepartmentChairPerformance() {
 <div className="page-header">
   <div className="page-header-left">
     <div className="page-header-badge">Academic Report</div>
-    <h2 className="page-title">Department Reports</h2>
-    <p className="page-sub">Academic performance, enrollment, and behavioral metrics for your department.</p>
+    <h2 className="page-title">
+      {programName ? `${programName} Program Reports` : "Program Reports"}
+    </h2>
+    <p className="page-sub">
+      Academic performance, enrollment, and behavioral metrics
+      {programName ? ` for the ${programName} program.` : " for your program."}
+    </p>
   </div>
   <div className="page-header-actions">
     <button className="print-btn">
@@ -185,7 +219,7 @@ export default function DepartmentChairPerformance() {
         <div className="pcard chart-half">
           <div className="pcard-header">
             <h3>Violations by Severity</h3>
-            <span className="pcard-sub">Behavioral incidents in your department</span>
+            <span className="pcard-sub">Behavioral incidents in your program</span>
           </div>
           <div className="pcard-body">
             <ResponsiveContainer width="100%" height={220}>
@@ -261,7 +295,7 @@ export default function DepartmentChairPerformance() {
       <div className="pcard">
         <div className="pcard-header">
           <h3>Top Students</h3>
-          <span className="pcard-sub">Highest academic performers in your department</span>
+          <span className="pcard-sub">Highest academic performers in your program</span>
         </div>
         <div className="pcard-body">
           {topStudents.length === 0 ? <p className="perf-empty">No GWA data recorded yet.</p> : (

@@ -343,6 +343,14 @@ class AnalyticsService
             ['sem' => "1st '26", 'gwa' => $avgGwa ?? 1.87],
         ]);
 
+        // ── Scope label (for frontend display) ──
+        $scopeLabel = null;
+        if ($programId) {
+            $scopeLabel = \App\Models\Program::find($programId)?->program_code;
+        } elseif ($departmentId) {
+            $scopeLabel = \App\Models\Department::find($departmentId)?->department_name;
+        }
+
         return [
             'summary'              => $summary,
             'distribution'         => $distribution,
@@ -354,6 +362,7 @@ class AnalyticsService
             'chart_data'           => $semesterTrend,
             'total_students'       => $total,
             'total_with_gwa'       => $gwaTotal,
+            'scope_label'          => $scopeLabel,
         ];
     }
 

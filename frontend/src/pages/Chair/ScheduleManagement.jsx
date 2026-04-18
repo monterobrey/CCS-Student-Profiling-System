@@ -603,6 +603,100 @@ export default function ScheduleManagement() {
     </div>
   </div>
 )}
+      {/* ── AUTO-GENERATE MODAL ── */}
+      {showAutoModal && (
+        <div className="modal-overlay" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>
+          <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-header-left">
+                <div className="modal-header-icon">
+                  <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+                    <path d="M9 2v2M9 14v2M2 9h2M14 9h2M4.22 4.22l1.42 1.42M12.36 12.36l1.42 1.42M4.22 13.78l1.42-1.42M12.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    <circle cx="9" cy="9" r="3" stroke="currentColor" strokeWidth="1.4"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3>Auto-Generate Schedules</h3>
+                  <p className="modal-subtitle">Automatically assign schedules for a program</p>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="field">
+                <label>Program <span className="req">*</span></label>
+                <select
+                  value={autoForm.program_id}
+                  onChange={(e) => setAutoForm({ ...autoForm, program_id: e.target.value })}
+                >
+                  <option value="">Select program</option>
+                  {programs.map((p) => (
+                    <option key={p.id} value={p.id}>{p.program_code} — {p.program_name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label>Year Level <span className="req">*</span></label>
+                <select
+                  value={autoForm.year_level}
+                  onChange={(e) => setAutoForm({ ...autoForm, year_level: e.target.value })}
+                >
+                  {["1","2","3","4"].map((y) => (
+                    <option key={y} value={y}>{y}{y==="1"?"st":y==="2"?"nd":y==="3"?"rd":"th"} Year</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label>Semester <span className="req">*</span></label>
+                <select
+                  value={autoForm.semester}
+                  onChange={(e) => setAutoForm({ ...autoForm, semester: e.target.value })}
+                >
+                  <option value="1st">1st Semester</option>
+                  <option value="2nd">2nd Semester</option>
+                  <option value="Summer">Summer</option>
+                </select>
+              </div>
+
+              {autoConflicts.length > 0 && (
+                <div className="conflict-box">
+                  <div className="conflict-header">
+                    <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM10 6v4M10 14h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>Conflicts Detected</span>
+                  </div>
+                  <ul className="conflict-list">
+                    {autoConflicts.map((c, i) => (
+                      <li key={i} className="conflict-note">{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="outline-btn" onClick={() => { setShowAutoModal(false); setAutoConflicts([]); }}>Cancel</button>
+              <button className="primary-btn" onClick={handleAutoGenerate} disabled={generating}>
+                {generating ? (
+                  <><span className="spinner-sm"></span> Generating...</>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                      <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Generate
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── ASSIGN FACULTY MODAL ── */}
       {showAssignModal && selectedSchedule && (
         <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>

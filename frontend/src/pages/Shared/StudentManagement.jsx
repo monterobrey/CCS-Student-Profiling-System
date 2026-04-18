@@ -140,7 +140,8 @@ export default function StudentManagement() {
   const filteredFormSections = useMemo(() => {
     if (!form.program_id || !form.year_level) return [];
     return sections.filter(sec =>
-      sec.program_id === form.program_id && sec.year_level === form.year_level
+      String(sec.program_id) === String(form.program_id) &&
+      String(sec.year_level) === String(form.year_level)
     );
   }, [sections, form.program_id, form.year_level]);
 

@@ -23,6 +23,62 @@ const EMPTY_FORM = {
   description: '',
 };
 
+/* ─── Stat icons (clean SVG, no emoji) ── */
+function IconFiled() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function IconMajor() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function IconPending() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function IconResolved() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  );
+}
+
+/* ─── Avatar colors — matches StudentManagement COLORS array ── */
+const AVATAR_COLORS = ['#FF6B1A', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
+const getAvatarColor = (name = '') => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+
+const STATS_CONFIG = [
+  { label: 'Filed by Me',     color: '#FF6B1A', iconBg: '#fff5ef', Icon: IconFiled    },
+  { label: 'Major Cases',     color: '#ef4444', iconBg: '#fef2f2', Icon: IconMajor    },
+  { label: 'Awaiting Action', color: '#f59e0b', iconBg: '#fffbeb', Icon: IconPending  },
+  { label: 'Resolved',        color: '#10b981', iconBg: '#f0fdf4', Icon: IconResolved },
+];
+
 const FacultyViolationManager = () => {
   const cx = (...names) => names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(' ');
 
@@ -30,37 +86,36 @@ const FacultyViolationManager = () => {
   const navigate = useNavigate();
 
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
-  const [studentSearch, setStudentSearch] = useState('');
+  const [studentSearch,      setStudentSearch]      = useState('');
   const [studentDropdownOpen, setStudentDropdownOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [sevFilter, setSevFilter] = useState('');
+  const [search,     setSearch]     = useState('');
+  const [sevFilter,  setSevFilter]  = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedViolation, setSelectedViolation] = useState(null);
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [showReportModal,   setShowReportModal]   = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const studentDropdownRef = useRef(null);
+  const studentDropdownRef  = useRef(null);
+  const prefillConsumedRef  = useRef(false);
   const queryClient = useQueryClient();
-
-  const prefillConsumedRef = useRef(false);
 
   const violationsQuery = useQuery({
     queryKey: ['faculty-violations'],
     queryFn: async () => {
-      const res = await facultyService.getMyViolations();
+      const res  = await facultyService.getMyViolations();
       const rows = res?.ok ? (res.data || []) : [];
       return rows.map((item) => ({
-        id: item.id,
-        studentName: `${item.student?.last_name || ''}, ${item.student?.first_name || ''} ${item.student?.middle_name || ''}`.trim().replace(/^,\s*/, ''),
-        studentId: item.student?.user?.student_number || '—',
-        section: item.student?.section?.section_name || '—',
+        id:           item.id,
+        studentName:  `${item.student?.last_name || ''}, ${item.student?.first_name || ''} ${item.student?.middle_name || ''}`.trim().replace(/^,\s*/, ''),
+        studentId:    item.student?.user?.student_number || '—',
+        section:      item.student?.section?.section_name || '—',
         violationType: item.violationType,
-        severity: item.severity,
+        severity:     item.severity,
         dateReported: item.dateReported,
-        status: item.status || 'Pending',
-        actionTaken: item.action_taken || '',
+        status:       item.status || 'Pending',
+        actionTaken:  item.action_taken || '',
         actionTakenBy: item.action_by_user?.name || item.action_by_user?.email || '',
-        description: item.description,
-        location: item.location,
+        description:  item.description,
+        location:     item.location,
         incidentTime: item.incident_time,
       }));
     },
@@ -72,7 +127,7 @@ const FacultyViolationManager = () => {
   const studentsQuery = useQuery({
     queryKey: ['faculty-handled-students'],
     queryFn: async () => {
-      const res = await facultyService.getMyStudents();
+      const res     = await facultyService.getMyStudents();
       const payload = res?.ok ? (res.data ?? {}) : {};
       return payload.students || [];
     },
@@ -82,73 +137,64 @@ const FacultyViolationManager = () => {
   });
 
   const violations = violationsQuery.data || [];
-  const students = studentsQuery.data || [];
+  const students   = studentsQuery.data  || [];
 
-  // If navigated from Subjects page, auto-open "Report Violation" and preselect student.
   useEffect(() => {
     if (prefillConsumedRef.current) return;
     const preselectStudentId = location.state?.preselectStudentId;
-    if (!preselectStudentId) return;
-    if (!students.length) return;
-
+    if (!preselectStudentId || !students.length) return;
     const idNum = Number(preselectStudentId);
-    const exists = students.some((s) => Number(s.id) === idNum);
-    if (!exists) return;
-
+    if (!students.some((s) => Number(s.id) === idNum)) return;
     prefillConsumedRef.current = true;
     resetForm();
     setSelectedStudentIds([idNum]);
     setShowReportModal(true);
     setStudentDropdownOpen(false);
-
-    // Clear navigation state so it doesn't re-trigger on refresh/back.
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate, students]);
 
   useEffect(() => {
-    const onClickOutside = (event) => {
-      if (!studentDropdownRef.current?.contains(event.target)) {
-        setStudentDropdownOpen(false);
-      }
+    const onClickOutside = (e) => {
+      if (!studentDropdownRef.current?.contains(e.target)) setStudentDropdownOpen(false);
     };
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const filteredReports = useMemo(() => {
-    return violations.filter(v => {
+  const filteredReports = useMemo(() =>
+    violations.filter(v => {
       const s = search.toLowerCase();
       const matchSearch = !search ||
         v.violationType?.toLowerCase().includes(s) ||
         v.studentName?.toLowerCase().includes(s) ||
         v.section?.toLowerCase().includes(s);
-      const matchSev = !sevFilter || v.severity === sevFilter;
-      const matchDate = !dateFilter || v.dateReported === dateFilter;
-      return matchSearch && matchSev && matchDate;
-    });
-  }, [violations, search, sevFilter, dateFilter]);
+      return matchSearch &&
+        (!sevFilter  || v.severity    === sevFilter) &&
+        (!dateFilter || v.dateReported === dateFilter);
+    }),
+    [violations, search, sevFilter, dateFilter]
+  );
 
   const filteredStudentOptions = useMemo(() => {
     const term = studentSearch.trim().toLowerCase();
     if (!term) return students;
     return students.filter((s) => {
       const fullName = `${s.last_name || ''}, ${s.first_name || ''} ${s.middle_name || ''}`.toLowerCase();
-      const studentNo = (s.user?.student_number || '').toLowerCase();
-      const section = (s.section?.section_name || '').toLowerCase();
-      return fullName.includes(term) || studentNo.includes(term) || section.includes(term);
+      return fullName.includes(term) || (s.user?.student_number || '').toLowerCase().includes(term) || (s.section?.section_name || '').toLowerCase().includes(term);
     });
   }, [students, studentSearch]);
 
   const selectedStudents = useMemo(() => {
-    const selectedSet = new Set(selectedStudentIds.map((id) => Number(id)));
-    return students.filter((student) => selectedSet.has(student.id));
+    const set = new Set(selectedStudentIds.map(Number));
+    return students.filter((s) => set.has(s.id));
   }, [students, selectedStudentIds]);
 
-  const stats = useMemo(() => [
-    { label: 'Filed by Me',     value: violations.length,                                           color: 'orange', icon: '📝' },
-    { label: 'Major Cases',     value: violations.filter(v => v.severity === 'Major').length,        color: 'red',    icon: '🚫' },
-    { label: 'Awaiting Action', value: violations.filter(v => v.status === 'Pending').length,        color: 'amber',  icon: '⏳' },
-    { label: 'Resolved',        value: violations.filter(v => v.status === 'Resolved').length,       color: 'blue',   icon: '✅' },
+  /* ── Stats values matching STATS_CONFIG order ── */
+  const statsValues = useMemo(() => [
+    violations.length,
+    violations.filter(v => v.severity === 'Major').length,
+    violations.filter(v => v.status   === 'Pending').length,
+    violations.filter(v => v.status   === 'Resolved').length,
   ], [violations]);
 
   const handleFormChange = (e) => {
@@ -156,13 +202,8 @@ const FacultyViolationManager = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const toggleStudent = (studentId) => {
-    setSelectedStudentIds((prev) => (
-      prev.includes(studentId)
-        ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
-    ));
-  };
+  const toggleStudent = (id) =>
+    setSelectedStudentIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
@@ -174,9 +215,7 @@ const FacultyViolationManager = () => {
   const reportViolationMutation = useMutation({
     mutationFn: (payload) => facultyService.reportViolation(payload),
     onSuccess: async (res) => {
-      if (!res?.ok) {
-        throw new Error(res?.message || 'Failed to submit violation report.');
-      }
+      if (!res?.ok) throw new Error(res?.message || 'Failed to submit violation report.');
       resetForm();
       setShowReportModal(false);
       await queryClient.invalidateQueries({ queryKey: ['faculty-violations'] });
@@ -188,18 +227,16 @@ const FacultyViolationManager = () => {
       alert('Please select students and fill in violation type, severity, and description.');
       return;
     }
-
     try {
-      const payload = {
-        student_ids: selectedStudentIds,
+      await reportViolationMutation.mutateAsync({
+        student_ids:   selectedStudentIds,
         violationType: form.violationType,
-        severity: form.severity,
-        description: form.description,
-        location: form.location || null,
-        dateReported: form.incidentDate || null,
+        severity:      form.severity,
+        description:   form.description,
+        location:      form.location || null,
+        dateReported:  form.incidentDate || null,
         incident_time: form.incidentTime || null,
-      };
-      await reportViolationMutation.mutateAsync(payload);
+      });
     } catch (error) {
       alert(error.message || 'Failed to submit violation report.');
     }
@@ -208,7 +245,7 @@ const FacultyViolationManager = () => {
   return (
     <div className={styles['faculty-violation-page']}>
 
-      {/* Header */}
+      {/* ── Header ── */}
       <div className={styles['page-header']}>
         <div className={styles['header-text']}>
           <h2 className={styles.title}>Violation Management</h2>
@@ -219,23 +256,30 @@ const FacultyViolationManager = () => {
         </button>
       </div>
 
-      {/* Stats Row */}
-      <div className={styles['stats-row']}>
-        {stats.map((stat, i) => (
-          <div key={i} className={cx('mini-card', `accent-${stat.color}`)}>
-            <div className={styles['card-icon']}>{stat.icon}</div>
-            <div className={styles['card-info']}>
-              <span className={styles['card-value']}>{stat.value}</span>
-              <span className={styles['card-label']}>{stat.label}</span>
+      {/* ── Stats — exact mini-stat-card pattern ── */}
+      <div className={styles['mini-stats']}>
+        {STATS_CONFIG.map(({ label, color, iconBg, Icon }, idx) => (
+          <div className={styles['mini-stat-card']} key={idx}>
+            <div className={styles['mini-stat-border']} style={{ background: color }} />
+            <div className={styles['mini-stat-content']}>
+              <div className={styles['mini-stat-icon']} style={{ background: iconBg, color }}>
+                <Icon />
+              </div>
+              <div className={styles['mini-stat-info']}>
+                <span className={styles['mini-stat-value']} style={{ color }}>{statsValues[idx]}</span>
+                <span className={styles['mini-stat-label']}>{label}</span>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Toolbar */}
+      {/* ── Toolbar ── */}
       <div className={styles['table-actions']}>
-        <div className={styles['search-container']}>
-          <span className={styles['search-icon']}>🔍</span>
+        <div className={styles['search-wrap']}>
+          <svg viewBox="0 0 18 18" fill="none" width="15" height="15">
+            <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
           <input
             type="text"
             placeholder="Search by student name, section, or violation type…"
@@ -243,11 +287,7 @@ const FacultyViolationManager = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          className={styles['filter-select']}
-          value={sevFilter}
-          onChange={(e) => setSevFilter(e.target.value)}
-        >
+        <select className={styles['filter-select']} value={sevFilter} onChange={(e) => setSevFilter(e.target.value)}>
           <option value="">All Severities</option>
           <option value="Major">Major</option>
           <option value="Moderate">Moderate</option>
@@ -262,7 +302,7 @@ const FacultyViolationManager = () => {
         />
       </div>
 
-      {/* Table */}
+      {/* ── Table ── */}
       <div className={styles['table-wrapper']}>
         {violationsQuery.isLoading ? (
           <div className={styles['table-loader']}>
@@ -281,31 +321,36 @@ const FacultyViolationManager = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredReports.map((report) => (
-                <tr key={report.id} className={styles['row-hover']} onClick={() => setSelectedViolation(report)}>
-                  <td>
-                    <div className={styles['student-profile']}>
-                      <div className={styles.avatar}>{report.studentName?.charAt(0)}</div>
-                      <div className={styles.meta}>
-                        <p className={styles.name}>{report.studentName}</p>
-                        <p className={styles.section}>{report.section}</p>
+              {filteredReports.map((report) => {
+                const avatarColor = getAvatarColor(report.studentName);
+                return (
+                  <tr key={report.id} className={styles['row-hover']} onClick={() => setSelectedViolation(report)}>
+                    <td>
+                      <div className={styles['student-profile']}>
+                        <div className={styles.avatar} style={{ background: avatarColor }}>
+                          {report.studentName?.charAt(0)}
+                        </div>
+                        <div className={styles.meta}>
+                          <p className={styles.name}>{report.studentName}</p>
+                          <p className={styles.section}>{report.section}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td><span className={styles['type-text']}>{report.violationType}</span></td>
-                  <td>
-                    <span className={cx('sev-tag', report.severity?.toLowerCase())}>
-                      {report.severity}
-                    </span>
-                  </td>
-                  <td className={styles['date-text']}>{report.dateReported}</td>
-                  <td>
-                    <span className={cx('status-pill', report.status?.toLowerCase())}>
-                      {report.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td><span className={styles['type-text']}>{report.violationType}</span></td>
+                    <td>
+                      <span className={cx('sev-tag', report.severity?.toLowerCase())}>
+                        {report.severity}
+                      </span>
+                    </td>
+                    <td className={styles['date-text']}>{report.dateReported}</td>
+                    <td>
+                      <span className={cx('status-pill', report.status?.toLowerCase())}>
+                        {report.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
               {filteredReports.length === 0 && (
                 <tr>
                   <td colSpan="5" className={styles['empty-msg']}>No filed violations match your filters.</td>
@@ -316,7 +361,7 @@ const FacultyViolationManager = () => {
         )}
       </div>
 
-      {/* Report Violation Modal */}
+      {/* ── Report Violation Modal (unchanged) ── */}
       {showReportModal && (
         <div className={styles['modal-backdrop']} onClick={() => { resetForm(); setShowReportModal(false); }}>
           <div className={cx('modal-box', 'modal-wide')} onClick={e => e.stopPropagation()}>
@@ -325,43 +370,24 @@ const FacultyViolationManager = () => {
               <button className={styles['close-x']} onClick={() => { resetForm(); setShowReportModal(false); }}>&times;</button>
             </div>
             <div className={styles['modal-content']}>
-
               <div className={styles['modal-section-label']}>Student Info</div>
               <div className={styles['modal-grid']}>
                 <div className={cx('modal-field', 'full')} ref={studentDropdownRef}>
                   <label>Select Students</label>
                   <div className={styles['student-multi-select']}>
-                    <div
-                      className={styles['student-multi-trigger']}
-                      onClick={() => setStudentDropdownOpen((prev) => !prev)}
-                    >
-                      {selectedStudentIds.length
-                        ? `${selectedStudentIds.length} student(s) selected`
-                        : 'Search and select students...'}
+                    <div className={styles['student-multi-trigger']} onClick={() => setStudentDropdownOpen(prev => !prev)}>
+                      {selectedStudentIds.length ? `${selectedStudentIds.length} student(s) selected` : 'Search and select students...'}
                     </div>
                     {studentDropdownOpen && (
                       <div className={styles['student-dropdown-panel']}>
-                        <input
-                          type="text"
-                          className={styles['student-search-input']}
-                          value={studentSearch}
-                          onChange={(e) => setStudentSearch(e.target.value)}
-                          placeholder="Search by name, student number, or section"
-                        />
+                        <input type="text" className={styles['student-search-input']} value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} placeholder="Search by name, student number, or section" />
                         <div className={styles['student-option-list']}>
                           {filteredStudentOptions.map((student) => {
                             const fullName = `${student.last_name || ''}, ${student.first_name || ''} ${student.middle_name || ''}`.trim().replace(/^,\s*/, '');
-                            const isSelected = selectedStudentIds.includes(student.id);
                             return (
                               <label key={student.id} className={styles['student-option-item']}>
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => toggleStudent(student.id)}
-                                />
-                                <span>
-                                  {fullName} - {student.user?.student_number || '—'} - {student.section?.section_name || 'No Section'}
-                                </span>
+                                <input type="checkbox" checked={selectedStudentIds.includes(student.id)} onChange={() => toggleStudent(student.id)} />
+                                <span>{fullName} - {student.user?.student_number || '—'} - {student.section?.section_name || 'No Section'}</span>
                               </label>
                             );
                           })}
@@ -420,13 +446,7 @@ const FacultyViolationManager = () => {
               <div className={styles['modal-grid']}>
                 <div className={cx('modal-field', 'full')}>
                   <label>Detailed Description</label>
-                  <textarea
-                    name="description"
-                    value={form.description}
-                    onChange={handleFormChange}
-                    rows={4}
-                    placeholder="Describe what happened in detail. Include witnesses, context, and any prior incidents if applicable."
-                  />
+                  <textarea name="description" value={form.description} onChange={handleFormChange} rows={4} placeholder="Describe what happened in detail. Include witnesses, context, and any prior incidents if applicable." />
                 </div>
               </div>
             </div>
@@ -441,7 +461,7 @@ const FacultyViolationManager = () => {
         </div>
       )}
 
-      {/* Detail Modal */}
+      {/* ── Detail Modal (unchanged) ── */}
       {selectedViolation && (
         <div className={styles['modal-backdrop']} onClick={() => setSelectedViolation(null)}>
           <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
@@ -462,15 +482,11 @@ const FacultyViolationManager = () => {
                 </div>
                 <div className={styles['detail-card']}>
                   <label>Severity</label>
-                  <span className={cx('sev-tag', selectedViolation.severity?.toLowerCase())}>
-                    {selectedViolation.severity}
-                  </span>
+                  <span className={cx('sev-tag', selectedViolation.severity?.toLowerCase())}>{selectedViolation.severity}</span>
                 </div>
                 <div className={styles['detail-card']}>
                   <label>Status</label>
-                  <span className={cx('status-pill', selectedViolation.status?.toLowerCase())}>
-                    {selectedViolation.status}
-                  </span>
+                  <span className={cx('status-pill', selectedViolation.status?.toLowerCase())}>{selectedViolation.status}</span>
                 </div>
                 <div className={styles['detail-card']}>
                   <label>Date Filed</label>

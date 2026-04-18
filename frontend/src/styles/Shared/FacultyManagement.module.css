@@ -82,7 +82,7 @@
 .s-avatar { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
 .s-avatar.lg { width: 50px; height: 50px; border-radius: 14px; font-size: 20px; }
 .s-name { font-size: 13px; font-weight: 600; color: #1a0a00; transition: color 0.15s; }
-.title-label {; font-weight: 700; margin-right: 4px; }
+.title-label { font-weight: 700; margin-right: 4px; }
 .s-sub { font-size: 11px; color: #b89f90; margin-top: 1px; }
 .code-badge { font-size: 11px; font-weight: 700; color: #FF6B1A; background: #fff5ef; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
 .status-badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 6px; white-space: nowrap; }

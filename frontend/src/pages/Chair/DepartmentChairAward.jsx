@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { awardService, studentService } from "../../services";
 import "../../styles/Chair/DepartmentChairAward.css";
@@ -10,18 +10,112 @@ const TABS = [
   { key: "rejected", label: "Rejected" },
 ];
 
+const PREDEFINED_AWARDS = [
+  "Dean's List",
+  "President's List",
+  "Academic Excellence Award",
+  "Best Thesis Award",
+  "Leadership Award",
+  "Community Service Award",
+  "Outstanding Student Award",
+  "Scholar of the Year",
+  "Others",
+];
+
 const EMPTY_FORM = {
-  student_id:    "",
+  student_ids:   [],
   awardName:     "",
+  customAward:   "",
   description:   "",
   date_received: "",
 };
+
+function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
+  const [query, setQuery] = useState("");
+  const [open,  setOpen]  = useState(false);
+  const ref               = useRef(null);
+
+  const selected = students.find(s => s.id === value);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return students.slice(0, 30);
+    const q = query.toLowerCase();
+    return students.filter(s =>
+      `${s.last_name} ${s.first_name}`.toLowerCase().includes(q) ||
+      s.program?.program_code?.toLowerCase().includes(q)
+    ).slice(0, 30);
+  }, [students, query]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="student-selector" ref={ref}>
+      <div className="student-selector-input" onClick={() => setOpen(o => !o)}>
+        {selected
+          ? <span className="ss-selected">{selected.last_name}, {selected.first_name} — {selected.program?.program_code}</span>
+          : <span className="ss-placeholder">Search student...</span>
+        }
+        <svg viewBox="0 0 16 16" fill="none" width="12" height="12" style={{ flexShrink: 0 }}>
+          <path d="M3 6l5 5 5-5" stroke="#a38d82" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      </div>
+
+      {open && (
+        <div className="ss-dropdown">
+          <div className="ss-search-wrap">
+            <svg viewBox="0 0 18 18" fill="none" width="13" height="13">
+              <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM16 16l-3.5-3.5" stroke="#a38d82" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            <input
+              autoFocus
+              type="text"
+              placeholder="Type name or program..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+          <div className="ss-list">
+            {filtered.length === 0
+              ? <div className="ss-empty">No students found</div>
+              : filtered.map(s => (
+                  <div
+                    key={s.id}
+                    className={`ss-option ${s.id === value ? "ss-option-active" : ""}`}
+                    onClick={() => { onChange(s.id); setOpen(false); setQuery(""); }}
+                  >
+                    <div className="ss-avatar" style={{ background: s.color ?? "#FF6B1A" }}>
+                      {s.first_name?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="ss-name">{s.last_name}, {s.first_name}</p>
+                      <p className="ss-prog">{s.program?.program_code}</p>
+                    </div>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
+      )}
+
+      {showRemove && (
+        <button className="ss-remove" onClick={onRemove} title="Remove">✕</button>
+      )}
+    </div>
+  );
+}
 
 export default function DepartmentChairAward() {
   const queryClient = useQueryClient();
 
   const [activeTab,    setActiveTab]    = useState("pending");
-  const [search,       setSearch]       = useState(""); // NEW: Search state
+  const [search,       setSearch]       = useState("");
   const [showModal,    setShowModal]    = useState(false);
   const [rejectId,     setRejectId]     = useState(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -29,7 +123,6 @@ export default function DepartmentChairAward() {
   const [saving,       setSaving]       = useState(false);
   const [toast,        setToast]        = useState(null);
 
-  // ── Cached queries ──
   const { data: awards = [], isLoading } = useQuery({
     queryKey: ["awards"],
     queryFn: async () => {
@@ -46,38 +139,37 @@ export default function DepartmentChairAward() {
     },
   });
 
-  /* ===========================
-     HELPERS
-  =========================== */
-
   const showToast = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3500);
   };
 
   const formatDate = (d) =>
-    d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+    d ? new Date(d).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+    }) : "—";
 
-  // NEW: Filtering logic now includes search text
+  const resolvedAwardName = form.awardName === "Others" ? form.customAward : form.awardName;
+
+  const addStudentSlot    = () => setForm(f => ({ ...f, student_ids: [...f.student_ids, ""] }));
+  const updateStudentSlot = (idx, id) => setForm(f => {
+    const ids = [...f.student_ids]; ids[idx] = id; return { ...f, student_ids: ids };
+  });
+  const removeStudentSlot = (idx) =>
+    setForm(f => ({ ...f, student_ids: f.student_ids.filter((_, i) => i !== idx) }));
+
   const filteredAwards = useMemo(() => {
     let result = awards;
-    
-    // 1. Filter by Tab
-    if (activeTab !== "all") {
-      result = result.filter(a => a.status === activeTab);
-    }
-    
-    // 2. Filter by Search input
+    if (activeTab !== "all") result = result.filter(a => a.status === activeTab);
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter(a => 
+      result = result.filter(a =>
         a.awardName?.toLowerCase().includes(q) ||
         a.student?.first_name?.toLowerCase().includes(q) ||
         a.student?.last_name?.toLowerCase().includes(q) ||
         a.student?.program?.program_code?.toLowerCase().includes(q)
       );
     }
-    
     return result;
   }, [awards, activeTab, search]);
 
@@ -88,25 +180,29 @@ export default function DepartmentChairAward() {
     rejected: awards.filter(a => a.status === "rejected").length,
   }), [awards]);
 
-  /* ===========================
-     GIVE AWARD (Chair → auto-approved)
-  =========================== */
-
   const handleGive = async () => {
-    if (!form.student_id || !form.awardName || !form.date_received) {
-      showToast("error", "Please fill in all required fields.");
+    const validIds = form.student_ids.filter(Boolean);
+    if (validIds.length === 0 || !resolvedAwardName || !form.date_received) {
+      showToast("error", "Please fill in all required fields and select at least one student.");
       return;
     }
     setSaving(true);
     try {
-      const res = await awardService.give(form);
-      if (res.ok) {
-        showToast("success", res.message || "Award given and approved.");
+      const results = await Promise.all(
+        validIds.map(id =>
+          awardService.give({ ...form, student_id: id, awardName: resolvedAwardName })
+        )
+      );
+      const allOk = results.every(r => r.ok);
+      if (allOk) {
+        showToast("success", `Award given to ${validIds.length} student(s).`);
         setShowModal(false);
         setForm(EMPTY_FORM);
-        queryClient.setQueryData(["awards"], (old = []) => [res.data, ...old]);
+        queryClient.setQueryData(["awards"], (old = []) => [
+          ...results.map(r => r.data), ...old,
+        ]);
       } else {
-        showToast("error", res.message || "Failed to give award.");
+        showToast("error", "Some awards failed. Please try again.");
       }
     } catch {
       showToast("error", "Failed to give award.");
@@ -114,10 +210,6 @@ export default function DepartmentChairAward() {
       setSaving(false);
     }
   };
-
-  /* ===========================
-     APPROVE
-  =========================== */
 
   const handleApprove = async (id) => {
     try {
@@ -128,57 +220,40 @@ export default function DepartmentChairAward() {
           old.map(a => a.id === res.data.id ? res.data : a)
         );
         queryClient.invalidateQueries({ queryKey: ["dean-summary"] });
-      } else {
-        showToast("error", res.message || "Failed to approve.");
-      }
-    } catch {
-      showToast("error", "Failed to approve.");
-    }
+      } else showToast("error", res.message || "Failed to approve.");
+    } catch { showToast("error", "Failed to approve."); }
   };
-
-  /* ===========================
-     REJECT
-  =========================== */
 
   const handleReject = async () => {
     try {
       const res = await awardService.reject(rejectId, rejectReason);
       if (res.ok) {
         showToast("success", "Award rejected.");
-        setRejectId(null);
-        setRejectReason("");
+        setRejectId(null); setRejectReason("");
         queryClient.setQueryData(["awards"], (old = []) =>
           old.map(a => a.id === res.data.id ? res.data : a)
         );
-      } else {
-        showToast("error", res.message || "Failed to reject.");
-      }
-    } catch {
-      showToast("error", "Failed to reject.");
-    }
+      } else showToast("error", res.message || "Failed to reject.");
+    } catch { showToast("error", "Failed to reject."); }
   };
-
-  /* ===========================
-     JSX
-  =========================== */
 
   return (
     <div className="page">
 
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
-      {/* HEADER (Renamed class to avoid the global dark banner bug) */}
+      {/* HEADER */}
       <div className="award-header-clean">
         <div>
-          <h2 className="page-title">Award Approvals</h2>
+          <h2 className="page-title">Awards</h2>
           <p className="page-sub">Review, approve, and give awards to students in your department.</p>
         </div>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>
+        <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setShowModal(true); }}>
           + Give Award
         </button>
       </div>
 
-      {/* CONTROLS: Tabs & Search */}
+      {/* CONTROLS */}
       <div className="controls-row">
         <div className="filter-tabs">
           {TABS.map(t => (
@@ -192,34 +267,27 @@ export default function DepartmentChairAward() {
             </button>
           ))}
         </div>
-
-          <div className="search-wrap">
-            <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
-              <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#a38d82" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-
-            <input 
-              type="text" 
-              placeholder="Search student or award..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-              {search && (
-            <button className="search-clear" onClick={() => setSearch("")}>
-              ✕
-            </button>
-          )}
+        <div className="search-wrap">
+          <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
+            <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#a38d82" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search student or award..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && <button className="search-clear" onClick={() => setSearch("")}>✕</button>}
         </div>
       </div>
 
-      {/* LIST / DATA TABLE */}
+      {/* TABLE */}
       {isLoading ? (
         <div className="loading-state"><div className="spinner" /><p>Loading awards...</p></div>
       ) : (
         <div className="awards-table-container">
 
-          {/* TABLE HEADER */}
+          {/* Header — inside container so grid aligns */}
           <div className="ach-row ach-header">
             <div className="ach-col">Award</div>
             <div className="ach-col">Student</div>
@@ -237,14 +305,15 @@ export default function DepartmentChairAward() {
             <div className="awards-list">
               {filteredAwards.map(a => (
                 <div className="ach-row" key={a.id}>
-                  
-                  {/* Award Info */}
+
+                  {/* Award */}
                   <div className="ach-col ach-info-col">
-                    <div className="ach-icon">⭐</div>
                     <div>
                       <p className="ach-title">{a.awardName}</p>
                       <p className="ach-meta">
-                        {a.applied_by ? `Recommender: ${a.recommender?.name ?? "Admin"}` : "Student Application"}
+                        {a.applied_by
+                          ? `Recommender: ${a.recommender?.name ?? "Admin"}`
+                          : "Student Application"}
                       </p>
                     </div>
                   </div>
@@ -271,24 +340,15 @@ export default function DepartmentChairAward() {
 
                   {/* Status */}
                   <div className="ach-col">
-                    <span className={`ach-status as-${a.status}`}>
-                      {a.status}
-                    </span>
+                    <span className={`ach-status as-${a.status}`}>{a.status}</span>
                   </div>
 
-                  {/* Actions */}
+                  {/* Action */}
                   <div className="ach-col action-col">
                     {a.status === "pending" ? (
                       <div className="ach-actions">
-                        <button className="btn-approve" onClick={() => handleApprove(a.id)}>
-                          Approve
-                        </button>
-                        <button className="btn-reject" onClick={() => {
-                          setRejectId(a.id);
-                          setRejectReason("");
-                        }}>
-                          Reject
-                        </button>
+                        <button className="btn-approve" onClick={() => handleApprove(a.id)}>Approve</button>
+                        <button className="btn-reject" onClick={() => { setRejectId(a.id); setRejectReason(""); }}>Reject</button>
                       </div>
                     ) : (
                       <span className="ach-resolved">Resolved</span>
@@ -299,39 +359,70 @@ export default function DepartmentChairAward() {
               ))}
             </div>
           )}
+
         </div>
       )}
 
-      {/* MODALS (Keep exactly as they were, they are fine!) */}
       {/* GIVE AWARD MODAL */}
       {showModal && (
         <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Give Award to Student</h3>
+              <h3>Give Award to Student(s)</h3>
               <button className="modal-close" onClick={() => setShowModal(false)} disabled={saving}>×</button>
             </div>
             <div className="modal-body">
+
               <div className="form-group">
-                <label>Student <span className="req">*</span></label>
-                <select value={form.student_id} onChange={e => setForm({ ...form, student_id: e.target.value })}>
-                  <option value="">Select student</option>
-                  {students.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.last_name}, {s.first_name} — {s.program?.program_code}
-                    </option>
-                  ))}
-                </select>
+                <label>
+                  Student(s) <span className="req">*</span>
+                  <span className="label-hint"> — add multiple if needed</span>
+                </label>
+                {form.student_ids.length === 0 && (
+                  <p className="ss-hint">Click "+ Add Student" to begin.</p>
+                )}
+                {form.student_ids.map((id, idx) => (
+                  <div key={idx} className="student-slot">
+                    <StudentSelector
+                      students={students}
+                      value={id}
+                      onChange={newId => updateStudentSlot(idx, newId)}
+                      onRemove={() => removeStudentSlot(idx)}
+                      showRemove={form.student_ids.length > 1}
+                    />
+                  </div>
+                ))}
+                <button className="btn-add-student" onClick={addStudentSlot}>
+                  <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                  Add Student
+                </button>
               </div>
+
               <div className="form-group">
                 <label>Award Name <span className="req">*</span></label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dean's List"
+                <select
                   value={form.awardName}
-                  onChange={e => setForm({ ...form, awardName: e.target.value })}
-                />
+                  onChange={e => setForm({ ...form, awardName: e.target.value, customAward: "" })}
+                  className="award-select"
+                >
+                  <option value="">Select an award...</option>
+                  {PREDEFINED_AWARDS.map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+                {form.awardName === "Others" && (
+                  <input
+                    className="award-custom-input"
+                    type="text"
+                    placeholder="Specify award name..."
+                    value={form.customAward}
+                    onChange={e => setForm({ ...form, customAward: e.target.value })}
+                  />
+                )}
               </div>
+
               <div className="form-group">
                 <label>Description</label>
                 <textarea
@@ -341,6 +432,7 @@ export default function DepartmentChairAward() {
                   onChange={e => setForm({ ...form, description: e.target.value })}
                 />
               </div>
+
               <div className="form-group">
                 <label>Date Received <span className="req">*</span></label>
                 <input
@@ -349,18 +441,24 @@ export default function DepartmentChairAward() {
                   onChange={e => setForm({ ...form, date_received: e.target.value })}
                 />
               </div>
+
             </div>
             <div className="modal-footer">
               <button className="btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
               <button className="btn-primary" onClick={handleGive} disabled={saving}>
-                {saving ? "Saving..." : "Give Award"}
+                {saving
+                  ? "Saving..."
+                  : `Give Award${form.student_ids.filter(Boolean).length > 1
+                      ? ` (${form.student_ids.filter(Boolean).length})`
+                      : ""}`
+                }
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* REJECT REASON MODAL */}
+      {/* REJECT MODAL */}
       {rejectId && (
         <div className="modal-overlay" onClick={() => setRejectId(null)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>

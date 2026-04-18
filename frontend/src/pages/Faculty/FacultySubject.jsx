@@ -27,7 +27,7 @@ function SearchIcon({ size = 14 }) {
   );
 }
 
-function UsersIcon({ size = 13 }) {
+function UsersIcon({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +39,7 @@ function UsersIcon({ size = 13 }) {
   );
 }
 
-function LayersIcon({ size = 13 }) {
+function LayersIcon({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,7 +87,6 @@ export default function FacultySubjects() {
   const [activeSubject, setActiveSubject] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
 
-  // ── Cached query — backend does all the work ──
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['faculty-students'],
     queryFn: async () => {
@@ -99,7 +98,7 @@ export default function FacultySubjects() {
   const subjects  = data?.subjects  ?? [];
   const students  = data?.students  ?? [];
 
-  /* ── Subject cards — one card per subject+section combo ── */
+  /* ── Subject cards ── */
   const subjectCards = useMemo(() =>
     subjects.map((s, idx) => ({
       key:          `${s.id}-${s.section_id}`,
@@ -108,7 +107,6 @@ export default function FacultySubjects() {
       name:         s.name,
       sectionName:  s.section_name,
       color:        CARD_COLORS[idx % CARD_COLORS.length],
-      // count students whose section matches this card
       enrolledCount: students.filter(st => st.section?.section_name === s.section_name).length,
     })),
     [subjects, students]
@@ -118,6 +116,39 @@ export default function FacultySubjects() {
   const totalLoad      = subjectCards.length;
   const activeSections = new Set(subjectCards.map(s => s.sectionName)).size;
   const totalStudents  = students.length;
+
+  /* ── Mini stats config — matches StudentManagement pattern ── */
+  const miniStats = [
+    {
+      label:   'Total Load',
+      value:   `${totalLoad}`,
+      sub:     `Class${totalLoad !== 1 ? 'es' : ''}`,
+      hint:    'Current semester',
+      color:   '#FF6B1A',
+      iconBg:  '#fff5ef',
+      icon: (
+        <BookIcon color="#FF6B1A" size={22} />
+      ),
+    },
+    {
+      label:   'Active Sections',
+      value:   `${activeSections}`,
+      sub:     `Section${activeSections !== 1 ? 's' : ''}`,
+      hint:    'Across all subjects',
+      color:   '#f59e0b',
+      iconBg:  '#fff9ed',
+      icon: <LayersIcon size={22} />,
+    },
+    {
+      label:   'Handled Students',
+      value:   `${totalStudents}`,
+      sub:     'Enrolled',
+      hint:    'Total headcount',
+      color:   '#1D9E75',
+      iconBg:  '#eefaf5',
+      icon: <UsersIcon size={22} />,
+    },
+  ];
 
   /* ── Filtered subject cards ── */
   const filteredSubjects = useMemo(() =>
@@ -166,48 +197,52 @@ export default function FacultySubjects() {
 
         {!activeSubject ? (
           <>
-            {/* Header */}
+            {/* ── Header ── */}
             <div className="subjects-header">
               <div className="header-info">
                 <h1 className="page-title">My Subjects</h1>
                 <p className="page-subtitle">Manage your assigned courses and access student rosters.</p>
               </div>
-              <div className="search-box">
-                <SearchIcon size={16} />
+            </div>
+
+            {/* ── Stats — same pattern as StudentManagement mini-stats ── */}
+            <div className="mini-stats">
+              {miniStats.map((s, idx) => (
+                <div className="mini-stat-card" key={idx}>
+                  <div className="mini-stat-border" style={{ background: s.color }} />
+                  <div className="mini-stat-content">
+                    <div className="mini-stat-icon" style={{ background: s.iconBg, color: s.color }}>
+                      {s.icon}
+                    </div>
+                    <div className="mini-stat-info">
+                      <span className="mini-stat-value" style={{ color: s.color }}>
+                        {s.value}
+                        <span className="mini-stat-sub"> {s.sub}</span>
+                      </span>
+                      <span className="mini-stat-label">{s.label}</span>
+                      <span className="mini-stat-hint">{s.hint}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Toolbar: search (matches StudentManagement table-toolbar) ── */}
+            <div className="table-toolbar">
+              <div className="search-wrap">
+                <SearchIcon size={15} />
                 <input
                   type="text"
-                  placeholder="Search course code or name..."
+                  placeholder="Search course code, name, or section…"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="subjects-summary">
-              <div className="mini-card-outline accent-orange">
-                <span className="mini-icon"><BookIcon color="#FF6B1A" size={14} /></span>
-                <span className="mini-label">Total Load</span>
-                <span className="mini-value">{totalLoad} Class{totalLoad !== 1 ? 'es' : ''}</span>
-                <span className="mini-hint">Current semester</span>
-              </div>
-              <div className="mini-card-outline accent-amber">
-                <span className="mini-icon"><LayersIcon size={14} /></span>
-                <span className="mini-label">Active Sections</span>
-                <span className="mini-value">{activeSections} Section{activeSections !== 1 ? 's' : ''}</span>
-                <span className="mini-hint">Across all subjects</span>
-              </div>
-              <div className="mini-card-outline accent-green">
-                <span className="mini-icon"><UsersIcon size={14} /></span>
-                <span className="mini-label">Handled Students</span>
-                <span className="mini-value">{totalStudents} Enrolled</span>
-                <span className="mini-hint">Total headcount</span>
-              </div>
-            </div>
-
             <p className="section-eyebrow">Assigned Subjects</p>
 
-            {/* Grid */}
+            {/* ── Grid ── */}
             <div className="subjects-grid">
               {isLoading ? (
                 <div className="loading-subjects">

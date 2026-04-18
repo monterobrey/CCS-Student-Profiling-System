@@ -78,7 +78,7 @@ const { role, logout } = useAuth();
           { path: "violations", meta: { title: "Violations", icon: "violations" } }
         ]},
         { name: "Awards", items: [
-          { path: "awards", meta: { title: "Award Approvals", icon: "awards" } }
+          { path: "awards", meta: { title: "Awards", icon: "awards" } }
         ]},
         { name: "Schedule", items: [
           { path: "schedule", meta: { title: "Manage Schedule", icon: "schedule" } }

@@ -2,7 +2,17 @@
 
 .empty-state-msg { padding: 30px 0; text-align: center; font-size: 13px; color: #b89f90; font-style: italic; }
 
-.dashboard-home { display: flex; flex-direction: column; gap: 0; }
+.dashboard-home {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-x: hidden;
+  max-width: 1400px;        /* add this */
+  margin: 0 auto;           /* add this */
+  width: 100%;              /* add this */
+  padding: 0 24px;          /* add this */
+  box-sizing: border-box;   /* add this */
+}
 
 .hero-banner {
   background: linear-gradient(130deg, #1a0a00 0%, #3d1500 55%, #FF6B1A 130%);
@@ -185,7 +195,8 @@
   /* Keep all 5 stats in one row on desktop */
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 0px;
+  margin-bottom: -20px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -273,10 +284,12 @@
 @media (max-width: 1200px) {
   /* Wrap earlier on smaller screens */
   .dean-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bottom-grid { grid-template-columns: repeat(2, minmax(280px, 1fr)); } 
 }
 
 @media (max-width: 900px) {
   .dean-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bottom-grid { grid-template-columns: 1fr; }
 }
 
 .dean-stat-delta.positive { background: #f0fdf4; color: #16a34a; }
@@ -298,9 +311,11 @@
 
 .bottom-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  gap: 20px;
   margin-top: 10px;
+  width: 100%;              /* add this */
+  box-sizing: border-box;
 }
 
 .card {

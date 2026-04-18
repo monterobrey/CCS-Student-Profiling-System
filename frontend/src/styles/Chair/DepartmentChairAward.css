@@ -7,7 +7,6 @@
   font-family: "Outfit", sans-serif;
 }
 
-/* Isolated Header to prevent global gradient bugs */
 .award-header-clean {
   display: flex;
   justify-content: space-between;
@@ -30,7 +29,7 @@
   margin-top: 4px;
 }
 
-/* --- Controls Row (Tabs + Search) --- */
+/* --- Controls Row --- */
 .controls-row {
   display: flex;
   justify-content: space-between;
@@ -66,14 +65,8 @@
   gap: 8px;
 }
 
-.filter-tab:hover {
-  color: #1a0a00;
-}
-
-.filter-tab.active {
-  background: #1a0a00;
-  color: #fff;
-}
+.filter-tab:hover { color: #1a0a00; }
+.filter-tab.active { background: #1a0a00; color: #fff; }
 
 .tab-count {
   background: rgba(255, 255, 255, 0.2);
@@ -95,9 +88,8 @@
   color: #a38d82;
 }
 
-.search-clear:hover {
-  color: #1a0a00;
-}
+.search-clear:hover { color: #1a0a00; }
+
 .search-wrap {
   display: flex;
   align-items: center;
@@ -119,11 +111,9 @@
   color: #1a0a00;
 }
 
-.search-wrap input::placeholder {
-  color: #b89f90;
-}
+.search-wrap input::placeholder { color: #b89f90; }
 
-/* --- Awards Data Table Layout --- */
+/* --- Awards Table --- */
 .awards-table-container {
   background: #ffffff;
   border-radius: 16px;
@@ -132,10 +122,7 @@
   overflow: hidden;
 }
 
-.awards-list {
-  display: flex;
-  flex-direction: column;
-}
+.awards-list { display: flex; flex-direction: column; }
 
 .ach-header {
   background: #fdfaf8;
@@ -145,6 +132,8 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* ── THE FIX: one single grid definition, 5 columns for Chair ── */
 .ach-row {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
@@ -152,197 +141,288 @@
   padding: 16px 24px;
   align-items: center;
   border-bottom: 1px solid #f9f7f5;
-  transition: background-color 0.2s;
-   transition: all 0.2s;
+  transition: all 0.2s;
 }
 
-.ach-row:hover {
-  background-color: #fdfcfb;
-  transform: translateY(-1px);
-}
+.ach-row:hover { background-color: #fdfcfb; transform: translateY(-1px); }
+.ach-row.ach-header:hover { background-color: #fdfaf8; transform: none; }
+.ach-row:last-child { border-bottom: none; }
 
-.ach-row:last-child {
-  border-bottom: none;
-}
-
-.ach-col {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.ach-info-col {
-  flex-direction: row;
-  align-items: center;
-  gap: 14px;
-}
+.ach-col { display: flex; flex-direction: column; justify-content: center; }
+.ach-info-col { flex-direction: row; align-items: center; gap: 14px; }
 
 .ach-icon {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   background: #fff8eb;
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
 }
 
-.ach-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1a0a00;
-  margin: 0 0 2px 0;
-}
+.ach-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; color: #1a0a00; margin: 0 0 2px 0; }
+.ach-meta { font-size: 11px; color: #a38d82; margin: 0; }
+.ach-student-name { font-size: 13px; font-weight: 600; color: #4a3f35; margin: 0 0 2px 0; }
+.ach-student-prog { font-size: 11px; color: #9a8070; background: #f0e8e0; padding: 2px 8px; border-radius: 4px; width: fit-content; margin: 0; }
+.ach-date { font-size: 13px; color: #4a3f35; margin: 0 0 2px 0; }
+.ach-reason { font-size: 11px; color: #b89f90; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin: 0; }
 
-.ach-meta {
-  font-size: 11px;
-  color: #a38d82;
-  margin: 0;
-}
-
-.ach-student-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #4a3f35;
-  margin: 0 0 2px 0;
-}
-
-.ach-student-prog {
-  font-size: 11px;
-  color: #9a8070;
-  background: #f0e8e0;
-  padding: 2px 8px;
-  border-radius: 4px;
-  width: fit-content;
-  margin: 0;
-}
-
-.ach-date {
-  font-size: 13px;
-  color: #4a3f35;
-  margin: 0 0 2px 0;
-}
-
-.ach-reason {
-  font-size: 11px;
-  color: #b89f90;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-  margin: 0;
-}
-
-/* --- Status Badges --- */
-.ach-status {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  width: fit-content;
-  border: 1px solid transparent;
-}
-
-.as-pending { background: #fffbeb; color: #d97706; }
+.ach-status { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; width: fit-content; border: 1px solid transparent; }
+.as-pending  { background: #fffbeb; color: #d97706; }
 .as-approved { background: #f0fdf4; color: #16a34a; }
 .as-rejected { background: #fff1f2; color: #e11d48; }
 
-/* --- Action Buttons --- */
-.action-col {
-  align-items: flex-end;
+.action-col { align-items: flex-end; }
+.ach-actions { display: flex; gap: 8px; }
+
+.btn-approve { background: #f0fdf4; color: #16a34a; border: 1px solid transparent; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-approve:hover { background: #16a34a; color: #ffffff; }
+.btn-reject  { background: #fff1f2; color: #e11d48; border: 1px solid transparent; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-reject:hover { background: #e11d48; color: #ffffff; }
+
+.ach-resolved { font-size: 12px; color: #a38d82; font-style: italic; padding-right: 8px; }
+
+.btn-primary { background: #FF6B1A; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: inherit; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-primary:hover { background: #e65c12; }
+
+.btn-secondary { background: transparent; color: #4a3f35; border: 1px solid #d4c4b8; padding: 10px 20px; border-radius: 10px; font-family: inherit; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-secondary:hover { background: #f9f7f5; }
+
+.empty-state { text-align: center; padding: 50px; color: #1a0a00; font-style: italic; font-size: 14px; font-weight: 600; }
+.empty-state span { display: block; font-size: 12px; margin-top: 4px; color: #b89f90; font-weight: 400; }
+
+/* ============================================
+   STUDENT SELECTOR (searchable dropdown)
+   ============================================ */
+.student-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.ach-actions {
+.student-selector {
+  position: relative;
+  flex: 1;
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-/* Modern Ghost Buttons for Actions */
-.btn-approve {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid transparent;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
+.student-selector-input {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e8ddd5;
+  border-radius: 10px;
+  padding: 10px 14px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-approve:hover {
-  background: #16a34a;
-  color: #ffffff;
-}
-
-.btn-reject {
-  background: #fff1f2;
-  color: #e11d48;
-  border: 1px solid transparent;
-  padding: 6px 12px;
-  border-radius: 8px;
+  font-size: 13px;
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.15s;
+  min-height: 42px;
 }
 
-.btn-reject:hover {
-  background: #e11d48;
-  color: #ffffff;
+.student-selector-input:hover { border-color: #FF6B1A; }
+
+.ss-selected { color: #1a0a00; font-weight: 500; }
+.ss-placeholder { color: #b89f90; }
+
+.ss-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e8ddd5;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  z-index: 999;
+  overflow: hidden;
 }
 
-.ach-resolved {
-  font-size: 12px;
-  color: #a38d82;
-  font-style: italic;
-  padding-right: 8px;
+.ss-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0e8e0;
 }
 
-/* General button styling for headers/modals */
-.btn-primary {
-  background: #FF6B1A;
-  color: white;
+.ss-search-wrap input {
+  flex: 1;
   border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
+  outline: none;
   font-family: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover { background: #e65c12; }
-
-.btn-secondary {
+  font-size: 13px;
+  color: #1a0a00;
   background: transparent;
-  color: #4a3f35;
-  border: 1px solid #d4c4b8;
-  padding: 10px 20px;
+}
+
+.ss-search-wrap input::placeholder { color: #b89f90; }
+
+.ss-list { max-height: 220px; overflow-y: auto; }
+
+.ss-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ss-option:hover { background: #faf8f6; }
+.ss-option-active { background: #fff5ef; }
+
+.ss-avatar {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+
+.ss-name { font-size: 13px; font-weight: 600; color: #1a0a00; margin: 0 0 1px 0; }
+.ss-prog { font-size: 11px; color: #9a8070; margin: 0; }
+.ss-empty { padding: 16px; text-align: center; font-size: 13px; color: #b89f90; }
+
+.ss-remove {
+  background: #fff1f2;
+  border: none;
+  color: #e11d48;
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.ss-remove:hover { background: #e11d48; color: #fff; }
+
+.btn-add-student {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px dashed #d4c4b8;
+  color: #9a8070;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.15s;
+  margin-top: 2px;
+}
+
+.btn-add-student:hover { border-color: #FF6B1A; color: #FF6B1A; background: #fff5ef; }
+
+.ss-hint { font-size: 12px; color: #b89f90; font-style: italic; margin: 0 0 8px 0; }
+.label-hint { font-size: 11px; color: #b89f90; font-weight: 400; margin-left: 4px; }
+
+/* ============================================
+   AWARD NAME DROPDOWN
+   ============================================ */
+.award-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e8ddd5;
   border-radius: 10px;
   font-family: inherit;
-  font-weight: 600;
+  font-size: 13px;
+  color: #1a0a00;
+  background: #fff;
+  outline: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: border-color 0.15s;
+  appearance: auto;
 }
 
-.btn-secondary:hover { background: #f9f7f5; }
+.award-select:focus { border-color: #FF6B1A; }
 
-.empty-state {
-  text-align: center;
-  padding: 50px;
-  color: #b89f90;
-  font-style: italic;
+.award-custom-input {
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e8ddd5;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #1a0a00;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
-.empty-state span {
-  display: block;
-  font-size: 12px;
-  margin-top: 4px;
+.award-custom-input:focus { border-color: #FF6B1A; }
+.award-custom-input::placeholder { color: #b89f90; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .controls-row { flex-direction: column; align-items: flex-start; }
+  .search-wrap { width: 100%; min-width: unset; }
+
+  .ach-row {
+    grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  }
+
+  /* hide action col — tap row to action on mobile */
+  .ach-row .action-col { display: none; }
 }
 
+@media (max-width: 600px) {
+  .ach-row {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  .ach-row .ach-col:nth-child(2) { display: none; }
+}
+
+/* ============================================================
+   AWARDS & RECOGNITION — Dean / Admin
+   Append these to the bottom of DeanDashboard.css
+   ============================================================ */
+
+/* Grid columns: 4-col read-only | 5-col dean (with action) */
+
+
+.ach-row.ach-row--dean {
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
+}
+
+/* Responsive — tablet */
+@media (max-width: 900px) {
+  .controls-row { flex-direction: column; align-items: flex-start; }
+  .search-wrap  { width: 100%; min-width: unset; }
+
+  .ach-row,
+  .ach-row.ach-row--dean {
+    grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  }
+
+  /* hide action col on tablet for dean — shown in expanded row instead */
+  .ach-row.ach-row--dean .action-col { display: none; }
+}
+
+/* Responsive — mobile */
+@media (max-width: 600px) {
+  .ach-row,
+  .ach-row.ach-row--dean {
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
+  }
+  
+
+  /* hide student col on small mobile */
+  .ach-row .ach-col:nth-child(2),
+  .ach-row.ach-row--dean .ach-col:nth-child(2) { display: none; }
+}

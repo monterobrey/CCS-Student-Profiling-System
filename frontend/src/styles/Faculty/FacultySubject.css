@@ -5,6 +5,9 @@
   padding: 0 0 24px;
   min-height: 100vh;
   font-family: 'Outfit', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .faculty-subjects-page {
@@ -15,42 +18,113 @@
 .subjects-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
+  align-items: flex-end;
   gap: 16px;
   flex-wrap: wrap;
 }
 
 .page-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: #1a0a00;
   margin: 0;
   line-height: 1.2;
 }
 
-.page-sub {
+.page-subtitle {
   font-size: 13px;
   color: #b89f90;
-  font-size: 13px;
   margin-top: 4px;
 }
 
-/* ─── Search box ────────────────────────────────────────────────────── */
-.search-box {
+/* ─── Mini Stats — mirrors StudentManagement exactly ───────────────── */
+.mini-stats {
   display: flex;
-  gap: 14px;
+  gap: 16px;
 }
 
-.stat-card {
+.mini-stat-card {
   background: #fff;
   border: 1px solid #f0e8e0;
-  padding: 9px 14px;
   border-radius: 12px;
-  width: 300px;
-  gap: 10px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  flex: 1;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.mini-stat-border {
+  height: 4px;
+  width: 100%;
+}
+
+.mini-stat-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.mini-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mini-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mini-stat-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.mini-stat-sub {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mini-stat-label {
+  font-size: 11px;
+  color: #9a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.mini-stat-hint {
+  font-size: 11px;
+  color: #c5b0a4;
+  margin-top: 1px;
+}
+
+/* ─── Toolbar — mirrors StudentManagement table-toolbar ────────────── */
+.table-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid #f0e8e0;
+  border-radius: 10px;
+  padding: 9px 14px;
+  flex: 1;
+  min-width: 0;
+  transition: all 0.2s;
 }
 
 .search-wrap:focus-within {
@@ -59,8 +133,6 @@
 }
 
 .search-wrap svg {
-  width: 15px;
-  height: 15px;
   color: #c0b0a5;
   flex-shrink: 0;
 }
@@ -70,94 +142,13 @@
   outline: none;
   font-size: 13px;
   font-family: 'Outfit', sans-serif;
-  font-size: 13px;
-  width: 100%;
   color: #1a0a00;
-  background: transparent;
+  width: 100%;
+  background: none;
 }
 
-.search-box input::placeholder { color: #c5b0a4; }
-.search-box svg                { color: #c5b0a4; flex-shrink: 0; }
-
-/* ─── Summary strip ─────────────────────────────────────────────────── */
-.subjects-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.mini-card-outline {
-  background: #fff;
-  border: 1px solid #f0e8e0;
-  border-top: 4px solid transparent;
-  border-radius: 14px;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  position: relative;
-}
-
-.mini-card-outline.accent-orange {
-  border-top-color: #FF6B1A;
-}
-
-.mini-card-outline.accent-amber {
-  border-top-color: #f59e0b;
-}
-
-.mini-card-outline.accent-green {
-  border-top-color: #1D9E75;
-}
-
-.mini-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 9px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
-  color: #a45b2d;
-  background: #fff6f1;
-}
-
-.mini-card-outline.accent-amber .mini-icon {
-  color: #9b5f00;
-  background: #fff9ed;
-}
-
-.mini-card-outline.accent-green .mini-icon {
-  color: #0F6E56;
-  background: #eefaf5;
-}
-
-.data-table th {
-  padding: 13px 18px;
-  background: #faf8f6;
-  font-size: 10px;
-  font-weight: 700;
-  color: #c5b0a4;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  border-bottom: 1px solid #f0e8e0;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.mini-value {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  color: #3d1500;
-  line-height: 1.1;
-}
-
-.mini-hint {
-  font-size: 11px;
-  color: #c5b0a4;
-  margin-top: 1px;
+.search-wrap input::placeholder {
+  color: #c0b0a5;
 }
 
 /* ─── Section eyebrow ───────────────────────────────────────────────── */
@@ -167,7 +158,7 @@
   letter-spacing: 0.7px;
   text-transform: uppercase;
   color: #c5b0a4;
-  margin-bottom: 14px;
+  margin: 0;
 }
 
 /* ─── Grid ──────────────────────────────────────────────────────────── */
@@ -205,7 +196,6 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.13);
 }
 
-/* Icon */
 .subject-icon-wrap {
   width: 42px;
   height: 42px;
@@ -217,7 +207,6 @@
   flex-shrink: 0;
 }
 
-/* Code + name */
 .subject-body { margin-bottom: 0; }
 
 .subject-code-row {
@@ -248,18 +237,16 @@
   line-height: 1.45;
 }
 
-/* Divider */
 .card-rule {
   border: none;
   border-top: 1px solid #f5ede7;
   margin: 16px 0 14px;
 }
 
-/* Meta row */
 .subject-meta-row {
   display: flex;
   gap: 20px;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .meta-stat { display: flex; flex-direction: column; gap: 1px; }
@@ -275,21 +262,6 @@
 .meta-lbl {
   font-size: 11px;
   color: #c5b0a4;
-}
-
-/* Footer CTA */
-.card-cta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: auto;
-  transition: transform 0.15s ease;
-}
-
-.subject-card:hover .card-cta {
-  transform: translateX(2px);
 }
 
 /* ─── Loading / empty ───────────────────────────────────────────────── */
@@ -355,9 +327,8 @@
   transition: background 0.15s, transform 0.15s;
 }
 
-.view-btn:hover {
-  border-color: #FF6B1A;
-  color: #FF6B1A;
+.refresh-btn:hover {
+  background: #FF6B1A;
 }
 
 /* ─── Roster panel ──────────────────────────────────────────────────── */
@@ -375,7 +346,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Panel header */
 .roster-page-header {
   padding: 18px 22px 14px;
   border-bottom: 1px solid #f5ede7;
@@ -440,7 +410,6 @@
   color: #a04815;
 }
 
-/* Panel search */
 .roster-search {
   padding: 14px 22px;
   border-bottom: 1px solid #f5ede7;
@@ -463,7 +432,6 @@
 
 .roster-search input::placeholder { color: #c5b0a4; }
 
-/* Table wrapper */
 .roster-table-wrap { overflow-x: auto; }
 
 .roster-table {
@@ -477,7 +445,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: #c5b0a4;
+  color: #9a8070;
   padding: 10px 22px;
   text-align: left;
   border-bottom: 1px solid #f5ede7;
@@ -494,7 +462,6 @@
 }
 
 .roster-table tr:last-child td { border-bottom: none; }
-
 .roster-table tbody tr:hover td { background: #fffaf8; }
 
 .report-violation-btn {
@@ -515,9 +482,7 @@
   transform: translateY(-1px);
 }
 
-.report-violation-btn:active {
-  transform: translateY(0);
-}
+.report-violation-btn:active { transform: translateY(0); }
 
 .report-violation-btn:disabled {
   opacity: 0.6;
@@ -532,7 +497,6 @@
   font-size: 13px !important;
 }
 
-/* Name cell */
 .name-cell {
   display: flex;
   align-items: center;
@@ -554,7 +518,6 @@
 
 .cell-muted { color: #a08070 !important; }
 
-/* Section tag */
 .section-tag {
   font-size: 11px;
   padding: 3px 9px;
@@ -565,19 +528,6 @@
   font-weight: 500;
 }
 
-/* Status pills */
-.status-pill {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 99px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-.status-regular   { background: #eaf3de; color: #3b6d11; }
-.status-irregular { background: #faeeda; color: #854f0b; }
-
-/* Panel footer */
 .roster-footer {
   padding: 11px 22px;
   border-top: 1px solid #f5ede7;
@@ -587,10 +537,15 @@
 }
 
 /* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .mini-stats { flex-wrap: wrap; }
+  .mini-stat-card { min-width: calc(50% - 8px); }
+}
+
 @media (max-width: 640px) {
   .subjects-header    { flex-direction: column; }
-  .search-box         { width: 100%; }
-  .subjects-summary   { grid-template-columns: 1fr; }
+  .mini-stats         { flex-direction: column; }
+  .mini-stat-card     { min-width: 100%; }
   .subjects-grid      { grid-template-columns: 1fr; }
   .subjects-container { padding: 0 0 20px; }
   .roster-page-header {
@@ -605,5 +560,5 @@
   .roster-search,
   .roster-table th,
   .roster-table td,
-  .roster-footer      { padding-left: 14px; padding-right: 14px; }
+  .roster-footer { padding-left: 14px; padding-right: 14px; }
 }

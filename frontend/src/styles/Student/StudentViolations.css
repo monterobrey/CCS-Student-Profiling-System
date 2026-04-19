@@ -1,45 +1,117 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
 
-.page {
+/* ─── Base ──────────────────────────────────────────────── */
+.student-violations-page.page {
   display: flex;
   flex-direction: column;
   gap: 20px;
   font-family: 'Outfit', sans-serif;
 }
 
-.page-header {
+.student-violations-page .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.page-title {
+.student-violations-page .page-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #1a0a00;
 }
 
-.page-sub {
+.student-violations-page .page-sub {
   font-size: 13px;
   color: #b89f90;
   margin-top: 4px;
 }
 
-/* Card */
-.pcard {
+/* ─── Record count badge ─────────────────────────────────── */
+.student-violations-page .record-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #f0e8e0;
+  color: #9a8070;
+  background: #fff;
+}
+
+.student-violations-page .record-count-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e11d48;
+}
+
+/* ─── Card ───────────────────────────────────────────────── */
+.student-violations-page .pcard {
   background: #fff;
   border: 1px solid #f0e8e0;
   border-radius: 20px;
   overflow: hidden;
 }
 
-.pcard-body {
-  padding: 22px;
+.student-violations-page .pcard-body {
+  padding: 0;
 }
 
-/* Loading */
-.loading-state {
+/* ─── Toolbar ────────────────────────────────────────────── */
+.student-violations-page .table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0e8e0;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #faf8f6;
+}
+
+.student-violations-page .toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a0a00;
+}
+
+.student-violations-page .filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.student-violations-page .filter-pill {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid #ede5dd;
+  color: #9a8070;
+  background: transparent;
+  transition: all 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.student-violations-page .filter-pill:hover {
+  border-color: #c8b0a0;
+  color: #4a3020;
+}
+
+.student-violations-page .filter-pill.active {
+  background: #1a0a00;
+  color: #fff;
+  border-color: #1a0a00;
+}
+
+/* ─── Loading ────────────────────────────────────────────── */
+.student-violations-page .loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,7 +122,7 @@
   font-size: 14px;
 }
 
-.spinner {
+.student-violations-page .spinner {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 107, 26, 0.1);
@@ -60,13 +132,11 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* Empty State */
-.empty-clean {
+/* ─── Empty ──────────────────────────────────────────────── */
+.student-violations-page .empty-clean {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -75,21 +145,30 @@
   gap: 12px;
 }
 
-.clean-title {
+.student-violations-page .clean-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #10b981;
 }
 
-.clean-sub {
+.student-violations-page .clean-sub {
   font-size: 13px;
   color: #b89f90;
 }
 
-/* Violation List */
-.student-violations-page .violation-table-wrap { overflow-x: auto; }
-.student-violations-page .violation-table { width: 100%; border-collapse: collapse; }
+/* ─── Table ──────────────────────────────────────────────── */
+.student-violations-page .violation-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.student-violations-page .violation-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
 .student-violations-page .violation-table th {
   text-align: left;
   font-size: 11px;
@@ -97,128 +176,342 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 12px 14px;
+  padding: 14px 24px;
   border-bottom: 1px solid #f0e8e0;
   background: #faf8f6;
 }
+
 .student-violations-page .violation-table td {
   font-size: 13px;
   color: #1a0a00;
-  padding: 13px 14px;
+  padding: 16px 24px;
   border-bottom: 1px solid #f7f2ee;
   vertical-align: middle;
 }
-.student-violations-page .v-row-clickable { cursor: pointer; transition: background 0.15s; }
-.student-violations-page .v-row-clickable:hover { background: #fff9f4; }
 
-.v-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #ef4444;
-  color: #fff;
-  font-weight: 800;
-  font-size: 18px;
+.student-violations-page .violation-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.student-violations-page .v-row-clickable {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.student-violations-page .v-row-clickable:hover {
+  background: #fff9f4;
+}
+
+/* ─── Type cell with icon ────────────────────────────────── */
+.student-violations-page .v-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.student-violations-page .v-row-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-/* Severity Badges */
-.sev-badge {
+.student-violations-page .v-row-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.student-violations-page .sev-icon-major,
+.student-v-modal .sev-icon-major { background: #fff1f2; color: #e11d48; }
+.student-violations-page .sev-icon-moderate,
+.student-v-modal .sev-icon-moderate { background: #fff7ed; color: #ea580c; }
+.student-violations-page .sev-icon-minor,
+.student-v-modal .sev-icon-minor { background: #fffbeb; color: #d97706; }
+
+.student-violations-page .v-type-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a0a00;
+}
+
+.student-violations-page .v-date-col {
+  color: #9a8070;
+  font-size: 12px;
+}
+
+.student-violations-page .v-chevron {
+  color: #c8b0a0;
+  font-size: 18px;
+  text-align: right;
+  width: 32px;
+  padding-right: 20px !important;
+}
+
+/* ─── Severity badges ────────────────────────────────────── */
+.student-violations-page .sev-badge,
+.student-v-modal .sev-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.student-violations-page .sev-major,
+.student-v-modal .sev-major { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+.student-violations-page .sev-moderate,
+.student-v-modal .sev-moderate { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.student-violations-page .sev-minor,
+.student-v-modal .sev-minor { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+
+/* ─── Status badges ──────────────────────────────────────── */
+.student-violations-page .v-status,
+.student-v-modal .v-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.student-violations-page .v-status.resolved,
+.student-v-modal .v-status.resolved { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.student-violations-page .v-status.pending,
+.student-v-modal .v-status.pending { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+.student-violations-page .v-status.under-review,
+.student-v-modal .v-status.under-review { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.student-violations-page .v-status.dismissed,
+.student-v-modal .v-status.dismissed { background: #f5f5f4; color: #57534e; border: 1px solid #d6d3d1; }
+.student-violations-page .v-status.sanctioned,
+.student-v-modal .v-status.sanctioned { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
+
+/* ─── Actor cell ─────────────────────────────────────────── */
+.student-violations-page .actor-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.student-violations-page .actor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f5ece4;
+  border: 1px solid #ede5dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
+  color: #9a8070;
+  flex-shrink: 0;
 }
 
-.sev-major {
-  background: #fff1f2;
-  color: #e11d48;
+.student-violations-page .actor-name {
+  font-size: 12px;
+  color: #9a8070;
 }
 
-.sev-moderate {
-  background: #fff7ed;
-  color: #ea580c;
-}
-
-.sev-minor {
-  background: #fffbeb;
-  color: #d97706;
-}
-
-/* Status */
-.v-status {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
-}
-
-.resolved {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-
-.pending {
-  background: #fef3c7;
-  color: #d97706;
-}
-
+/* ─── Modal overlay ──────────────────────────────────────── */
 .student-v-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(26, 10, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 20px;
+  backdrop-filter: blur(2px);
 }
+
+/* ─── Modal ──────────────────────────────────────────────── */
 .student-v-modal {
   width: 100%;
-  max-width: 640px;
+  max-width: 560px;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid #f0e8e0;
   overflow: hidden;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 20px 60px rgba(26, 10, 0, 0.12);
 }
+
+/* ─── Modal header ───────────────────────────────────────── */
 .student-v-modal-header {
-  padding: 16px 20px;
+  padding: 18px 20px;
   border-bottom: 1px solid #f0e8e0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
 }
-.student-v-modal-header h3 { margin: 0; font-size: 17px; font-family: 'Plus Jakarta Sans', sans-serif; }
-.student-v-modal-header button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #b89f90;
-}
-.student-v-modal-body { padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-.student-v-detail-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid #f7f2ee;
-  padding-bottom: 8px;
-}
-.student-v-detail-row span { color: #9a8070; font-size: 12px; }
-.student-v-detail-row strong { color: #1a0a00; font-size: 13px; text-align: right; }
-.student-v-block span { display: block; color: #9a8070; font-size: 12px; margin-bottom: 4px; }
-.student-v-block p {
-  margin: 0;
-  background: #fff9f4;
-  border: 1px solid #f7e6dc;
+
+.modal-header-icon {
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-header-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-header-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a0a00;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-header-sub {
+  font-size: 12px;
+  color: #b89f90;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #faf8f6;
+  border: 1px solid #ede5dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #9a8070;
+  flex-shrink: 0;
+  transition: all 0.12s;
+  padding: 0;
+}
+
+.modal-close-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.modal-close-btn:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+/* ─── Modal body ─────────────────────────────────────────── */
+.student-v-modal-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f7f2ee;
+}
+
+.modal-section:last-child {
+  border-bottom: none;
+}
+
+.modal-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #b89f90;
+  margin-bottom: 12px;
+}
+
+/* ─── Modal detail grid ──────────────────────────────────── */
+.modal-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-key {
+  font-size: 11px;
+  color: #b89f90;
+  font-weight: 500;
+}
+
+.detail-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a0a00;
+}
+
+/* ─── Prose blocks ───────────────────────────────────────── */
+.modal-prose-block {
+  background: #faf8f6;
+  border: 1px solid #f0e8e0;
+  border-radius: 10px;
+  padding: 12px 14px;
   font-size: 13px;
   color: #4a3020;
+  line-height: 1.65;
+}
+
+.modal-action-by {
+  font-size: 12px;
+  color: #9a8070;
+  margin-top: 10px;
+}
+
+.modal-action-by strong {
+  color: #1a0a00;
+  font-weight: 600;
+}
+
+/* ─── Modal footer ───────────────────────────────────────── */
+.student-v-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #f0e8e0;
+  display: flex;
+  justify-content: flex-end;
+  background: #faf8f6;
+}
+
+.modal-btn-close {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: 1px solid #ede5dd;
+  background: #fff;
+  color: #4a3020;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.modal-btn-close:hover {
+  background: #1a0a00;
+  color: #fff;
+  border-color: #1a0a00;
 }

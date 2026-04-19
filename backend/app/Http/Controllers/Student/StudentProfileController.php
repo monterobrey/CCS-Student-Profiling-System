@@ -282,7 +282,7 @@ class StudentProfileController extends Controller
     public function getViolations(Request $request)
     {
         $violations = StudentViolation::where('student_id', $request->user()->student->id)
-            ->with(['faculty', 'course'])
+            ->with(['faculty', 'course', 'actionByUser'])
             ->get();
 
         return ApiResponse::success($violations);

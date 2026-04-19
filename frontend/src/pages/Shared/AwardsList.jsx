@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth, ROLES } from "../../context/AuthContext";
 import { awardService } from "../../services";
 import styles from "../../styles/Shared/AwardsList.module.css";
@@ -45,6 +45,11 @@ export default function AwardsList() {
       const res = await awardService.getAll();
       return res.ok ? (res.data ?? []) : [];
     },
+    // Make sure the list stays fresh when navigating back
+    // or returning to the tab (no manual refresh needed).
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const showToast = (type, message) => {
@@ -80,40 +85,54 @@ export default function AwardsList() {
     return list;
   }, [awards, activeTab, search]);
 
-  const handleApprove = async (id) => {
-    try {
-      const res = await awardService.approve(id);
-      if (res.ok) {
-        showToast("success", "Award approved successfully.");
-        queryClient.setQueryData(["awards"], (old = []) =>
-          old.map(a => a.id === res.data.id ? res.data : a)
+  const approveMutation = useMutation({
+    mutationFn: async (id) => awardService.approve(id),
+    onSuccess: async (res) => {
+      if (!res?.ok) {
+        showToast(
+          "error",
+          res?.status === 403
+            ? "You do not have permission to approve this award."
+            : (res?.message || "Failed to approve.")
         );
-        queryClient.invalidateQueries({ queryKey: ["dean-summary"] });
-      } else {
-        showToast("error", res.status === 403 ? "You do not have permission to approve this award." : (res.message || "Failed to approve."));
+        return;
       }
-    } catch {
-      showToast("error", "Failed to approve.");
-    }
-  };
 
-  const handleReject = async () => {
-    try {
-      const res = await awardService.reject(rejectId, rejectReason);
-      if (res.ok) {
-        showToast("success", "Award rejected.");
-        setRejectId(null);
-        setRejectReason("");
-        queryClient.setQueryData(["awards"], (old = []) =>
-          old.map(a => a.id === res.data.id ? res.data : a)
+      showToast("success", "Award approved successfully.");
+      queryClient.setQueryData(["awards"], (old = []) =>
+        old.map(a => a.id === res.data?.id ? res.data : a)
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["awards"] }),
+        queryClient.invalidateQueries({ queryKey: ["dean-summary"] }),
+      ]);
+    },
+    onError: () => showToast("error", "Failed to approve."),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async ({ id, reason }) => awardService.reject(id, reason),
+    onSuccess: async (res) => {
+      if (!res?.ok) {
+        showToast(
+          "error",
+          res?.status === 403
+            ? "You do not have permission to reject this award."
+            : (res?.message || "Failed to reject.")
         );
-      } else {
-        showToast("error", res.status === 403 ? "You do not have permission to reject this award." : (res.message || "Failed to reject."));
+        return;
       }
-    } catch {
-      showToast("error", "Failed to reject.");
-    }
-  };
+
+      showToast("success", "Award rejected.");
+      setRejectId(null);
+      setRejectReason("");
+      queryClient.setQueryData(["awards"], (old = []) =>
+        old.map(a => a.id === res.data?.id ? res.data : a)
+      );
+      await queryClient.invalidateQueries({ queryKey: ["awards"] });
+    },
+    onError: () => showToast("error", "Failed to reject."),
+  });
 
   return (
     <div className={styles.page}>
@@ -265,13 +284,15 @@ export default function AwardsList() {
                         <div className={styles.actions}>
                           <button
                             className={styles.btnApprove}
-                            onClick={() => handleApprove(a.id)}
+                            onClick={() => approveMutation.mutate(a.id)}
+                            disabled={approveMutation.isPending}
                           >
                             Approve
                           </button>
                           <button
                             className={styles.btnReject}
                             onClick={() => { setRejectId(a.id); setRejectReason(""); }}
+                            disabled={rejectMutation.isPending}
                           >
                             Reject
                           </button>
@@ -311,7 +332,13 @@ export default function AwardsList() {
             </div>
             <div className={styles.modalFooter}>
               <button className={styles.btnSecondary} onClick={() => setRejectId(null)}>Cancel</button>
-              <button className={styles.btnReject} onClick={handleReject}>Confirm Reject</button>
+              <button
+                className={styles.btnReject}
+                onClick={() => rejectMutation.mutate({ id: rejectId, reason: rejectReason })}
+                disabled={rejectMutation.isPending}
+              >
+                Confirm Reject
+              </button>
             </div>
           </div>
         </div>

@@ -69,7 +69,7 @@ export default function ViolationsList() {
     return actorName;
   };
 
-  const viewingViolation = id ? cases.find((c) => c.id === id) ?? null : null;
+  const viewingViolation = id ? cases.find((c) => String(c.id) === String(id)) ?? null : null;
   const isResolvedCase = (viewingViolation?.status || '').toLowerCase() === 'resolved';
 
   const openViolation = (v) => {
@@ -104,9 +104,15 @@ export default function ViolationsList() {
       const res = await violationService.update(viewingViolation.id, editForm);
       if (res.ok) {
         queryClient.setQueryData(['violations', role], (old = []) =>
-          old.map((v) => (v.id === res.data.id ? res.data : v))
+          old.map((v) => (String(v.id) === String(res.data?.id) ? res.data : v))
         );
-        queryClient.invalidateQueries({ queryKey: ['dean-summary'] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['violations'] }),
+          queryClient.invalidateQueries({ queryKey: ['faculty-violations'] }),
+          queryClient.invalidateQueries({ queryKey: ['student-violations'] }),
+          queryClient.invalidateQueries({ queryKey: ['dean-summary'] }),
+          queryClient.invalidateQueries({ queryKey: ['faculty-dashboard-summary'] }),
+        ]);
         showToast('success', 'Violation updated successfully.');
         closeModal();
       } else {

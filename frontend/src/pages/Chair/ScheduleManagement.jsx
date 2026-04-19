@@ -309,6 +309,13 @@ export default function ScheduleManagement() {
     setShowAssignModal(true);
   };
 
+  const openReassign = (item) => {
+    setSelectedSchedule(item);
+    setAssignForm({ faculty_id: item.faculty_id?.toString() ?? "" });
+    setAssignError("");
+    setShowAssignModal(true);
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -421,9 +428,20 @@ export default function ScheduleManagement() {
                         )}
                       </td>
                       <td>
-                        <button className="delete-btn-sm" onClick={() => deleteSchedule(item)}>
-                          Delete
-                        </button>
+                        <div className="action-cell">
+                          {item.faculty && (
+                            <button className="edit-btn-sm" onClick={() => openReassign(item)} title="Change faculty">
+                              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                                <path d="M11.5 2.5l2 2M2 14l2-2 8.5-8.5-2-2-8.5 8.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </button>
+                          )}
+                          <button className="delete-btn-sm" onClick={() => deleteSchedule(item)} title="Delete schedule">
+                              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                                <path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -702,7 +720,7 @@ export default function ScheduleManagement() {
         <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
           <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Assign Faculty</h3>
+              <h3>{selectedSchedule.faculty ? "Change Faculty" : "Assign Faculty"}</h3>
               <button className="modal-close" onClick={() => setShowAssignModal(false)}>✕</button>
             </div>
             <div className="modal-body">

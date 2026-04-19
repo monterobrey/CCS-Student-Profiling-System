@@ -19,11 +19,13 @@
   border-radius: 20px;
   padding: 28px 32px;
   position: relative;
-  overflow: hidden;
+  overflow: hidden; /* PUT THIS BACK to trap the glowing shapes */
   margin-bottom: 20px;
+  height: auto !important; /* FORCES the banner to grow vertically */
+  min-height: max-content; /* Ensures it wraps all content completely */
 }
 
-.hero-bg-shape { position: absolute; border-radius: 50%; pointer-events: none; }
+.hero-bg-shape { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;}
 
 .shape-1 {
   width: 320px;
@@ -46,9 +48,10 @@
 .hero-body {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center so things align nicely when stacked */
   justify-content: space-between;
   gap: 24px;
+  flex-wrap: wrap; /* ADD THIS so the content stacks safely instead of clipping */
 }
 
 .hero-left {
@@ -87,6 +90,7 @@
   color: #fff;
   letter-spacing: -0.5px;
   margin-bottom: 8px;
+  word-break: break-word;
 }
 
 .dean-hero-desc {
@@ -149,7 +153,7 @@
 
 .hero-btn-ghost:hover { background: rgba(255, 255, 255, 0.18); }
 
-.hero-right { display: flex; gap: 12px; flex-shrink: 0; }
+.hero-right { display: flex; gap: 12px; flex-shrink: 1; }
 
 .hero-stat-card {
   background: rgba(255, 255, 255, 0.08);

@@ -1,7 +1,7 @@
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 .aff-page {
-  padding: 28px 32px;
-  max-width: 1100px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   position: relative;
 }
@@ -105,8 +105,8 @@
 /* ── Grid ────────────────────────────────────────────────────────────────── */
 .aff-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
 }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
@@ -118,9 +118,14 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: box-shadow .15s;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+  min-width: 0;
 }
-.aff-card:hover { box-shadow: 0 4px 16px rgba(255,107,26,.08); }
+.aff-card:hover {
+  box-shadow: 0 6px 22px rgba(255,107,26,.10);
+  transform: translateY(-1px);
+  border-color: #f1d8c9;
+}
 
 /* Default org card gets a subtle accent border */
 .aff-card-default {
@@ -133,6 +138,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
+  gap: 10px;
 }
 .aff-org-badge {
   font-size: 11px;
@@ -145,6 +151,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 .aff-icon-btn {
   background: none;
@@ -378,10 +385,14 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .aff-page { padding: 20px 16px; }
+  .aff-page { padding: 0; }
   .aff-header { flex-direction: column; }
   .aff-field-row { grid-template-columns: 1fr; }
   .aff-grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 1200px) {
+  .aff-title { font-size: 22px; }
 }
 
 /* ── Autocomplete ────────────────────────────────────────────────────────── */

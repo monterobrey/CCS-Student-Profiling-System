@@ -34,7 +34,7 @@ class AwardController extends Controller
         $data = $request->validate([
             'student_id'    => 'required|exists:students,id',
             'awardName'     => 'required|string|max:255',
-            'description'   => 'required|string',
+            'description'   => 'nullable|string',
             'date_received' => 'required|date',
         ]);
 
@@ -56,7 +56,7 @@ class AwardController extends Controller
     {
         $data = $request->validate([
             'awardName'     => 'required|string|max:255',
-            'description'   => 'required|string',
+            'description'   => 'nullable|string',
             'date_received' => 'required|date',
         ]);
 

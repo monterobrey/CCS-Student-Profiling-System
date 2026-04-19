@@ -67,7 +67,7 @@ class AwardService
                 'student_id'     => $data['student_id'],
                 'faculty_id'     => $facultyId,
                 'awardName'      => $data['awardName'],
-                'description'    => $data['description'],
+                'description'    => $data['description'] ?? '',
                 'date_received'  => $data['date_received'],
                 'issued_by'      => $user->name,
                 'applied_by'     => true,           // admin-given
@@ -90,7 +90,7 @@ class AwardService
             'student_id'     => $user->student->id,
             'faculty_id'     => null,
             'awardName'      => $data['awardName'],
-            'description'    => $data['description'],
+            'description'    => $data['description'] ?? '',
             'date_received'  => $data['date_received'],
             'issued_by'      => 'Student Application',
             'applied_by'     => false,              // student-applied

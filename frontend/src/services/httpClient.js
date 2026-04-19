@@ -24,6 +24,18 @@ const getAuthToken = () => {
   return localStorage.getItem('auth_token');
 };
 
+const getLoginPathForRole = () => {
+  try {
+    const stored = localStorage.getItem('user');
+    const role = stored ? JSON.parse(stored)?.role : null;
+    if (role === 'student') return '/students/login';
+    // dean / chair / secretary / faculty all use the faculty login page
+    return '/faculty/login';
+  } catch {
+    return '/faculty/login';
+  }
+};
+
 /**
  * Build authorization header
  */
@@ -57,7 +69,7 @@ const request = async (endpoint, options = {}) => {
       // Clear token and redirect to login
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      window.location.href = '/faculty/login';
+      window.location.href = getLoginPathForRole();
     }
 
     return {

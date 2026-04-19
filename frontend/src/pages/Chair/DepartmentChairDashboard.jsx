@@ -114,7 +114,10 @@ const ChairDashboard = () => {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
     },
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // GWA distribution scoped to chair's program (reuses academic-performance cache)
@@ -124,7 +127,10 @@ const ChairDashboard = () => {
       const res = await analyticsService.getAcademicPerformance();
       return res.ok ? (res.data ?? {}) : {};
     },
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const distribution = useMemo(() => perfData.distribution ?? [], [perfData]);
@@ -134,7 +140,7 @@ const ChairDashboard = () => {
     totalFaculty:     summaryData.total_faculty       ?? 0,
     avgGwa:           summaryData.dept_avg_gwa ? Number(summaryData.dept_avg_gwa).toFixed(2) : '0.00',
     activeViolations: summaryData.active_violations   ?? 0,
-    pendingAwards:    summaryData.pending_verifications ?? 0,
+    pendingAwards:    summaryData.pending_awards ?? 0,
   }), [summaryData]);
 
   const chairTopStudents  = useMemo(() => summaryData.top_students ?? [], [summaryData]);

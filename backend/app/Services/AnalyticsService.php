@@ -13,6 +13,7 @@ use App\Models\Schedule;
 use App\Models\StudentOrganization;
 use App\Models\StudentSkill;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 /**
  * Service for analytics and dashboard data.
@@ -22,21 +23,39 @@ class AnalyticsService
     /**
      * Get dashboard summary for Dean, Chair, and Secretary.
      */
-    public function getDeanSummary()
+    public function getDeanSummary($user = null)
     {
-        $totalStudents = Student::count();
-        $totalFaculty = Faculty::count();
-        $totalViolations = StudentViolation::where('status', 'active')->count();
-        $totalAwards = AcademicAward::count();
-        $pendingAwardsCount = AcademicAward::where('status', 'pending')->count();
-        $avgGwa = Student::whereNotNull('gwa')->avg('gwa') ?: 1.87;
+        $departmentId = null;
+        if ($user && method_exists($user, 'isDepartmentChair') && $user->isDepartmentChair()) {
+            $departmentId = $user->faculty?->department_id ?? null;
+        }
+
+        $studentsQuery = Student::query();
+        $facultyQuery  = Faculty::query();
+        $awardsQuery   = AcademicAward::query();
+        $violationsQuery = StudentViolation::query();
+
+        if ($departmentId) {
+            $studentsQuery->whereHas('program', fn($q) => $q->where('department_id', $departmentId));
+            $facultyQuery->where('department_id', $departmentId);
+            $awardsQuery->whereHas('student.program', fn($q) => $q->where('department_id', $departmentId));
+            $violationsQuery->whereHas('student.program', fn($q) => $q->where('department_id', $departmentId));
+        }
+
+        $totalStudents   = $studentsQuery->count();
+        $totalFaculty    = $facultyQuery->count();
+        $totalViolations = (clone $violationsQuery)->where('status', 'active')->count();
+        $totalAwards     = $awardsQuery->count();
+        $pendingAwardsCount = (clone $awardsQuery)->where('status', 'pending')->count();
+
+        $avgGwa = (clone $studentsQuery)->whereNotNull('gwa')->avg('gwa') ?: 1.87;
 
         $dayOfWeek = date('l');
         $facultyPresentToday = (int) Schedule::where('dayOfWeek', $dayOfWeek)
             ->distinct('faculty_id')
             ->count('faculty_id');
 
-        $topStudents = Student::with(['program'])
+        $topStudents = (clone $studentsQuery)->with(['program'])
             ->whereNotNull('gwa')
             ->orderBy('gwa', 'asc')
             ->limit(3)
@@ -87,7 +106,7 @@ class AnalyticsService
                 ];
             });
 
-        $pendingAchievements = AcademicAward::with('student')
+        $pendingAchievements = (clone $awardsQuery)->with('student')
             ->where('status', 'pending')
             ->latest()
             ->limit(4)
@@ -100,7 +119,7 @@ class AnalyticsService
                 ];
             });
 
-        $recentAwards = AcademicAward::with('student')
+        $recentAwards = (clone $awardsQuery)->with('student')
             ->where('status', 'approved')
             ->latest('approved_at')
             ->limit(4)
@@ -109,12 +128,12 @@ class AnalyticsService
                 return [
                     'student' => $a->student ? ($a->student->first_name . ' ' . $a->student->last_name) : 'Unknown',
                     'award' => $a->awardName,
-                    'date' => $a->approved_at ? $a->approved_at->toDateString() : null,
+                    'date' => $a->approved_at ? Carbon::parse($a->approved_at)->toDateString() : null,
                     'color' => '#' . substr(md5($a->id), 0, 6),
                 ];
             });
 
-        $recentViolations = StudentViolation::with('student')
+        $recentViolations = (clone $violationsQuery)->with('student')
             ->where('status', 'active')
             ->latest()
             ->limit(2)

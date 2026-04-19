@@ -26,6 +26,16 @@ function getInitials(a) {
   return (f + l).toUpperCase() || "?";
 }
 
+function getActionTaker(a) {
+  if (!a) return "—";
+  const actor = a.approver;
+  return (
+    actor?.name ||
+    actor?.email ||
+    (a.approved_by ? `User #${a.approved_by}` : "—")
+  );
+}
+
 export default function AwardsList() {
   const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).filter(Boolean).join(" ");
 
@@ -298,9 +308,14 @@ export default function AwardsList() {
                           </button>
                         </div>
                       ) : (
-                        <span className={styles.resolvedText}>
-                          {a.status === "approved" ? "Approved" : "Rejected"}
-                        </span>
+                        <div className={styles.resolvedBlock}>
+                          <span className={styles.resolvedText}>
+                            {a.status === "approved" ? "Approved" : "Rejected"}
+                          </span>
+                          <span className={styles.actionTakenBy}>
+                            Action taken by {getActionTaker(a)}
+                          </span>
+                        </div>
                       )}
                     </div>
                   )}

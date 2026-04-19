@@ -21,7 +21,7 @@ class AnalyticsController extends Controller
      */
     public function deanSummary(Request $request)
     {
-        $data = $this->analyticsService->getDeanSummary();
+        $data = $this->analyticsService->getDeanSummary($request->user());
         return ApiResponse::success($data);
     }
 

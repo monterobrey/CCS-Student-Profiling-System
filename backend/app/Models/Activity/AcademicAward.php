@@ -10,6 +10,12 @@ class AcademicAward extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'date_received' => 'date',
+        'approved_at'   => 'datetime',
+        'applied_by'    => 'boolean',
+    ];
+
     protected $fillable = [
         'student_id',
         'faculty_id',

@@ -13,7 +13,10 @@ export default function DeanDashboard() {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
     },
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Reuse the dean-report cache for GWA distribution (shares cache with Reports Overview)
@@ -23,7 +26,10 @@ export default function DeanDashboard() {
       const res = await analyticsService.getDeanReport();
       return res.ok ? (res.data ?? {}) : {};
     },
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const distribution = useMemo(() => report.distribution ?? [], [report]);

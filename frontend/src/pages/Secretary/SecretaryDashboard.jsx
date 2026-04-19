@@ -13,7 +13,10 @@ export default function SecretaryDashboard() {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
     },
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const {

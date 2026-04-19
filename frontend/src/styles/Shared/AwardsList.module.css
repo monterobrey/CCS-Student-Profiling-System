@@ -55,6 +55,8 @@
 .btnSecondary { background: #fff; color: #5d4638; border: 1px solid #ebddd2; }
 .btnSecondary:hover { border-color: #d7c2b4; }
 .resolvedText { font-size: 12px; font-weight: 700; color: #8d7465; }
+.resolvedBlock { display: flex; flex-direction: column; gap: 3px; }
+.actionTakenBy { font-size: 11px; color: #b69d8e; font-weight: 600; }
 
 .emptyState { padding: 38px 20px; text-align: center; color: #8f7261; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
 .emptyState span { color: #b69d8e; font-size: 12px; }

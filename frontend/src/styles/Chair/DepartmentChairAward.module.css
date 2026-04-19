@@ -136,8 +136,10 @@
 /* ── THE FIX: one single grid definition, 5 columns for Chair ── */
 .ach-row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
-  gap: 16px;
+  /* Balance columns so Award doesn't look overly wide */
+  grid-template-columns: 1.6fr 1.4fr 1fr 1fr 160px;
+  /* Reduce perceived "white space" between columns */
+  gap: 10px;
   padding: 16px 24px;
   align-items: center;
   border-bottom: 1px solid #f9f7f5;
@@ -171,7 +173,7 @@
 .as-approved { background: #f0fdf4; color: #16a34a; }
 .as-rejected { background: #fff1f2; color: #e11d48; }
 
-.action-col { align-items: flex-end; }
+.action-col { align-items: center; }
 .ach-actions { display: flex; gap: 8px; }
 
 .btn-approve { background: #f0fdf4; color: #16a34a; border: 1px solid transparent; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
@@ -179,7 +181,9 @@
 .btn-reject  { background: #fff1f2; color: #e11d48; border: 1px solid transparent; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .btn-reject:hover { background: #e11d48; color: #ffffff; }
 
-.ach-resolved { font-size: 12px; color: #a38d82; font-style: italic; padding-right: 8px; }
+.ach-resolved-block { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+.ach-resolved { font-size: 12px; color: #a38d82; font-style: italic; }
+.ach-action-by { font-size: 11px; color: #b89f90; font-weight: 600; }
 
 .btn-primary { background: #FF6B1A; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-family: inherit; font-weight: 600; cursor: pointer; transition: background 0.2s; }
 .btn-primary:hover { background: #e65c12; }
@@ -397,7 +401,7 @@
 
 
 .ach-row.ach-row--dean {
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
+  grid-template-columns: 1.6fr 1.4fr 1fr 1fr 160px;
 }
 
 /* Responsive — tablet */
@@ -405,7 +409,7 @@
   .controls-row { flex-direction: column; align-items: flex-start; }
   .search-wrap  { width: 100%; min-width: unset; }
 
-  .ach-row,
+  /* Keep dean layout scoped; Chair uses the responsive rules above */
   .ach-row.ach-row--dean {
     grid-template-columns: 2fr 1.5fr 1fr 1fr;
   }
@@ -416,13 +420,182 @@
 
 /* Responsive — mobile */
 @media (max-width: 600px) {
-  .ach-row,
-  .ach-row.ach-row--dean {
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 160px;
-  }
-  
+  .ach-row.ach-row--dean { grid-template-columns: 2fr 1fr 1fr; }
 
-  /* hide student col on small mobile */
-  .ach-row .ach-col:nth-child(2),
+  /* hide student col on small mobile (dean only) */
   .ach-row.ach-row--dean .ach-col:nth-child(2) { display: none; }
+}
+
+/* ============================================================
+   Shared AwardsList look + enhanced modal UI (Chair)
+   ============================================================ */
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1200;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(26,10,0,.12);
+}
+.toast-success { border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; }
+.toast-error   { border: 1px solid #fecdd3; background: #fff1f2; color: #be123c; }
+
+.loading-state {
+  border: 1px solid #f0e8e0;
+  border-radius: 18px;
+  background: #fff;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #a98f80;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #fff2e9;
+  border-top-color: #ff6b1a;
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------- Modal (Give / Reject) ---------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,10,0,.36);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border: 1px solid #efe4da;
+  border-radius: 16px;
+  box-shadow: 0 22px 60px rgba(26,10,0,.22);
+  overflow: hidden;
+  transform: translateY(0);
+}
+
+.modal.modal-sm { max-width: 460px; }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2e9e2;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaf8 100%);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  color: #1a0a00;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid #ecdfd5;
+  background: #fff;
+  color: #9c8476;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s ease;
+}
+
+.modal-close:hover {
+  border-color: #ff6b1a;
+  color: #ff6b1a;
+  box-shadow: 0 0 0 3px rgba(255,107,26,.08);
+}
+
+.modal-close:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.modal-body {
+  padding: 14px 16px;
+  max-height: min(72vh, 640px);
+  overflow: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #f2e9e2;
+  background: #fcfaf8;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c6354;
+}
+
+.req { color: #ef4444; font-weight: 800; }
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  border: 1px solid #ecdfd5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #ff6b1a;
+  box-shadow: 0 0 0 3px rgba(255,107,26,.08);
+}
+
+@media (max-width: 520px) {
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer > button { width: 100%; }
 }

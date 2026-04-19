@@ -17,6 +17,7 @@ import DepartmentChairPerformance from "./pages/Chair/DepartmentChairPerformance
 import DepartmentChairAward from "./pages/Chair/DepartmentChairAward";
 import ScheduleManagement from "./pages/Chair/ScheduleManagement";
 import SetupPassword from "./pages/Shared/SetupPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 import StudentCurriculum from "./pages/Student/StudentCurriculum";
 
 import Users from "./pages/Users/Users";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/login" element={<Navigate to="/faculty/login" replace />} />
           <Route path="/setup-password" element={<SetupPassword />} />
           <Route path="/setup-password-faculty" element={<SetupPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           <Route element={
             <ProtectedRoute>

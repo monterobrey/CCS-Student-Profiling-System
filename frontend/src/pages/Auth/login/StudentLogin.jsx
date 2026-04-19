@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { authService } from "../../../services";
+import ForgotPasswordModal from "../ForgotPasswordModal";
 import "../../../styles/Student/StudentLogin.css";
 
 const Login = () => {
@@ -14,6 +15,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [idFocused, setIdFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,6 +51,7 @@ const Login = () => {
 
   return (
     <div className="sl-page">
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
       <div className="sl-shell">
 
         {/* LEFT PANEL - HERO */}
@@ -160,7 +163,7 @@ const Login = () => {
                   </button>
                 </div>
                 <div className="sl-field-footer">
-                  <button type="button" className="sl-forgot">Forgot password?</button>
+                  <button type="button" className="sl-forgot" onClick={() => setShowForgot(true)}>Forgot password?</button>
                 </div>
               </div>
 

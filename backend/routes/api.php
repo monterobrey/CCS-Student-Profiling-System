@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -20,6 +21,8 @@ use App\Http\Controllers\Functions\AwardController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // Protected routes

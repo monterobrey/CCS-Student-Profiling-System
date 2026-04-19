@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { authService } from "../../../services";
+import ForgotPasswordModal from "../ForgotPasswordModal";
 import "../../../styles/Auth/login/FacultyLogin.css";
 import pncLogo from "../../../assets/pnc-logo.png";
 import ccsLogo from "../../../assets/ccs-logo.png";
@@ -17,6 +18,7 @@ export default function FacultyLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -42,6 +44,7 @@ export default function FacultyLogin() {
 
   return (
     <div className="login-page">
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
       <div className="shell">
 
         {/* LEFT FORM */}
@@ -123,7 +126,7 @@ export default function FacultyLogin() {
                   </button>
                 </div>
                 <div className="field-footer">
-                  <button type="button" className="forgot">Forgot password?</button>
+                  <button type="button" className="forgot" onClick={() => setShowForgot(true)}>Forgot password?</button>
                 </div>
               </div>
 

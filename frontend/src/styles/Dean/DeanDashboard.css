@@ -48,7 +48,7 @@
 .hero-body {
   position: relative;
   display: flex;
-  align-items: flex-start; /* Changed from center so things align nicely when stacked */
+  align-items: center; /* Changed from center so things align nicely when stacked */
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap; /* ADD THIS so the content stacks safely instead of clipping */

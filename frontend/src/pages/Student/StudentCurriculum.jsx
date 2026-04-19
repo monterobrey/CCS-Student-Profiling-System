@@ -1,201 +1,231 @@
-import { useState, useMemo } from 'react'
-import '../../styles/Student/StudentSchedule.css'
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { studentService } from "../../services/studentService";
+import { curriculumService } from "../../services/curriculumService";
+import "../../styles/Student/StudentCurriculum.css";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const DAYS      = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const TIMES     = ['7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM']
-const CELL_H    = 72
-const START_HR  = 7
-const TODAY_COL = 2
+const getYearSuffix = (y) => {
+  if (y === 1) return "st";
+  if (y === 2) return "nd";
+  if (y === 3) return "rd";
+  return "th";
+};
 
-const MONTH_DATES = [
-  null, null, null, null, null, 1, 2,
-  3, 4, 5, 6, 7, 8, 9,
-  10, 11, 12, 13, 14, 15, 16,
-  17, 18, 19, 20, 21, 22, 23,
-  24, 25, 26, 27, 28, 29, 30,
-  31, null, null, null, null, null, null,
-]
+const typeClass = (t) =>
+  `scur-type-${String(t || "other")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")}`;
 
-const INITIAL_EVENTS = [
-  { id: 1, name: 'IT Elective',      code: 'IT 401', room: 'Room 301', day: 0, start: '7:30 AM',  end: '9:00 AM',  bg: '#FF9800', fg: '#fff'    },
-  { id: 2, name: 'IT Elective',      code: 'IT 402', room: 'Room 302', day: 1, start: '8:30 AM',  end: '10:00 AM', bg: '#B2DFDB', fg: '#004D40' },
-  { id: 3, name: 'IT Elective',      code: 'IT 403', room: 'Room 303', day: 2, start: '7:00 AM',  end: '10:00 AM', bg: '#29B6F6', fg: '#fff'    },
-  { id: 4, name: 'Graphic Design',   code: 'GD 201', room: 'Lab 2',    day: 2, start: '10:30 AM', end: '12:00 PM', bg: '#66BB6A', fg: '#fff'    },
-  { id: 5, name: 'Event Faculty',    code: 'EF 101', room: 'Room 105', day: 3, start: '10:30 AM', end: '12:00 PM', bg: '#FFA726', fg: '#fff'    },
-  { id: 6, name: 'Class Exhibition', code: 'CE 301', room: 'Hall A',   day: 0, start: '1:00 PM',  end: '2:30 PM',  bg: '#EF9A9A', fg: '#7f0000' },
-  { id: 7, name: 'Design Review',    code: 'DR 201', room: 'Studio 1', day: 1, start: '1:30 PM',  end: '3:00 PM',  bg: '#FF8A65', fg: '#fff'    },
-  { id: 8, name: 'English Exam',     code: 'EN 102', room: 'Room 201', day: 4, start: '1:00 PM',  end: '2:30 PM',  bg: '#FFF176', fg: '#5d4037' },
-  { id: 9, name: 'Workshop',         code: 'WS 101', room: 'Lab 3',    day: 5, start: '10:00 AM', end: '12:00 PM', bg: '#CE93D8', fg: '#4a148c' },
-]
+export default function StudentCurriculum() {
+  const [filterYear, setFilterYear] = useState("all");
+  const [search, setSearch] = useState("");
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function toMins(timeStr) {
-  const [time, mod] = timeStr.split(' ')
-  let [h, m] = time.split(':').map(Number)
-  if (!m) m = 0
-  if (mod === 'PM' && h !== 12) h += 12
-  if (mod === 'AM' && h === 12) h = 0
-  return h * 60 + m
-}
+  const {
+    data: profileRecord,
+    isPending: profileLoading,
+    isError: profileError,
+    error,
+    refetch: refetchProfile,
+  } = useQuery({
+    queryKey: ["student", "my-profile"],
+    queryFn: async () => {
+      const res = await studentService.getProfile();
+      if (!res.ok) throw new Error(res.message || "Failed to load profile");
+      return res.data ?? null;
+    },
+  });
 
-// ─── Component ────────────────────────────────────────────────────────────────
-const StudentSchedule = () => {
-  const [events]       = useState(INITIAL_EVENTS)
-  const [weekOffset, setWeekOffset]   = useState(0)
-  const [selectedId, setSelectedId]   = useState(null)
+  const program = profileRecord?.program ?? null;
+  const programId = program?.id ?? null;
 
-  const weekDates = useMemo(
-    () => DAYS.map((_, i) => 12 + weekOffset * 7 + i),
-    [weekOffset]
-  )
+  const {
+    data: curriculum = [],
+    isPending: curriculumLoading,
+    isError: curriculumError,
+    refetch: refetchCurriculum,
+  } = useQuery({
+    queryKey: ["student-curriculum", String(programId || "")],
+    queryFn: async () => {
+      if (!programId) return [];
+      const res = await curriculumService.getAll(programId);
+      if (!res.ok) throw new Error(res.message || "Failed to load curriculum");
+      return res.data ?? [];
+    },
+    enabled: !!programId,
+  });
 
-  const currentHighlight = weekDates[TODAY_COL]
+  const groupedCurriculum = useMemo(() => {
+    let filtered = [...curriculum];
 
-  const todayEvents = useMemo(
-    () => events.filter((e) => e.day === TODAY_COL),
-    [events]
-  )
-
-  const getEventStyle = (ev) => {
-    const startMins = toMins(ev.start)
-    const endMins   = toMins(ev.end)
-    const top       = ((startMins - START_HR * 60) / 60) * CELL_H
-    const height    = ((endMins - startMins) / 60) * CELL_H - 4
-    const isActive  = selectedId === ev.id
-
-    return {
-      position:     'absolute',
-      top:          `${top}px`,
-      height:       `${height}px`,
-      left:         `calc(${ev.day} * (100% / 7) + 5px)`,
-      width:        `calc(100% / 7 - 10px)`,
-      background:   ev.bg,
-      color:        ev.fg,
-      zIndex:       isActive ? 50 : 1,
-      outline:      isActive ? '2px solid #1976D2' : 'none',
-      outlineOffset: '1px',
+    if (filterYear !== "all") {
+      filtered = filtered.filter((item) => String(item.year_level) === String(filterYear));
     }
-  }
 
-  const isToday = (colIdx) => colIdx === TODAY_COL && weekOffset === 0
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      filtered = filtered.filter((item) => {
+        const code = item?.course?.course_code?.toLowerCase?.() ?? "";
+        const name = item?.course?.course_name?.toLowerCase?.() ?? "";
+        return code.includes(s) || name.includes(s);
+      });
+    }
 
-  const toggleSelected = (id) => setSelectedId((prev) => (prev === id ? null : id))
+    const years = {};
+    filtered.forEach((item) => {
+      const y = String(item.year_level ?? "");
+      if (!years[y]) years[y] = {};
+      const sem = String(item.semester ?? "");
+      if (!years[y][sem]) years[y][sem] = [];
+      years[y][sem].push(item);
+    });
+
+    return Object.keys(years)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((y) => ({
+        year: y,
+        semesters: Object.keys(years[y]).sort().map((s) => ({
+          semester: s,
+          courses: years[y][s],
+        })),
+      }));
+  }, [curriculum, filterYear, search]);
+
+  const programLabel = program
+    ? [program.program_code, program.program_name].filter(Boolean).join(" — ")
+    : null;
+
+  const showErrorState = profileError || curriculumError;
 
   return (
-    <div className="wrap">
-      {/* ── Main Calendar ── */}
-      <div className="main">
-        <div className="cal-area">
-          <div className="cal-inner">
-            {/* Day Headers */}
-            <div className="day-headers">
-              <div className="time-spacer"></div>
-              {DAYS.map((day, i) => (
-                <div key={day} className={`dh${isToday(i) ? ' today' : ''}`}>
-                  <span className="dh-name">{day.slice(0, 3)}</span>
-                  <span className="dh-num">{weekDates[i]}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Time Grid */}
-            <div className="time-grid">
-              <div className="time-col">
-                {TIMES.map((t) => (
-                  <div key={t} className="t-label">{t}</div>
-                ))}
-              </div>
-              <div className="grid-cols">
-                {/* Background cells */}
-                {DAYS.map((day, di) => (
-                  <div key={`col-${di}`} className="g-col">
-                    {TIMES.map((t) => (
-                      <div key={t} className="g-cell"></div>
-                    ))}
-                  </div>
-                ))}
-
-                {/* Event blocks */}
-                {events.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="evt"
-                    style={getEventStyle(ev)}
-                    onClick={() => toggleSelected(ev.id)}
-                  >
-                    <div className="evt-name">{ev.name}</div>
-                    <div className="evt-time">{ev.start} - {ev.end}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+    <div className="scur-page">
+      <div className="scur-header">
+        <div>
+          <h2 className="scur-title">My Curriculum</h2>
+          <p className="scur-sub">
+            {programLabel ? (
+              <>
+                Based on your program: <span className="scur-program">{programLabel}</span>
+              </>
+            ) : (
+              "View the subjects for your program curriculum."
+            )}
+          </p>
         </div>
       </div>
 
-      {/* ── Right Panel ── */}
-      <div className="right">
-        {/* Mini Calendar */}
-        <div className="mini-cal">
-          <div className="mini-hdr">
-            <h3>August 2020</h3>
-            <div className="mini-nav">
-              <button onClick={() => setWeekOffset((w) => w - 1)}>&#8249;</button>
-              <button onClick={() => setWeekOffset((w) => w + 1)}>&#8250;</button>
-            </div>
-          </div>
-          <div className="mini-days">
-            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-              <span key={i}>{d}</span>
-            ))}
-          </div>
-          <div className="mini-grid">
-            {MONTH_DATES.map((d, i) => (
-              <span
-                key={i}
-                className={[
-                  d === null ? 'empty' : '',
-                  d === currentHighlight ? 'cur' : '',
-                  d !== null && weekDates.includes(d) && d !== currentHighlight ? 'hi' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Class List */}
-        <div className="class-list">
-          <div className="cl-hdr">
-            <h3>Class list</h3>
-            <a href="#" onClick={(e) => e.preventDefault()}>View all</a>
-          </div>
-          <div className="cl-sub">Today, Aug 14</div>
-          {todayEvents.map((ev) => (
-            <div
-              key={`card-${ev.id}`}
-              className={`cl-card${selectedId === ev.id ? ' card-active' : ''}`}
-              style={{ background: ev.bg }}
-              onClick={() => toggleSelected(ev.id)}
-            >
-              <div className="cl-card-inner">
-                <div className="cl-dot" style={{ background: ev.fg, opacity: 0.6 }}></div>
-                <div className="cl-info">
-                  <h4 style={{ color: ev.fg }}>{ev.name}</h4>
-                  <p style={{ color: ev.fg }}>{ev.start} - {ev.end}</p>
-                </div>
-              </div>
-              <div className="cl-arr" style={{ color: ev.fg, opacity: 0.5 }}>&#8250;</div>
-            </div>
-          ))}
-        </div>
+      <div className="scur-filter">
+        <input
+          className="scur-search"
+          placeholder="Search by course code or name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+          <option value="all">All Years</option>
+          <option value="1">1st Year</option>
+          <option value="2">2nd Year</option>
+          <option value="3">3rd Year</option>
+          <option value="4">4th Year</option>
+        </select>
       </div>
+
+      {profileLoading ? (
+        <div className="scur-state">
+          <span className="scur-spinner" /> Loading your profile...
+        </div>
+      ) : !programId ? (
+        <div className="scur-empty">
+          <p className="scur-empty-title">No program assigned yet</p>
+          <p className="scur-empty-sub">Once your program is set, your curriculum will appear here.</p>
+        </div>
+      ) : showErrorState ? (
+        <div className="scur-empty scur-empty-error">
+          <p className="scur-empty-title">Could not load curriculum</p>
+          <p className="scur-empty-sub">{error?.message || "Please try again."}</p>
+          <button
+            className="scur-retry"
+            onClick={() => {
+              refetchProfile();
+              refetchCurriculum();
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : curriculumLoading ? (
+        <div className="scur-state">
+          <span className="scur-spinner" /> Loading curriculum...
+        </div>
+      ) : groupedCurriculum.length === 0 ? (
+        <div className="scur-empty">
+          <p className="scur-empty-title">No curriculum entries found</p>
+          <p className="scur-empty-sub">Try changing the year filter or search term.</p>
+        </div>
+      ) : (
+        groupedCurriculum.map((year) => {
+          const totalCourses = year.semesters.reduce((sum, s) => sum + s.courses.length, 0);
+          const yNum = Number(year.year);
+          return (
+            <div key={year.year} className="scur-year">
+              <div className="scur-year-head">
+                <span className="scur-year-pill">
+                  {year.year}
+                  {Number.isFinite(yNum) ? getYearSuffix(yNum) : ""} Year
+                </span>
+                <span className="scur-year-count">
+                  {totalCourses} subject{totalCourses !== 1 ? "s" : ""}
+                </span>
+              </div>
+
+              <div className="scur-sem-grid">
+                {year.semesters.map((sem) => (
+                  <div key={sem.semester} className="scur-sem">
+                    <div className="scur-sem-head">
+                      <span className="scur-sem-label">{sem.semester} Semester</span>
+                      <span className="scur-sem-badge">{sem.courses.length} subjects</span>
+                    </div>
+
+                    <div className="scur-table-wrap">
+                      <table className="scur-table">
+                        <thead>
+                          <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th className="scur-num">Lec</th>
+                            <th className="scur-num">Lab</th>
+                            <th className="scur-num">Units</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sem.courses.map((item) => (
+                            <tr key={item.id}>
+                              <td>
+                                <span className="scur-code">{item.course?.course_code ?? "—"}</span>
+                              </td>
+                              <td className="scur-name">{item.course?.course_name ?? "—"}</td>
+                              <td>
+                                <span className={`scur-type ${typeClass(item.course?.type)}`}>
+                                  {item.course?.type ?? "—"}
+                                </span>
+                              </td>
+                              <td className="scur-num">{item.course?.lec_units ?? "—"}</td>
+                              <td className="scur-num">{item.course?.lab_units ?? "—"}</td>
+                              <td className="scur-num scur-units">{item.course?.units ?? "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
-  )
+  );
 }
-
-export default StudentSchedule

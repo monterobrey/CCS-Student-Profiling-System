@@ -379,7 +379,7 @@ function App() {
               path="/student/curriculum"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
-                  <StudentSchedule/>
+                  <StudentCurriculum/>
                 </ProtectedRoute>
               }
             />

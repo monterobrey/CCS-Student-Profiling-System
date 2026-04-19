@@ -90,7 +90,7 @@ export default function StudentManagement() {
   };
 
   // derived from cached students + url param
-  const viewingStudent = id ? students.find(s => s.id === id) ?? null : null;
+  const viewingStudent = id ? students.find(s => String(s.id) === String(id)) ?? null : null;
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -128,7 +128,7 @@ export default function StudentManagement() {
     return students
       .filter(s => {
         const matchProgram = !filterProgram || s.program?.program_code === filterProgram;
-        const matchYear    = !filterYear    || s.year_level === filterYear;
+        const matchYear    = !filterYear    || String(s.year_level) === String(filterYear);
         return matchProgram && matchYear;
       })
       .map(s => s.section?.section_name)
@@ -140,8 +140,7 @@ export default function StudentManagement() {
   const filteredFormSections = useMemo(() => {
     if (!form.program_id || !form.year_level) return [];
     return sections.filter(sec =>
-      String(sec.program_id) === String(form.program_id) &&
-      String(sec.year_level) === String(form.year_level)
+      String(sec.program_id) === String(form.program_id) && String(sec.year_level) === String(form.year_level)
     );
   }, [sections, form.program_id, form.year_level]);
 
@@ -156,7 +155,7 @@ export default function StudentManagement() {
 
       const matchSearch  = !search        || fullName.includes(search.toLowerCase()) || email.includes(search.toLowerCase()) || studNum.includes(search.toLowerCase());
       const matchProgram = !filterProgram || progCode === filterProgram;
-      const matchYear    = !filterYear    || s.year_level === filterYear;
+      const matchYear    = !filterYear    || String(s.year_level) === String(filterYear);
       const matchSection = !filterSection || secName === filterSection;
       const matchStatus  = !filterStatus  || status === filterStatus;
 
@@ -323,10 +322,6 @@ export default function StudentManagement() {
     } catch {
       showToast('error', 'Failed to resend setup email.');
     }
-  };
-
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['students'] });
   };
 
   const handleCSV = async (e) => {

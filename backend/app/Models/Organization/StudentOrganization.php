@@ -18,6 +18,17 @@ class StudentOrganization extends Model
         'dateLeft',
     ];
 
+    protected $appends = ['is_default'];
+
+    public function getIsDefaultAttribute(): bool
+    {
+        $defaultNames = [
+            'Society of Information Technology Students',
+            'Association of Computer Science Students',
+        ];
+        return in_array($this->organization?->organization_name, $defaultNames, true);
+    }
+
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);

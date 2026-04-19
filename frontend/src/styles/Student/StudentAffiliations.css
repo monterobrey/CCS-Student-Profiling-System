@@ -1,0 +1,497 @@
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+.aff-page {
+  padding: 28px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── Toast ───────────────────────────────────────────────────────────────── */
+.aff-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  animation: fadeInUp 0.25s ease;
+}
+.aff-toast-success { background: #e6f9f0; color: #1a7a4a; border: 1px solid #b2e8cf; }
+.aff-toast-error   { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6c6; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.aff-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.aff-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a0a00;
+  margin: 0 0 4px;
+}
+.aff-sub {
+  font-size: 13.5px;
+  color: #b89f90;
+  margin: 0;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.aff-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #FF6B1A;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.aff-primary-btn:hover:not(:disabled) { background: #e55a0e; }
+.aff-primary-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.aff-ghost-btn {
+  padding: 9px 18px;
+  background: transparent;
+  color: #7a5c4e;
+  border: 1.5px solid #e8d8d0;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.aff-ghost-btn:hover:not(:disabled) { background: #fdf6f3; }
+.aff-ghost-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ── Loading / Empty ─────────────────────────────────────────────────────── */
+.aff-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #b89f90;
+  font-size: 14px;
+  padding: 48px 0;
+  justify-content: center;
+}
+.aff-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1.5px dashed #f0e8e0;
+  text-align: center;
+  gap: 8px;
+}
+.aff-empty-icon { margin-bottom: 4px; }
+.aff-empty-title { font-size: 15px; font-weight: 600; color: #1a0a00; margin: 0; }
+.aff-empty-sub   { font-size: 13px; color: #b89f90; margin: 0 0 12px; }
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+.aff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.aff-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1.5px solid #f0e8e0;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow .15s;
+}
+.aff-card:hover { box-shadow: 0 4px 16px rgba(255,107,26,.08); }
+
+/* Default org card gets a subtle accent border */
+.aff-card-default {
+  border-color: #ffd4b8;
+  background: linear-gradient(135deg, #fff 80%, #fff8f5 100%);
+}
+
+.aff-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.aff-org-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+}
+.aff-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.aff-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color .15s, background .15s;
+}
+.aff-edit-btn   { color: #b89f90; }
+.aff-edit-btn:hover { color: #FF6B1A; background: #fff5ef; }
+.aff-remove-btn { color: #c9a99a; }
+.aff-remove-btn:hover:not(:disabled) { color: #b91c1c; background: #fef2f2; }
+.aff-remove-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.aff-default-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #FF6B1A;
+  background: #fff5ef;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid #ffd4b8;
+}
+
+.aff-org-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a0a00;
+  margin: 0;
+  line-height: 1.3;
+}
+.aff-role {
+  font-size: 13px;
+  color: #FF6B1A;
+  font-weight: 600;
+  margin: 0;
+}
+.aff-org-desc {
+  font-size: 12.5px;
+  color: #b89f90;
+  margin: 2px 0 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.aff-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+.aff-date-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #9a7a6e;
+}
+.aff-date-left { color: #b89f90; }
+.aff-active-dot {
+  font-size: 11px;
+  font-weight: 600;
+  color: #15803d;
+  background: #f0fdf4;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ── Modal overlay ───────────────────────────────────────────────────────── */
+.aff-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,10,0,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.aff-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  animation: aff-modal-in .2s ease;
+}
+@keyframes aff-modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Modal header ────────────────────────────────────────────────────────── */
+.aff-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f5ede8;
+}
+.aff-modal-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.aff-modal-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff5ef;
+  color: #FF6B1A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.aff-modal-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a0a00;
+  margin: 0 0 2px;
+}
+.aff-modal-sub {
+  font-size: 12.5px;
+  color: #b89f90;
+  margin: 0;
+}
+.aff-close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #b89f90;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color .15s;
+}
+.aff-close-btn:hover { color: #1a0a00; }
+
+/* ── Modal body ──────────────────────────────────────────────────────────── */
+.aff-modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.aff-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.aff-field label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5a3a2e;
+}
+.aff-req     { color: #FF6B1A; margin-left: 2px; }
+.aff-optional { color: #b89f90; font-weight: 400; margin-left: 4px; }
+
+.aff-field input,
+.aff-field select {
+  padding: 9px 12px;
+  border: 1.5px solid #e8d8d0;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #1a0a00;
+  background: #fff;
+  outline: none;
+  transition: border-color .15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.aff-field input:focus,
+.aff-field select:focus { border-color: #FF6B1A; }
+.aff-field input.aff-error,
+.aff-field select.aff-error { border-color: #ef4444; }
+.aff-field-err {
+  font-size: 11.5px;
+  color: #ef4444;
+}
+.aff-field-loading {
+  font-size: 13px;
+  color: #b89f90;
+  padding: 8px 0;
+}
+
+.aff-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Modal footer ────────────────────────────────────────────────────────── */
+.aff-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #f5ede8;
+}
+
+/* ── Spinners ────────────────────────────────────────────────────────────── */
+.aff-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid #f0e8e0;
+  border-top-color: #FF6B1A;
+  border-radius: 50%;
+  animation: aff-spin .7s linear infinite;
+  display: inline-block;
+}
+.aff-spinner-sm {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: aff-spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes aff-spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .aff-page { padding: 20px 16px; }
+  .aff-header { flex-direction: column; }
+  .aff-field-row { grid-template-columns: 1fr; }
+  .aff-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Autocomplete ────────────────────────────────────────────────────────── */
+.aff-autocomplete-wrap {
+  position: relative;
+}
+.aff-autocomplete-wrap input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.aff-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e8d8d0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+.aff-suggestions li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background .12s;
+  gap: 8px;
+}
+.aff-suggestions li:hover { background: #fff8f5; }
+.aff-sug-name {
+  font-size: 13.5px;
+  color: #1a0a00;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aff-sug-type {
+  font-size: 11px;
+  color: #b89f90;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Read-only info block (edit modal) ───────────────────────────────────── */
+.aff-readonly-block {
+  background: #fdf8f5;
+  border: 1.5px solid #f0e8e0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.aff-readonly-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.aff-readonly-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #b89f90;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+.aff-readonly-val {
+  font-size: 13.5px;
+  color: #1a0a00;
+  font-weight: 500;
+}
+
+/* ── Archive modal extras ────────────────────────────────────────────────── */
+.aff-modal-sm { max-width: 420px; }
+
+.aff-modal-icon-danger {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.aff-delete-msg {
+  font-size: 14px;
+  color: #4a3020;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.aff-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.aff-danger-btn:hover:not(:disabled) { background: #dc2626; }
+.aff-danger-btn:disabled { opacity: .6; cursor: not-allowed; }

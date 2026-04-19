@@ -60,7 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/student/skills/{id}', [StudentProfileController::class, 'removeSkill']);
         Route::get('/student/organizations', [StudentProfileController::class, 'getOrganizations']);
         Route::post('/student/affiliations', [StudentProfileController::class, 'addAffiliation']);
-        Route::delete('/student/affiliations/{id}', [StudentProfileController::class, 'removeAffiliation']);
+        Route::put('/student/affiliations/{id}', [StudentProfileController::class, 'updateAffiliation']);
+        Route::patch('/student/affiliations/{id}/archive', [StudentProfileController::class, 'archiveAffiliation']);
         Route::post('/student/activities', [StudentProfileController::class, 'addActivity']);
         Route::get('/student/violations', [StudentProfileController::class, 'getViolations']);
 

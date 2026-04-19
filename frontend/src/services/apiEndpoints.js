@@ -27,6 +27,10 @@ export const API_ENDPOINTS = {
     ADD_SKILL: "/student/skills",
     REMOVE_SKILL: (id) => `/student/skills/${id}`,
     VIOLATIONS: "/student/violations",
+    ORGANIZATIONS: "/student/organizations",
+    ADD_AFFILIATION: "/student/affiliations",
+    UPDATE_AFFILIATION: (id) => `/student/affiliations/${id}`,
+    ARCHIVE_AFFILIATION: (id) => `/student/affiliations/${id}/archive`,
   },
   FACULTY: {
     LIST: "/faculty",

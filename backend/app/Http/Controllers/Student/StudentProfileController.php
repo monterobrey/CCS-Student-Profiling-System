@@ -19,6 +19,7 @@ class StudentProfileController extends Controller
 {
     /**
      * Get the authenticated student's full profile including guardian, skills, etc.
+     * Also auto-assigns the default program organization (SITES/ACSS) if not yet linked.
      */
     public function show(Request $request)
     {
@@ -37,7 +38,49 @@ class StudentProfileController extends Controller
         ->where('user_id', $user->id)
         ->firstOrFail();
 
+        // ── Auto-assign default program organization if not yet linked ──
+        $this->ensureDefaultOrgAffiliation($student);
+
+        // Reload organizations after potential auto-assign
+        $student->load('organizations.organization');
+
         return ApiResponse::success($student);
+    }
+
+    /**
+     * Ensure the student has their program's default organization affiliation.
+     * BSIT → SITES (Society of Information Technology Students)
+     * BSCS → ACSS  (Association of Computer Science Students)
+     */
+    private function ensureDefaultOrgAffiliation(Student $student): void
+    {
+        $programCode = $student->program?->program_code;
+
+        $defaultOrgName = match ($programCode) {
+            'BSIT' => 'Society of Information Technology Students',
+            'BSCS' => 'Association of Computer Science Students',
+            default => null,
+        };
+
+        if (!$defaultOrgName) return;
+
+        $org = UniversityOrganization::where('organization_name', $defaultOrgName)->first();
+        if (!$org) return;
+
+        // Only create if not already affiliated
+        $alreadyLinked = StudentOrganization::where('student_id', $student->id)
+            ->where('org_id', $org->id)
+            ->exists();
+
+        if (!$alreadyLinked) {
+            StudentOrganization::create([
+                'student_id' => $student->id,
+                'org_id'     => $org->id,
+                'role'       => 'Member',
+                'dateJoined' => $student->created_at->toDateString(),
+                'dateLeft'   => null,
+            ]);
+        }
     }
 
     /**
@@ -118,34 +161,75 @@ class StudentProfileController extends Controller
 
     /**
      * Add an organization affiliation.
+     * Accepts a free-text organization_name — finds or creates the org automatically.
+     * The default program org (SITES/ACSS) is auto-assigned on profile load, not here.
      */
     public function addAffiliation(Request $request)
     {
         $validated = $request->validate([
-            'org_id' => 'required|exists:university_organizations,id',
-            'role' => 'required|string',
-            'dateJoined' => 'required|date',
+            'organization_name' => 'required|string|max:255',
+            'organization_type' => 'nullable|string|max:100',
+            'role'              => 'required|string|max:100',
+            'dateJoined'        => 'required|date',
+            'dateLeft'          => 'nullable|date|after_or_equal:dateJoined',
         ]);
+
+        // Find or create the university organization by name
+        $org = \App\Models\UniversityOrganization::firstOrCreate(
+            ['organization_name' => $validated['organization_name']],
+            [
+                'organization_type' => $validated['organization_type'] ?? 'Other',
+                'description'       => null,
+            ]
+        );
 
         $affiliation = StudentOrganization::create([
             'student_id' => $request->user()->student->id,
-            'org_id' => $validated['org_id'],
-            'role' => $validated['role'],
-            'dateJoined' => $validated['dateJoined'],
+            'org_id'     => $org->id,
+            'role'        => $validated['role'],
+            'dateJoined'  => $validated['dateJoined'],
+            'dateLeft'    => $validated['dateLeft'] ?? null,
         ]);
 
         return ApiResponse::success($affiliation->load('organization'), 'Affiliation added.', 201);
     }
 
     /**
-     * Remove an organization affiliation.
+     * Update an existing affiliation — only role and dateLeft are editable.
      */
-    public function removeAffiliation(Request $request, $id)
+    public function updateAffiliation(Request $request, $id)
     {
-        $affiliation = StudentOrganization::where('id', $id)->where('student_id', $request->user()->student->id)->firstOrFail();
-        $affiliation->delete();
+        $affiliation = StudentOrganization::where('id', $id)
+            ->where('student_id', $request->user()->student->id)
+            ->firstOrFail();
 
-        return ApiResponse::success(null, 'Affiliation removed.');
+        $validated = $request->validate([
+            'role'     => 'required|string|max:100',
+            'dateLeft' => 'nullable|date|after_or_equal:' . $affiliation->dateJoined,
+        ]);
+
+        $affiliation->update([
+            'role'     => $validated['role'],
+            'dateLeft' => $validated['dateLeft'] ?? null,
+        ]);
+
+        return ApiResponse::success($affiliation->load('organization'), 'Affiliation updated.');
+    }
+
+    /**
+     * Archive an affiliation — sets dateLeft to today instead of deleting.
+     */
+    public function archiveAffiliation(Request $request, $id)
+    {
+        $affiliation = StudentOrganization::where('id', $id)
+            ->where('student_id', $request->user()->student->id)
+            ->firstOrFail();
+
+        $affiliation->update([
+            'dateLeft' => now()->toDateString(),
+        ]);
+
+        return ApiResponse::success($affiliation->load('organization'), 'Affiliation archived.');
     }
 
     /**

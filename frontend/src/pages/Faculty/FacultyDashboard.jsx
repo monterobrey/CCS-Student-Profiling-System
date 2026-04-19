@@ -1,21 +1,69 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { analyticsService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/Faculty/FacultyDashboard.css';
+
+const statIcons = {
+  subjects: (
+    <>
+      <rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </>
+  ),
+  students: (
+    <path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  ),
+  gwa: <path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />,
+  violations: (
+    <path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  ),
+  awards: (
+    <path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  ),
+};
 
 const FacultyDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [facultyStats, setFacultyStats] = useState({ totalSubjects: 0, totalStudents: 0 });
-  const [scheduleToday, setScheduleToday] = useState([]);
-  const [topStudents, setTopStudents] = useState([]);
-  const [pendingActions, setPendingActions] = useState([
-    { label: 'Grades to submit', count: 0, color: '#FF6B1A' },
-    { label: 'Award recommendations', count: 0, color: '#f59e0b' },
-    { label: 'Violation reports', count: 0, color: '#ef4444' }
-  ]);
-  const [subjects, setSubjects] = useState([]);
+
+  const { data: summary = {}, isLoading, isError } = useQuery({
+    queryKey: ['faculty-dashboard-summary'],
+    queryFn: async () => {
+      const res = await analyticsService.getFacultySummary();
+      if (!res.ok) throw new Error(res.message || 'Failed to load dashboard');
+      return res.data ?? {};
+    },
+    staleTime: 60_000,
+  });
+
+  const {
+    total_subjects: totalSubjects = 0,
+    total_students: totalStudents = 0,
+    avg_gwa: avgGwa = null,
+    today_schedule: scheduleToday = [],
+    top_students: topStudents = [],
+    subjects = [],
+    pending_actions: pendingActions = [
+      { label: 'Grades to submit', count: 0, color: '#FF6B1A' },
+      { label: 'Award recommendations', count: 0, color: '#f59e0b' },
+      { label: 'Violation reports', count: 0, color: '#ef4444' },
+    ],
+  } = summary;
+
+  const violationCount = pendingActions.find((a) => a.label === 'Violation reports')?.count ?? 0;
+  const awardsPendingCount = pendingActions.find((a) => a.label === 'Award recommendations')?.count ?? 0;
+
+  const uniqueSubjects = useMemo(() => {
+    const seen = new Set();
+    return subjects.filter((s) => {
+      const key = `${s.code}|${s.section}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [subjects]);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -24,88 +72,145 @@ const FacultyDashboard = () => {
     return `${prefix}, ${name}`;
   }, [user]);
 
-  const [stats, setStats] = useState([
-    { label: 'My Subjects', value: '0', delta: 'This semester', deltaClass: 'positive', fill: '0%', iconBg: '#fff5ef', iconColor: '#FF6B1A', route: '/faculty/subjects', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
-    { label: 'Total Students', value: '0', delta: 'Enrolled', deltaClass: 'positive', fill: '0%', iconBg: '#eff6ff', iconColor: '#3b82f6', route: '/faculty/students', iconPath: <><path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
-    { label: 'Avg Class GWA', value: 'N/A', delta: 'All classes', deltaClass: 'positive', fill: '0%', iconBg: '#f5f3ff', iconColor: '#8b5cf6', iconPath: <path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/> },
-    { label: 'Violations Filed', value: '0', delta: 'This semester', deltaClass: 'negative', fill: '0%', iconBg: '#fff1f2', iconColor: '#ef4444', route: '/faculty/violations', iconPath: <path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/> },
-    { label: 'Awards Given', value: '0', delta: 'Recommended', deltaClass: 'positive', fill: '0%', iconBg: '#fffbeb', iconColor: '#f59e0b', route: '/faculty/awards', iconPath: <path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/> }
-  ]);
+  const todayLabel = useMemo(
+    () => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+    []
+  );
 
-  const todayLabel = useMemo(() => 
-    new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }), 
-  []);
+  const stats = useMemo(() => {
+    const gwaVal = avgGwa != null ? Number(avgGwa).toFixed(2) : 'N/A';
+    const gwaFill =
+      avgGwa != null ? `${Math.max(0, Math.min(100, ((3 - Number(avgGwa)) / 2) * 100))}%` : '0%';
+    const subjFill = totalSubjects > 0 ? `${Math.min(100, totalSubjects * 15)}%` : '0%';
+    const studFill = totalStudents > 0 ? `${Math.min(100, (totalStudents / 120) * 100)}%` : '0%';
+    const violFill = totalStudents > 0 ? `${Math.min(100, (violationCount / totalStudents) * 100)}%` : violationCount > 0 ? '40%' : '0%';
+    const awardFill = awardsPendingCount > 0 ? `${Math.min(100, awardsPendingCount * 20)}%` : '0%';
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/analytics/faculty');
-        const data = response.data;
+    return [
+      {
+        label: 'My Subjects',
+        value: String(totalSubjects),
+        delta: 'This semester',
+        deltaClass: 'positive',
+        fill: subjFill,
+        iconBg: '#fff5ef',
+        iconColor: '#FF6B1A',
+        route: '/faculty/subjects',
+        iconPath: statIcons.subjects,
+      },
+      {
+        label: 'Total Students',
+        value: String(totalStudents),
+        delta: 'Enrolled',
+        deltaClass: 'positive',
+        fill: studFill,
+        iconBg: '#eff6ff',
+        iconColor: '#3b82f6',
+        route: '/faculty/students',
+        iconPath: statIcons.students,
+      },
+      {
+        label: 'Avg Class GWA',
+        value: gwaVal,
+        delta: 'All classes',
+        deltaClass: avgGwa != null && Number(avgGwa) <= 1.75 ? 'positive' : avgGwa != null ? 'warning' : 'positive',
+        fill: gwaFill,
+        iconBg: '#f5f3ff',
+        iconColor: '#8b5cf6',
+        iconPath: statIcons.gwa,
+      },
+      {
+        label: 'Violations Filed',
+        value: String(violationCount),
+        delta: 'Active',
+        deltaClass: 'negative',
+        fill: violFill,
+        iconBg: '#fff1f2',
+        iconColor: '#ef4444',
+        route: '/faculty/violations',
+        iconPath: statIcons.violations,
+      },
+      {
+        label: 'Awards Pending',
+        value: String(awardsPendingCount),
+        delta: 'Recommendations',
+        deltaClass: 'positive',
+        fill: awardFill,
+        iconBg: '#fffbeb',
+        iconColor: '#f59e0b',
+        route: '/faculty/awards',
+        iconPath: statIcons.awards,
+      },
+    ];
+  }, [totalSubjects, totalStudents, avgGwa, violationCount, awardsPendingCount]);
 
-        setFacultyStats({ totalSubjects: data.total_subjects, totalStudents: data.total_students });
-        setScheduleToday(data.today_schedule || []);
-        setTopStudents(data.top_students || []);
-        setSubjects(data.subjects || []);
-
-        setStats(prev => {
-          const updated = [...prev];
-          updated[0].value = data.total_subjects.toString();
-          updated[1].value = data.total_students.toString();
-          return updated;
-        });
-      } catch (err) {
-        console.error('Fetch error:', err);
-      }
-    };
-    fetchData();
-  }, []);
+  const pendingRoute = (label) => {
+    if (label === 'Award recommendations') return '/faculty/awards';
+    if (label === 'Violation reports') return '/faculty/violations';
+    return '/faculty/subjects';
+  };
 
   return (
     <div className="faculty-dashboard-home">
-      {/* Hero Banner - Matches your screenshot height and wide layout */}
       <div className="hero-banner">
         <div className="hero-bg-shape shape-1"></div>
         <div className="hero-body">
           <div className="hero-left">
-            <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
+            <p className="hero-eyebrow">
+              <span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester
+            </p>
             <h2 className="hero-greeting">{greeting} 👋</h2>
-            <p className="faculty-hero-desc">You have <strong>{facultyStats.totalSubjects} subjects</strong> this semester with <strong>{facultyStats.totalStudents} enrolled students</strong> across all your classes.</p>
+            <p className="faculty-hero-desc">
+              {isLoading && 'Loading your dashboard…'}
+              {isError && !isLoading && 'Could not load dashboard data. Please refresh or try again later.'}
+              {!isLoading && !isError && (
+                <>
+                  You have <strong>{totalSubjects} subjects</strong> this semester with{' '}
+                  <strong>{totalStudents} enrolled students</strong> across all your classes.
+                </>
+              )}
+            </p>
             <div className="hero-actions">
-              <Link to="/faculty/schedule" className="hero-btn-primary">My Schedule</Link>
-              <Link to="/faculty/students" className="hero-btn-ghost">View My Students</Link>
+              <Link to="/faculty/schedule" className="hero-btn-primary">
+                My Schedule
+              </Link>
+              <Link to="/faculty/students" className="hero-btn-ghost">
+                View My Students
+              </Link>
             </div>
           </div>
           <div className="hero-right">
             <div className="hero-stat-card">
               <span className="hsc-label">Subjects</span>
-              <span className="hsc-value">{facultyStats.totalSubjects}</span>
+              <span className="hsc-value">{isLoading ? '—' : totalSubjects}</span>
               <span className="hsc-sub">This semester</span>
             </div>
             <div className="hero-stat-card">
               <span className="hsc-label">Students</span>
-              <span className="hsc-value">{facultyStats.totalStudents}</span>
+              <span className="hsc-value">{isLoading ? '—' : totalStudents}</span>
               <span className="hsc-sub">Enrolled</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Grid (isolated, Dean-style) */}
       <div className="faculty-stats-grid">
-        {stats.map((stat, idx) => (
+        {stats.map((stat) => (
           <div
-            key={idx}
+            key={stat.label}
             className="faculty-stat-card"
             onClick={() => stat.route && navigate(stat.route)}
             style={{ borderTop: `3px solid ${stat.iconColor}` }}
           >
             <div className="faculty-stat-top">
               <div className="faculty-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
-                <svg viewBox="0 0 18 18" fill="none">{stat.iconPath}</svg>
+                <svg viewBox="0 0 18 18" fill="none">
+                  {stat.iconPath}
+                </svg>
               </div>
             </div>
             <div className="faculty-stat-bottom">
-              <span className="faculty-stat-value">{stat.value}</span>
+              <span className="faculty-stat-value">{isLoading ? '—' : stat.value}</span>
               <span className={`faculty-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
             </div>
             <span className="faculty-stat-label">{stat.label}</span>
@@ -117,36 +222,97 @@ const FacultyDashboard = () => {
       </div>
 
       <div className="bottom-grid">
-        {/* Today's Schedule */}
         <div className="card">
           <div className="card-header">
-            <div><h3 className="card-title">Today's Teaching Schedule</h3><p className="card-sub">{todayLabel}</p></div>
-            <Link to="/faculty/schedule" className="card-link">View all →</Link>
+            <div>
+              <h3 className="card-title">Today's Teaching Schedule</h3>
+              <p className="card-sub">{todayLabel}</p>
+            </div>
+            <Link to="/faculty/schedule" className="card-link">
+              View all →
+            </Link>
           </div>
           <div className="schedule-list">
-            {scheduleToday.length === 0 ? <div className="empty-small">No classes today.</div> : 
-              scheduleToday.map((cls, i) => (/* Mapping logic here */ null))
-            }
+            {scheduleToday.length === 0 ? (
+              <div className="empty-small">{isLoading ? 'Loading…' : 'No classes today.'}</div>
+            ) : (
+              scheduleToday.map((cls, i) => (
+                <div key={`${cls.time}-${cls.section}-${i}`} className="fd-schedule-row">
+                  <div className="fd-schedule-time-col">
+                    <span className="fd-time">{cls.time}</span>
+                    <span className="fd-duration">{cls.duration}</span>
+                  </div>
+                  <div className="fd-schedule-dot" style={{ background: cls.color }} />
+                  <div className="fd-schedule-body">
+                    <div className="fd-schedule-title">{cls.subject}</div>
+                    <div className="fd-schedule-meta">
+                      {cls.section} · {cls.room} · {cls.enrolled} enrolled
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Student Performance & Pending Actions (Center Column) */}
         <div className="card">
           <div className="card-header">
-            <div><h3 className="card-title">Student Performance</h3><p className="card-sub">Top students across my classes</p></div>
-            <Link to="/faculty/students" className="card-link">View all →</Link>
+            <div>
+              <h3 className="card-title">Student Performance</h3>
+              <p className="card-sub">Top students across my classes (by GWA)</p>
+            </div>
+            <Link to="/faculty/students" className="card-link">
+              View all →
+            </Link>
           </div>
-          
+
+          <div className="fd-top-students">
+            {topStudents.length === 0 ? (
+              <div className="empty-small" style={{ padding: '16px 0' }}>
+                {isLoading ? 'Loading…' : 'No GWA records for students in your sections yet.'}
+              </div>
+            ) : (
+              topStudents.map((stu, i) => (
+                <div key={`${stu.name}-${i}`} className="fd-student-row">
+                  <div className="fd-stu-av" style={{ background: stu.color }}>
+                    {stu.name?.charAt(0) || '?'}
+                  </div>
+                  <div className="fd-stu-info">
+                    <div className="fd-stu-name">{stu.name}</div>
+                    <div className="fd-stu-meta">{stu.subject}</div>
+                  </div>
+                  <span className="fd-stu-grade">{stu.grade}</span>
+                </div>
+              ))
+            )}
+          </div>
+
           <div className="violations-mini">
-            <div className="vm-header"><span className="vm-label">Pending Actions</span></div>
+            <div className="vm-header">
+              <span className="vm-label">Pending Actions</span>
+            </div>
             <div className="pending-actions-list">
-              {pendingActions.map((action, i) => (
-                <div className="pending-action-row" key={i}>
+              {pendingActions.map((action) => (
+                <div
+                  className="pending-action-row"
+                  key={action.label}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(pendingRoute(action.label))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(pendingRoute(action.label));
+                    }
+                  }}
+                >
                   <div className="pending-dot" style={{ background: action.color }}></div>
                   <span className="pending-text">{action.label}</span>
                   <div className="pending-arrow-box">
-                     <span className="pending-badge" style={{ color: action.color }}>{action.count}</span>
-                     <span className="arrow-icon">›</span>
+                    <span className="pending-badge" style={{ color: action.color }}>
+                      {action.count}
+                    </span>
+                    <span className="arrow-icon">›</span>
                   </div>
                 </div>
               ))}
@@ -154,16 +320,34 @@ const FacultyDashboard = () => {
           </div>
         </div>
 
-        {/* Courses I Teach */}
         <div className="card">
           <div className="card-header">
-            <div><h3 className="card-title">Courses I Teach</h3><p className="card-sub">Current semester workload</p></div>
-            <Link to="/faculty/subjects" className="card-link">View all →</Link>
+            <div>
+              <h3 className="card-title">Courses I Teach</h3>
+              <p className="card-sub">Current semester workload</p>
+            </div>
+            <Link to="/faculty/subjects" className="card-link">
+              View all →
+            </Link>
           </div>
           <div className="faculty-subjects-list">
-            {subjects.length === 0 ? <div className="empty-small">No courses assigned.</div> : 
-              subjects.map((subj, i) => (/* Mapping logic here */ null))
-            }
+            {uniqueSubjects.length === 0 ? (
+              <div className="empty-small">{isLoading ? 'Loading…' : 'No courses assigned.'}</div>
+            ) : (
+              uniqueSubjects.map((subj, i) => (
+                <div key={`${subj.code}-${subj.section}-${i}`} className="fd-subject-row">
+                  <div className="fd-subj-code" style={{ borderColor: subj.color, color: subj.color }}>
+                    {subj.code}
+                  </div>
+                  <div className="fd-subj-body">
+                    <div className="fd-subj-name">{subj.name}</div>
+                    <div className="fd-subj-meta">
+                      {subj.section} · {subj.enrolled} students
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

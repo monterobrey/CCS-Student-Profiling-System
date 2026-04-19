@@ -218,16 +218,27 @@ class AnalyticsService
                 ];
             });
 
+        $avgGwa = null;
+        if ($sectionIds->isNotEmpty()) {
+            $gwaQuery = Student::whereIn('section_id', $sectionIds)->whereNotNull('gwa');
+            if ($gwaQuery->exists()) {
+                $avgGwa = round((float) $gwaQuery->avg('gwa'), 2);
+            }
+        }
+
         return [
             'total_subjects' => $totalSubjects,
             'total_students' => $totalStudents,
+            'avg_gwa' => $avgGwa,
             'today_schedule' => $todaySchedule,
             'top_students' => $topStudents,
             'subjects' => $subjects,
             'pending_actions' => [
                 ['label' => 'Grades to submit', 'count' => 0, 'color' => '#FF6B1A'],
                 ['label' => 'Award recommendations', 'count' => AcademicAward::where('status', 'pending')->count(), 'color' => '#f59e0b'],
-                ['label' => 'Violation reports', 'count' => StudentViolation::where('faculty_id', $facultyId)->where('status', 'active')->count(), 'color' => '#ef4444']
+                ['label' => 'Violation reports', 'count' => StudentViolation::where('faculty_id', $facultyId)
+                    ->whereNotIn('status', ['Resolved', 'Dismissed'])
+                    ->count(), 'color' => '#ef4444'],
             ]
         ];
     }

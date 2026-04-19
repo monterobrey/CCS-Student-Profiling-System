@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth, ROLES } from "../../context/AuthContext";
 import { awardService } from "../../services";
-import "../../styles/Dean/DeanDashboard.css";
+import styles from "../../styles/Shared/AwardsList.module.css";
 
 const TABS = [
   { key: "all",      label: "All"      },
@@ -27,9 +27,11 @@ function getInitials(a) {
 }
 
 export default function AwardsList() {
+  const cx = (...names) => names.filter(Boolean).map((name) => styles[name]).filter(Boolean).join(" ");
+
   const { role } = useAuth();
   const queryClient = useQueryClient();
-  const isDean = role === ROLES.DEAN;
+  const canManageAwards = role === ROLES.DEAN || role === ROLES.CHAIR || role === ROLES.SECRETARY;
 
   const [activeTab,    setActiveTab]    = useState("all");
   const [search,       setSearch]       = useState("");
@@ -88,7 +90,7 @@ export default function AwardsList() {
         );
         queryClient.invalidateQueries({ queryKey: ["dean-summary"] });
       } else {
-        showToast("error", res.message || "Failed to approve.");
+        showToast("error", res.status === 403 ? "You do not have permission to approve this award." : (res.message || "Failed to approve."));
       }
     } catch {
       showToast("error", "Failed to approve.");
@@ -106,7 +108,7 @@ export default function AwardsList() {
           old.map(a => a.id === res.data.id ? res.data : a)
         );
       } else {
-        showToast("error", res.message || "Failed to reject.");
+        showToast("error", res.status === 403 ? "You do not have permission to reject this award." : (res.message || "Failed to reject."));
       }
     } catch {
       showToast("error", "Failed to reject.");
@@ -114,43 +116,47 @@ export default function AwardsList() {
   };
 
   return (
-    <div className="page">
+    <div className={styles.page}>
 
       {/* TOAST */}
       {toast && (
-        <div className={`toast toast-${toast.type}`}>{toast.message}</div>
+        <div className={cx("toast", `toast-${toast.type}`)}>{toast.message}</div>
       )}
 
       {/* PAGE HEADER */}
-      <div className="award-header-clean">
+      <div className={styles.header}>
         <div>
-          <h2 className="page-title">Awards &amp; Recognition</h2>
-          <p className="page-sub">
-            {isDean
+          <h2 className={styles.pageTitle}>Awards &amp; Recognition</h2>
+          <p className={styles.pageSub}>
+            {canManageAwards
               ? "Review and approve award nominations across all departments."
               : "View all student award records."}
           </p>
         </div>
+        <div className={styles.headerBadge}>
+          <span className={styles.headerDot}></span>
+          {counts.pending} Pending
+        </div>
       </div>
 
       {/* CONTROLS ROW */}
-      <div className="controls-row">
-        <div className="filter-tabs">
+      <div className={styles.controlsRow}>
+        <div className={styles.filterTabs}>
           {TABS.map(t => (
             <button
               key={t.key}
-              className={`filter-tab ${activeTab === t.key ? "active" : ""}`}
+              className={cx("filterTab", activeTab === t.key && "active")}
               onClick={() => setActiveTab(t.key)}
             >
               {t.label}
               {counts[t.key] > 0 && (
-                <span className="tab-count">{counts[t.key]}</span>
+                <span className={styles.tabCount}>{counts[t.key]}</span>
               )}
             </button>
           ))}
         </div>
 
-        <div className="search-wrap">
+        <div className={styles.searchWrap}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <circle cx="6" cy="6" r="4.5" stroke="#b89f90" strokeWidth="1.3"/>
             <path d="M9.5 9.5l2.5 2.5" stroke="#b89f90" strokeWidth="1.3" strokeLinecap="round"/>
@@ -162,33 +168,33 @@ export default function AwardsList() {
             onChange={e => setSearch(e.target.value)}
           />
           {search && (
-            <button className="search-clear" onClick={() => setSearch("")}>×</button>
+            <button className={styles.searchClear} onClick={() => setSearch("")}>×</button>
           )}
         </div>
       </div>
 
       {/* TABLE */}
       {isLoading ? (
-        <div className="loading-state">
-          <div className="spinner" />
+        <div className={styles.loadingState}>
+          <div className={styles.spinner} />
           <p>Loading awards...</p>
         </div>
       ) : (
-        <div className="awards-table-container">
-          <div className="awards-list">
+        <div className={styles.tableContainer}>
+          <div className={styles.awardsList}>
 
             {/* Header */}
-            <div className={`ach-row ach-header${isDean ? " ach-row--dean" : ""}`}>
-              <div className="ach-col">Award</div>
-              <div className="ach-col">Student</div>
-              <div className="ach-col">Date</div>
-              <div className="ach-col">Status</div>
-              {isDean && <div className="ach-col action-col">Action</div>}
+            <div className={cx("row", "headerRow", canManageAwards && "rowDean")}>
+              <div className={styles.col}>Award</div>
+              <div className={styles.col}>Student</div>
+              <div className={styles.col}>Date</div>
+              <div className={styles.col}>Status</div>
+              {canManageAwards && <div className={cx("col", "actionCol")}>Action</div>}
             </div>
 
             {/* Empty state */}
             {filteredAwards.length === 0 ? (
-              <div className="empty-state">
+              <div className={styles.emptyState}>
                 No awards found.
                 <span>
                   {search
@@ -200,13 +206,13 @@ export default function AwardsList() {
               filteredAwards.map(a => (
                 <div
                   key={a.id}
-                  className={`ach-row${isDean ? " ach-row--dean" : ""}`}
+                  className={cx("row", canManageAwards && "rowDean")}
                 >
                   {/* Award */}
-                  <div className="ach-col ach-info-col">
+                  <div className={cx("col", "infoCol")}>
                     <div>
-                      <p className="ach-title">{a.awardName}</p>
-                      <p className="ach-meta">
+                      <p className={styles.awardTitle}>{a.awardName}</p>
+                      <p className={styles.awardMeta}>
                         {a.applied_by
                           ? `Given by ${a.recommender?.name ?? "Admin"}`
                           : "Student application"}
@@ -215,19 +221,19 @@ export default function AwardsList() {
                   </div>
 
                   {/* Student */}
-                  <div className="ach-col">
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div className={styles.col}>
+                    <div className={styles.studentCell}>
                       <div
-                        className="ss-avatar"
+                        className={styles.avatar}
                         style={{ background: getAvatarColor(a.student?.first_name ?? "") }}
                       >
                         {getInitials(a)}
                       </div>
                       <div>
-                        <p className="ach-student-name">
+                        <p className={styles.studentName}>
                           {a.student?.first_name} {a.student?.last_name}
                         </p>
-                        <p className="ach-student-prog">
+                        <p className={styles.studentMeta}>
                           {a.student?.program?.program_code}
                           {a.student?.section?.section_name
                             ? ` · ${a.student.section.section_name}`
@@ -238,40 +244,40 @@ export default function AwardsList() {
                   </div>
 
                   {/* Date */}
-                  <div className="ach-col">
-                    <p className="ach-date">{formatDate(a.date_received)}</p>
+                  <div className={styles.col}>
+                    <p className={styles.date}>{formatDate(a.date_received)}</p>
                     {a.action_taken && (
-                      <p className="ach-reason">{a.action_taken}</p>
+                      <p className={styles.reason}>{a.action_taken}</p>
                     )}
                   </div>
 
                   {/* Status */}
-                  <div className="ach-col">
-                    <span className={`ach-status as-${a.status}`}>
+                  <div className={styles.col}>
+                    <span className={cx("status", `status-${a.status}`)}>
                       {a.status}
                     </span>
                   </div>
 
                   {/* Actions — Dean only */}
-                  {isDean && (
-                    <div className="ach-col action-col">
+                  {canManageAwards && (
+                    <div className={cx("col", "actionCol")}>
                       {a.status === "pending" ? (
-                        <div className="ach-actions">
+                        <div className={styles.actions}>
                           <button
-                            className="btn-approve"
+                            className={styles.btnApprove}
                             onClick={() => handleApprove(a.id)}
                           >
                             Approve
                           </button>
                           <button
-                            className="btn-reject"
+                            className={styles.btnReject}
                             onClick={() => { setRejectId(a.id); setRejectReason(""); }}
                           >
                             Reject
                           </button>
                         </div>
                       ) : (
-                        <span className="ach-resolved">
+                        <span className={styles.resolvedText}>
                           {a.status === "approved" ? "Approved" : "Rejected"}
                         </span>
                       )}
@@ -286,14 +292,14 @@ export default function AwardsList() {
 
       {/* REJECT MODAL */}
       {rejectId && (
-        <div className="modal-overlay" onClick={() => setRejectId(null)}>
-          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={styles.modalOverlay} onClick={() => setRejectId(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
               <h3>Reject Award</h3>
-              <button className="modal-close" onClick={() => setRejectId(null)}>×</button>
+              <button className={styles.modalClose} onClick={() => setRejectId(null)}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
                 <label>Reason (optional)</label>
                 <textarea
                   rows="3"
@@ -303,9 +309,9 @@ export default function AwardsList() {
                 />
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setRejectId(null)}>Cancel</button>
-              <button className="btn-reject" onClick={handleReject}>Confirm Reject</button>
+            <div className={styles.modalFooter}>
+              <button className={styles.btnSecondary} onClick={() => setRejectId(null)}>Cancel</button>
+              <button className={styles.btnReject} onClick={handleReject}>Confirm Reject</button>
             </div>
           </div>
         </div>

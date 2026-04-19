@@ -87,17 +87,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/archive', [ArchiveController::class, 'index']);
         Route::post('/archive/{id}/restore', [ArchiveController::class, 'restore']);
         Route::get('/analytics/dean-report', [AnalyticsController::class, 'deanReport']);
-
-        // Dean can approve/reject awards
-        Route::post('/awards/{id}/approve', [AwardController::class, 'approve']);
-        Route::post('/awards/{id}/reject',  [AwardController::class, 'reject']);
     });
 
-    // Chair Specific — give awards + approve/reject
+    // Chair Specific — give awards
     Route::middleware('role:department_chair')->group(function () {
         Route::post('/awards',              [AwardController::class, 'give']);
-        Route::post('/awards/{id}/approve', [AwardController::class, 'approve']);
-        Route::post('/awards/{id}/reject',  [AwardController::class, 'reject']);
     });
 
     // Secretary Specific
@@ -130,6 +124,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Awards — Dean/Secretary view all, Chair views dept (scoped in service)
         Route::get('/awards', [AwardController::class, 'index']);
+        // Approve/reject pending awards
+        Route::post('/awards/{id}/approve', [AwardController::class, 'approve']);
+        Route::post('/awards/{id}/reject',  [AwardController::class, 'reject']);
         
         // Archiving (Shared)
         Route::delete('/secretary/students/{id}', [StudentController::class, 'destroy']);

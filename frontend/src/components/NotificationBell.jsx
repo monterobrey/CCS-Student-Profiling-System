@@ -42,7 +42,7 @@ export default function NotificationBell() {
   // Poll every 30 seconds
   useEffect(() => {
     fetchNotifications();
-    intervalRef.current = setInterval(fetchNotifications, 30000);
+    intervalRef.current = setInterval(fetchNotifications, 60000);
     return () => clearInterval(intervalRef.current);
   }, [fetchNotifications]);
 

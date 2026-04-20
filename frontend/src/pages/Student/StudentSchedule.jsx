@@ -47,13 +47,13 @@ const StudentSchedule = () => {
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   const stats = useMemo(() => {
-    const total = schedules.length;
-    const today = schedules.filter((s) => s.dayOfWeek === currentDay).length;
+    const total = new Set(schedules.map((s) => s.course_id)).size;
+    const today = new Set(schedules.filter((s) => s.dayOfWeek === currentDay).map((s) => s.course_id)).size;
     const upcoming = schedules.filter(
       (s) => s.dayOfWeek === currentDay && toMinutes(s.startTime) > currentMinutes
     ).length;
-    const morning = schedules.filter((s) => toMinutes(s.startTime) < 12 * 60).length;
-    const afternoon = schedules.filter((s) => toMinutes(s.startTime) >= 12 * 60).length;
+    const morning = new Set(schedules.filter((s) => toMinutes(s.startTime) < 12 * 60).map((s) => s.course_id)).size;
+    const afternoon = new Set(schedules.filter((s) => toMinutes(s.startTime) >= 12 * 60).map((s) => s.course_id)).size;
     return { total, today, upcoming, morning, afternoon };
   }, [schedules, currentDay, currentMinutes]);
 

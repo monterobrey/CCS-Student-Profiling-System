@@ -1,110 +1,98 @@
-import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
+import { httpClient } from "../../services/httpClient";
+import { API_ENDPOINTS } from "../../services/apiEndpoints";
 import "../../styles/Student/StudentDashboard.css";
+
+const fetchDashboard = async () => {
+  const res = await httpClient.get(API_ENDPOINTS.STUDENT.DASHBOARD);
+  if (!res.ok) throw new Error(res.message || "Failed to load dashboard");
+  return res.data;
+};
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState([]);
-  const [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [studentProfile, setStudentProfile] = useState({ gwa: "0.00" });
-  const [studentActivities, setStudentActivities] = useState([]);
-  const [studentAwards, setStudentAwards] = useState([]);
-  const [studentViolations, setStudentViolations] = useState([]);
-  const [todaySchedule, setTodaySchedule] = useState([]);
-  const [studentChartData, setStudentChartData] = useState([]);
+  const { data: dash = null, isLoading } = useQuery({
+    queryKey: ["student-dashboard"],
+    queryFn: fetchDashboard,
+  });
 
   const todayLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 
-  function buildStats(s) {
-    return [
-      {
-        label: "My GWA",
-        value: s.gwa || "0.00",
-        delta: "Academic",
-        deltaClass: "positive",
-        fill: s.gwa ? "80%" : "0%",
-        iconBg: "#f5f3ff",
-        iconColor: "#8b5cf6",
-        route: "/student/academic-history",
-        iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
-      },
-      {
-        label: "Subjects",
-        value: (s.enrolled_subjects_count || 0).toString(),
-        delta: "Enrolled",
-        deltaClass: "positive",
-        fill: s.enrolled_subjects_count ? "70%" : "0%",
-        iconBg: "#eff6ff",
-        iconColor: "#3b82f6",
-        route: "/student/schedule",
-        iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h6M6 9h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
-      },
-      {
-        label: "Awards",
-        value: (s.awards?.length || 0).toString(),
-        delta: "This year",
-        deltaClass: "positive",
-        fill: s.awards?.length ? "60%" : "0%",
-        iconBg: "#fffbeb",
-        iconColor: "#f59e0b",
-        route: "/student/awards",
-        iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
-      },
-      {
-        label: "Violations",
-        value: (s.violations?.length || 0).toString(),
-        delta: s.violations?.length > 0 ? "Action Needed" : "Clear",
-        deltaClass: s.violations?.length > 0 ? "negative" : "positive",
-        fill: s.violations?.length > 0 ? "100%" : "0%",
-        iconBg: "#f0fdf4",
-        iconColor: "#10b981",
-        route: "/student/violations",
-        iconPath: '<circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
-      },
-      {
-        label: "Activities",
-        value: (s.activities?.length || 0).toString(),
-        delta: "Non-academic",
-        deltaClass: "neutral",
-        fill: s.activities?.length ? "50%" : "0%",
-        iconBg: "#fff5ef",
-        iconColor: "#FF6B1A",
-        route: "/student/activities",
-        iconPath: '<circle cx="9" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16c0-4 3-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
-      },
-    ];
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/student/profile");
-        const s = response.data;
-
-        setProfileIncomplete(!s.gender || !s.contact_number || !s.address);
-        setStudentProfile({ ...s });
-        setStudentActivities(s.activities || []);
-        setStudentAwards(s.awards || []);
-        setStudentViolations(s.violations || []);
-        setTodaySchedule(s.today_schedule || []);
-        setStudentChartData(s.chart_data || []);
-        setStats(buildStats(s));
-      } catch (err) {
-        console.error("Failed to fetch student profile:", err);
-        setStats(buildStats({}));
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const firstName = user?.name?.split(" ")[0] ?? "Student";
+
+  const gwa              = dash?.gwa ?? "0.00";
+  const profileIncomplete = dash?.profile_incomplete ?? false;
+  const todaySchedule    = dash?.today_schedule ?? [];
+  const recentAwards     = dash?.recent_awards ?? [];
+  const hasViolations    = dash?.has_active_violations ?? false;
+  const violationsCount  = dash?.violations_count ?? 0;
+  const awardsCount      = dash?.awards_count ?? 0;
+  const activitiesCount  = dash?.activities_count ?? 0;
+  const subjectsCount    = dash?.enrolled_subjects_count ?? 0;
+
+  const stats = [
+    {
+      label: "My GWA",
+      value: gwa,
+      delta: "Academic",
+      deltaClass: "positive",
+      fill: gwa && gwa !== "0.00" ? `${Math.min((parseFloat(gwa) / 4) * 100, 100)}%` : "0%",
+      iconBg: "#f5f3ff",
+      iconColor: "#8b5cf6",
+      route: "/student/profile",
+      iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    },
+    {
+      label: "Subjects",
+      value: subjectsCount.toString(),
+      delta: "Enrolled",
+      deltaClass: "positive",
+      fill: subjectsCount ? "70%" : "0%",
+      iconBg: "#eff6ff",
+      iconColor: "#3b82f6",
+      route: "/student/schedule",
+      iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h6M6 9h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    },
+    {
+      label: "Awards",
+      value: awardsCount.toString(),
+      delta: "This year",
+      deltaClass: "positive",
+      fill: awardsCount ? "60%" : "0%",
+      iconBg: "#fffbeb",
+      iconColor: "#f59e0b",
+      route: "/student/awards",
+      iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    },
+    {
+      label: "Violations",
+      value: violationsCount.toString(),
+      delta: hasViolations ? "Action Needed" : "Clear",
+      deltaClass: hasViolations ? "negative" : "positive",
+      fill: hasViolations ? "100%" : "0%",
+      iconBg: "#f0fdf4",
+      iconColor: "#10b981",
+      route: "/student/violations",
+      iconPath: '<circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    },
+    {
+      label: "Activities",
+      value: activitiesCount.toString(),
+      delta: "Non-academic",
+      deltaClass: "neutral",
+      fill: activitiesCount ? "50%" : "0%",
+      iconBg: "#fff5ef",
+      iconColor: "#FF6B1A",
+      route: "/student/activities",
+      iconPath: '<circle cx="9" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16c0-4 3-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    },
+  ];
 
   return (
     <div className="sd-dashboard-home">
@@ -116,14 +104,18 @@ const StudentDashboard = () => {
         <div className="sd-ambient sd-ambient-3"></div>
 
         <div className="sd-hero-body">
-          {/* LEFT: Greeting & CTA */}
+          {/* LEFT */}
           <div className="sd-hero-left">
             <div className="sd-hero-meta">
               <span className="sd-meta-dot"></span>
-              <span>AY 2026–2027 · 2nd Semester</span>
+              <span>
+                {dash?.program_code ? `${dash.program_code} · ` : ""}
+                {dash?.section_name ?? ""}
+              </span>
             </div>
             <h1 className="sd-hero-heading">
-              Good morning, <span className="sd-hero-name">{firstName}</span>{" "}
+              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"},{" "}
+              <span className="sd-hero-name">{firstName}</span>{" "}
               <span className="sd-wave">👋</span>
             </h1>
             <div className="sd-hero-chips">
@@ -132,7 +124,7 @@ const StudentDashboard = () => {
                   <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
                   <path d="M8 4.5V8l2.5 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
-                {todaySchedule.length} class{todaySchedule.length !== 1 ? "es" : ""} today
+                {isLoading ? "—" : `${todaySchedule.length} class${todaySchedule.length !== 1 ? "es" : ""} today`}
               </span>
             </div>
             <div className="sd-hero-actions">
@@ -143,11 +135,11 @@ const StudentDashboard = () => {
                 </svg>
                 View Schedule
               </Link>
-              <Link to="/student/academic-history" className="sd-btn-ghost">
+              <Link to="/student/curriculum" className="sd-btn-ghost">
                 <svg viewBox="0 0 16 16" fill="none" style={{ width: "13px", height: "13px" }}>
                   <path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Academic History
+                My Curriculum
               </Link>
             </div>
           </div>
@@ -161,20 +153,8 @@ const StudentDashboard = () => {
                 </svg>
                 <span className="sd-kpi-eyebrow">Current GWA</span>
               </div>
-              <span className="sd-kpi-val">{studentProfile.gwa || "0.00"}</span>
+              <span className="sd-kpi-val">{isLoading ? "—" : gwa}</span>
               <span className="sd-kpi-foot">This semester</span>
-              <div className="sd-kpi-sparkbar">
-                {studentChartData.map((b, i) => (
-                  <div
-                    key={i}
-                    className="sd-kpi-spark-seg"
-                    style={{
-                      height: b.pct * 0.28 + "px",
-                      opacity: i === studentChartData.length - 1 ? 1 : 0.25 + i * 0.1,
-                    }}
-                  ></div>
-                ))}
-              </div>
             </div>
 
             <div className="sd-kpi-tile sd-kpi-accent">
@@ -185,13 +165,15 @@ const StudentDashboard = () => {
                 </svg>
                 <span className="sd-kpi-eyebrow">Activities</span>
               </div>
-              <span className="sd-kpi-val">{studentActivities.length}</span>
+              <span className="sd-kpi-val">{isLoading ? "—" : activitiesCount}</span>
               <span className="sd-kpi-foot">Non-academic</span>
               <div className="sd-kpi-ring">
                 <svg viewBox="0 0 48 48" fill="none">
                   <circle cx="24" cy="24" r="19" stroke="rgba(255,255,255,0.15)" strokeWidth="5" />
                   <circle cx="24" cy="24" r="19" stroke="rgba(255,255,255,0.8)" strokeWidth="5"
-                    strokeDasharray="119.4" strokeDashoffset="40" strokeLinecap="round"
+                    strokeDasharray="119.4"
+                    strokeDashoffset={activitiesCount > 0 ? Math.max(10, 119.4 - (activitiesCount * 10)) : 119.4}
+                    strokeLinecap="round"
                     transform="rotate(-90 24 24)" />
                 </svg>
               </div>
@@ -201,7 +183,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* ═══════════════ PROFILE NUDGE ═══════════════ */}
-      {profileIncomplete && (
+      {!isLoading && profileIncomplete && (
         <div className="sd-profile-nudge">
           <div className="sd-nudge-bar-right"></div>
           <div className="sd-nudge-left">
@@ -215,15 +197,6 @@ const StudentDashboard = () => {
               <p className="sd-nudge-title">Your profile is incomplete</p>
               <p className="sd-nudge-desc">Add your contact details and address to finish registration.</p>
             </div>
-          </div>
-          <div className="sd-nudge-progress">
-            <div className="sd-nudge-steps">
-              <div className="sd-nudge-step sd-done"></div>
-              <div className="sd-nudge-step sd-done"></div>
-              <div className="sd-nudge-step"></div>
-              <div className="sd-nudge-step"></div>
-            </div>
-            <span className="sd-nudge-progress-label">2 of 4 complete</span>
           </div>
           <Link to="/student/profile" className="sd-nudge-cta">Complete Profile →</Link>
         </div>
@@ -242,11 +215,11 @@ const StudentDashboard = () => {
             </div>
             <div className="sd-sc-body">
               <span className="sd-sc-label">{stat.label}</span>
-              <span className="sd-sc-value">{stat.value}</span>
+              <span className="sd-sc-value">{isLoading ? "—" : stat.value}</span>
             </div>
             <span className={`sd-sc-badge ${stat.deltaClass}`}>{stat.delta}</span>
             <div className="sd-sc-progress">
-              <div className="sd-sc-progress-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
+              <div className="sd-sc-progress-fill" style={{ width: isLoading ? "0%" : stat.fill, background: stat.iconColor }}></div>
             </div>
           </div>
         ))}
@@ -265,7 +238,9 @@ const StudentDashboard = () => {
             <Link to="/student/schedule" className="sd-panel-link">View all →</Link>
           </div>
           <div className="sd-timeline">
-            {todaySchedule.length === 0 ? (
+            {isLoading ? (
+              <div className="sd-empty-state"><span>Loading...</span></div>
+            ) : todaySchedule.length === 0 ? (
               <div className="sd-empty-state">
                 <svg viewBox="0 0 24 24" fill="none" style={{ width: "28px", height: "28px", opacity: 0.25 }}>
                   <rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" strokeWidth="1.4" />
@@ -275,7 +250,7 @@ const StudentDashboard = () => {
               </div>
             ) : (
               todaySchedule.map((cls, idx) => (
-                <div className="sd-tl-item" key={cls.subject}>
+                <div className="sd-tl-item" key={`${cls.code}-${idx}`}>
                   <div className="sd-tl-time">
                     <span className="sd-tl-t">{cls.time}</span>
                     <span className="sd-tl-dur">{cls.duration}</span>
@@ -305,11 +280,13 @@ const StudentDashboard = () => {
             <Link to="/student/awards" className="sd-panel-link">View all →</Link>
           </div>
           <div className="sd-awards-list">
-            {studentAwards.length === 0 ? (
+            {isLoading ? (
+              <div className="sd-empty-state"><span>Loading...</span></div>
+            ) : recentAwards.length === 0 ? (
               <div className="sd-empty-state"><span>No awards yet</span></div>
             ) : (
-              studentAwards.slice(0, 3).map((award) => (
-                <div className="sd-award-row" key={award.title}>
+              recentAwards.map((award) => (
+                <div className="sd-award-row" key={award.id}>
                   <div className="sd-award-icon" style={{ background: award.color + "18", color: award.color }}>
                     <svg viewBox="0 0 14 14" fill="none" style={{ width: "13px", height: "13px" }}>
                       <path d="M7 1l1.5 4H13l-3.5 2.5 1.5 4L7 9.5 3.5 12l1.5-4L1 5h4.5L7 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
@@ -317,9 +294,11 @@ const StudentDashboard = () => {
                   </div>
                   <div className="sd-award-body">
                     <p className="sd-award-title">{award.title}</p>
-                    <p className="sd-award-sem">{award.semester}</p>
+                    <p className="sd-award-sem">{award.date}</p>
                   </div>
-                  <span className="sd-award-chip">{award.badge}</span>
+                  <span className="sd-award-chip" style={{ background: award.color + "18", color: award.color }}>
+                    {award.badge}
+                  </span>
                 </div>
               ))
             )}
@@ -332,7 +311,7 @@ const StudentDashboard = () => {
               <span className="sd-viol-label">Violations</span>
               <Link to="/student/violations" className="sd-panel-link">See all →</Link>
             </div>
-            {studentViolations.length === 0 && (
+            {!isLoading && !hasViolations && (
               <div className="sd-viol-clear">
                 <div className="sd-viol-check">
                   <svg viewBox="0 0 12 12" fill="none" style={{ width: "10px", height: "10px" }}>
@@ -342,38 +321,66 @@ const StudentDashboard = () => {
                 <span>No active violations — keep it up!</span>
               </div>
             )}
+            {!isLoading && hasViolations && (
+              <div className="sd-viol-clear" style={{ color: "#ef4444" }}>
+                <div className="sd-viol-check" style={{ background: "#fee2e2", color: "#ef4444" }}>
+                  <svg viewBox="0 0 12 12" fill="none" style={{ width: "10px", height: "10px" }}>
+                    <path d="M6 3v4M6 9v.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <span>{violationsCount} violation{violationsCount !== 1 ? "s" : ""} on record — action may be needed.</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* GWA Chart */}
+        {/* Quick Links panel instead of empty chart */}
         <div className="sd-panel">
           <div className="sd-panel-header">
             <div>
-              <h3 className="sd-panel-title">Academic Performance</h3>
-              <p className="sd-panel-sub">GWA trend per semester</p>
+              <h3 className="sd-panel-title">Quick Access</h3>
+              <p className="sd-panel-sub">Jump to your most-used pages</p>
             </div>
-            <Link to="/student/academic-history" className="sd-panel-link">History →</Link>
           </div>
-          <div className="sd-chart-area">
-            {studentChartData.map((bar, i) => (
-              <div className="sd-chart-col" key={i}>
-                <div className="sd-chart-col-inner">
-                  <div
-                    className={`sd-chart-bar${i === studentChartData.length - 1 ? " sd-chart-bar--active" : ""}`}
-                    style={{ height: bar.pct + "%" }}
-                  >
-                    <div className="sd-chart-tip">{bar.sem}<br /><strong>{bar.gwa}</strong></div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "4px 0" }}>
+            {[
+              { label: "My Profile",      sub: "Update personal info",     to: "/student/profile",      color: "#8b5cf6" },
+              { label: "My Curriculum",   sub: "View program subjects",    to: "/student/curriculum",   color: "#3b82f6" },
+              { label: "My Schedule",     sub: "Today's & weekly classes", to: "/student/schedule",     color: "#10b981" },
+              { label: "Awards",          sub: "Achievements & recognition",to: "/student/awards",      color: "#f59e0b" },
+              { label: "Affiliations",    sub: "Organizations & clubs",    to: "/student/affiliations", color: "#ff6b1a" },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                style={{ textDecoration: "none" }}
+              >
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "12px",
+                  padding: "10px 12px", borderRadius: "10px",
+                  border: "1.5px solid #f0e8e0", background: "#fff",
+                  transition: "border-color 0.15s",
+                }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = item.color}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "#f0e8e0"}
+                >
+                  <div style={{
+                    width: "32px", height: "32px", borderRadius: "8px",
+                    background: item.color + "18", color: item.color,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
+                    <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+                      <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a0a00" }}>{item.label}</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "#9a8070" }}>{item.sub}</p>
                   </div>
                 </div>
-                <span className="sd-chart-lbl">{bar.sem}</span>
-              </div>
+              </Link>
             ))}
-          </div>
-          <div className="sd-chart-legend">
-            <span className="sd-cl-dot sd-cl-dot--active"></span>
-            <span className="sd-cl-text">Current sem</span>
-            <span className="sd-cl-dot"></span>
-            <span className="sd-cl-text">Previous</span>
           </div>
         </div>
 

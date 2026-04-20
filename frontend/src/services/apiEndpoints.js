@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     LIST: "/students",
     DETAIL: (id) => `/students/${id}`,
     PROFILE: "/student/profile",
+    DASHBOARD: "/student/dashboard",
     GUARDIAN: "/student/guardian",
     SCHEDULE: "/student/schedule",
     CREATE: "/secretary/students",

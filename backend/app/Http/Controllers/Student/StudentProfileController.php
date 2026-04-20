@@ -287,5 +287,103 @@ class StudentProfileController extends Controller
 
         return ApiResponse::success($violations);
     }
+
+    /**
+     * Get dashboard summary for the authenticated student.
+     * Returns profile info, today's schedule, recent awards, violations, and activity counts.
+     */
+    public function dashboard(Request $request)
+    {
+        $user    = $request->user();
+        $student = Student::with([
+            'user',
+            'section',
+            'program',
+            'awards',
+            'violations',
+            'nonAcademicActivities',
+        ])
+        ->where('user_id', $user->id)
+        ->firstOrFail();
+
+        // Today's schedule — based on the student's section
+        $todaySchedules = [];
+        if ($student->section_id) {
+            $dayName = now()->format('l'); // e.g. "Monday"
+            $schedules = \App\Models\Schedule::where('section_id', $student->section_id)
+                ->where('dayOfWeek', $dayName)
+                ->with(['course', 'faculty.user'])
+                ->orderBy('startTime')
+                ->get()
+                ->unique('course_id') // one entry per subject, not per lec/lab slot
+                ->values();
+
+            $colors = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#ff6b1a','#06b6d4'];
+            $todaySchedules = $schedules->values()->map(function ($s, $i) use ($colors) {
+                $start = $s->startTime ? substr($s->startTime, 0, 5) : '';
+                $end   = $s->endTime   ? substr($s->endTime,   0, 5) : '';
+                $fmt   = fn($t) => $t ? date('g:i A', strtotime($t)) : '';
+                $faculty = $s->faculty;
+                $facultyName = $faculty
+                    ? trim(($faculty->first_name ?? '') . ' ' . ($faculty->last_name ?? ''))
+                    : 'TBA';
+
+                // Duration in minutes
+                $startMins = $start ? (intval(substr($start,0,2))*60 + intval(substr($start,3,2))) : 0;
+                $endMins   = $end   ? (intval(substr($end,0,2))*60   + intval(substr($end,3,2)))   : 0;
+                $dur = $endMins - $startMins;
+                $durLabel = $dur > 0 ? floor($dur/60).'h '.($dur%60 ? ($dur%60).'m' : '') : '';
+
+                return [
+                    'subject'   => $s->course->course_name ?? 'Unknown',
+                    'code'      => $s->course->course_code ?? '',
+                    'time'      => $fmt($s->startTime),
+                    'end_time'  => $fmt($s->endTime),
+                    'duration'  => trim($durLabel),
+                    'room'      => $s->room ?? 'TBA',
+                    'professor' => $facultyName,
+                    'type'      => ucfirst($s->class_type ?? 'Lecture'),
+                    'color'     => $colors[$i % count($colors)],
+                ];
+            })->toArray();
+        }
+
+        // Recent awards (approved only, latest 3)
+        $statusColors = ['approved' => '#10b981', 'pending' => '#f59e0b', 'rejected' => '#ef4444'];
+        $recentAwards = $student->awards
+            ->sortByDesc('created_at')
+            ->take(3)
+            ->values()
+            ->map(fn($a) => [
+                'id'     => $a->id,
+                'title'  => $a->awardName,
+                'status' => $a->status,
+                'date'   => $a->date_received?->format('M d, Y'),
+                'color'  => $statusColors[$a->status] ?? '#9ca3af',
+                'badge'  => ucfirst($a->status),
+            ])->toArray();
+
+        // Violations summary
+        $violations = $student->violations;
+        $activeViolations = $violations->whereIn('status', ['pending', 'under_review'])->values();
+
+        return ApiResponse::success([
+            'gwa'                    => $student->gwa ?? '0.00',
+            'profile_incomplete'     => !$student->gender || !$student->contact_number || !$student->address,
+            'section_name'           => $student->section?->section_name ?? 'Unassigned',
+            'program_code'           => $student->program?->program_code ?? '',
+            'year_level'             => $student->year_level ?? '',
+            'enrolled_subjects_count'=> $student->section_id
+                ? \App\Models\Schedule::where('section_id', $student->section_id)->distinct('course_id')->count('course_id')
+                : 0,
+            'awards_count'           => $student->awards->count(),
+            'violations_count'       => $violations->count(),
+            'active_violations_count'=> $activeViolations->count(),
+            'activities_count'       => $student->nonAcademicActivities->count(),
+            'today_schedule'         => $todaySchedules,
+            'recent_awards'          => $recentAwards,
+            'has_active_violations'  => $activeViolations->isNotEmpty(),
+        ]);
+    }
 }
 

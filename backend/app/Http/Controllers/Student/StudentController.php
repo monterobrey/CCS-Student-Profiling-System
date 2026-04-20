@@ -135,6 +135,9 @@ class StudentController extends Controller
     {
         $request->validate(['file' => 'required|file|mimes:csv,txt']);
 
+        // Allow enough time for bulk imports (1000+ rows)
+        set_time_limit(300);
+
         $result = $this->studentImportService->importFromFile($request->file('file')->getRealPath());
 
         return ApiResponse::success(

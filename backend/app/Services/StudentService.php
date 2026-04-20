@@ -53,9 +53,11 @@ class StudentService
                 'middle_name' => $data['middle_name'] ?? null,
             ]);
 
-            // Send setup password notification (after profile exists so greeting uses name)
-            $user->load('student');
-            $user->notify(new SetupPasswordNotification($setupToken));
+            // Send setup password notification — skip during bulk import
+            if (empty($data['skip_notification'])) {
+                $user->load('student');
+                $user->notify(new SetupPasswordNotification($setupToken));
+            }
 
             // Create guardian if provided
             if (isset($data['guardian']) && !empty($data['guardian']['first_name'])) {

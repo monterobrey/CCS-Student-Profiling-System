@@ -165,7 +165,7 @@
 .assign-btn:hover { background: #ff6b1a; color: #fff; }
 
 .delete-btn-sm {
-  padding: 5px 12px;
+  padding: 5px 8px;
   border-radius: 8px;
   border: 1px solid #fecaca;
   background: #fff5f5;
@@ -173,8 +173,32 @@
   font-size: 12px;
   font-family: inherit;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color .15s, color .15s, background .15s;
 }
-.delete-btn-sm:hover { background: #ef4444; color: #fff; }
+.delete-btn-sm:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+.edit-btn-sm {
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid #e8d8d0;
+  background: #fff;
+  color: #b89f90;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.edit-btn-sm:hover { border-color: #FF6B1A; color: #FF6B1A; background: #fff5ef; }
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* ── Empty state ── */
 .empty-state {

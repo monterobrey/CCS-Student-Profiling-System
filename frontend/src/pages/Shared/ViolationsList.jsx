@@ -69,7 +69,7 @@ export default function ViolationsList() {
     return actorName;
   };
 
-  const viewingViolation = id ? cases.find((c) => c.id === id) ?? null : null;
+  const viewingViolation = id ? cases.find((c) => String(c.id) === String(id)) ?? null : null;
   const isResolvedCase = (viewingViolation?.status || '').toLowerCase() === 'resolved';
 
   const openViolation = (v) => {

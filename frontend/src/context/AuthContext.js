@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AuthContext = createContext(null);
 
@@ -13,6 +14,7 @@ export const ROLES = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -28,6 +30,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, token = null) => {
+    // Clear any cached data from a previous session before setting the new user
+    queryClient.clear();
     const userWithDefaults = {
       ...userData,
       role: userData.role || ROLES.DEAN,
@@ -43,6 +47,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("auth_token");
+    // Wipe all cached query data so the next login starts fresh
+    queryClient.clear();
   };
 
   const getRoleBasePath = useCallback((userRole) => {

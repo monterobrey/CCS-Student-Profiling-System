@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, ROLES } from "../context/AuthContext";
+import { prefetchStudentPage } from "../utils/prefetch";
 import "./AppLayout.css";
 import ccsLogo from "../assets/ccs-logo.png";
 
@@ -42,6 +44,7 @@ const SECTION_ORDER = ['Overview', 'Profiling', 'Academic', 'Accounts', 'Monitor
 export default function Sidebar({ collapsed, setCollapsed }) {
 const { role, logout } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const menuSections = useMemo(() => {
     const roleMenu = {
@@ -193,6 +196,11 @@ const { role, logout } = useAuth();
                 key={item.path}
                 to={`/${getBasePath(role)}/${item.path}`} 
                 className="nav-item"
+                onMouseEnter={() => {
+                  if (role === ROLES.STUDENT) {
+                    prefetchStudentPage(queryClient, item.path);
+                  }
+                }}
               >
                 <Icon name={item.meta.icon} />
                 {!collapsed && <span>{item.meta.title}</span>}

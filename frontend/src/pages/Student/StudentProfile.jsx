@@ -86,7 +86,9 @@ export default function StudentProfile() {
               <div className="spr-identity-info">
                 <div className="spr-identity-name">{fullName}</div>
                 <div className="spr-identity-meta">
-                  {profile.student_number} · {profile.section_name || "Unassigned"}
+                  {profile.student_number}
+                  {profile.program_code ? ` · ${profile.program_code}` : ""}
+                  {" · "}{profile.section_name || "Unassigned"}
                 </div>
               </div>
               <span className="spr-active-badge">Active</span>
@@ -481,14 +483,30 @@ export default function StudentProfile() {
                   </svg>
                 </div>
                 <div className="spr-tab-header-text">
-                  <div className="spr-tab-header-title">Semester Progress</div>
-                  <div className="spr-tab-header-subtitle">Academic Performance</div>
+                  <div className="spr-tab-header-title">Academic Standing</div>
+                  <div className="spr-tab-header-subtitle">Current enrollment info</div>
                 </div>
               </div>
               <div className="spr-progress-body">
                 {[
-                  { label: "Units Completed", value: "36 / 120", pct: "30%", color: "orange" },
-                  { label: "Subjects Passed", value: "12 / 15", pct: "80%", color: "purple" },
+                  {
+                    label: "Year Level",
+                    value: profile.year_level && profile.year_level !== "—"
+                      ? `${profile.year_level}${profile.year_level === "1" ? "st" : profile.year_level === "2" ? "nd" : profile.year_level === "3" ? "rd" : "th"} Year`
+                      : "Not set",
+                    pct: profile.year_level && profile.year_level !== "—"
+                      ? `${(Number(profile.year_level) / 4) * 100}%`
+                      : "0%",
+                    color: "orange",
+                  },
+                  {
+                    label: "Current GWA",
+                    value: profile.gwa && profile.gwa !== "0.00" ? `${profile.gwa} / 4.00` : "No GWA yet",
+                    pct: profile.gwa && profile.gwa !== "0.00"
+                      ? `${Math.min((parseFloat(profile.gwa) / 4.0) * 100, 100)}%`
+                      : "0%",
+                    color: "purple",
+                  },
                 ].map((item) => (
                   <div className="spr-progress-item" key={item.label}>
                     <div className="spr-progress-labels">
@@ -524,7 +542,12 @@ export default function StudentProfile() {
               <div className="spr-acad-rows">
                 {[
                   { key: "Student ID", val: profile.student_number || "—" },
-                  { key: "Program", val: profile.course_name || "—" },
+                  {
+                    key: "Program",
+                    val: profile.program_code
+                      ? `${profile.program_code} — ${profile.course_name}`
+                      : profile.course_name || "—",
+                  },
                   { key: "Year Level & Section", val: profile.section_name || "Unassigned" },
                 ].map((row) => (
                   <div className="spr-acad-row" key={row.key}>

@@ -8,17 +8,72 @@ const TABS = [
   { key: 'contact',  label: 'Contact & Address' },
 ];
 
-const EXPERTISE_CATEGORIES = [
-  'Programming',
-  'Database',
-  'Networking',
-  'Web Development',
-  'Mobile Development',
-  'Data Science',
-  'Cybersecurity',
-  'Research',
-  'Other',
-];
+const EXPERTISE_MAP = {
+  'Programming': [
+    'Java', 'Python', 'C / C++', 'C#', 'JavaScript', 'TypeScript',
+    'PHP', 'Kotlin', 'Swift', 'Go', 'Ruby', 'Rust',
+    'Data Structures & Algorithms', 'Object-Oriented Programming',
+    'Discrete Mathematics', 'Integrative Programming',
+  ],
+  'Web Development': [
+    'HTML / CSS', 'React', 'Vue.js', 'Angular', 'Next.js',
+    'PHP / Laravel', 'Node.js / Express', 'Django / Flask',
+    'REST API Design', 'GraphQL',
+    'Electronic Commerce', 'Responsive Web Design',
+    'Server-Side Scripting', 'Client-Side Scripting',
+    'Web Security & Optimization', 'Web Frameworks',
+  ],
+  'Mobile Development': [
+    'Flutter', 'React Native', 'Android (Java/Kotlin)',
+    'iOS (Swift)', 'Cross-Platform Development',
+    'Mobile UI/UX', 'Mobile App Development',
+  ],
+  'Database': [
+    'MySQL / MariaDB', 'PostgreSQL', 'MongoDB', 'SQLite',
+    'Oracle DB', 'SQL Server', 'Redis',
+    'Database Design & Normalization', 'Information Management',
+    'Data Analytics', 'Data Warehousing',
+  ],
+  'Networking': [
+    'TCP/IP Fundamentals', 'Cisco Networking', 'Network Administration',
+    'Network Security', 'Wireless Networks',
+    'Cloud Networking (AWS/Azure/GCP)', 'VPN & Firewalls',
+    'Networking & Communication',
+  ],
+  'Systems': [
+    'System Analysis & Design', 'System Integration & Architecture',
+    'Platform Technologies', 'System Administration & Maintenance',
+    'Human-Computer Interaction', 'Emerging Technologies',
+    'IT Infrastructure', 'Operating Systems',
+  ],
+  'Security': [
+    'Information Assurance & Security', 'Ethical Hacking / Penetration Testing',
+    'Cryptography', 'Cybersecurity Fundamentals',
+    'Digital Forensics', 'Secure Software Development',
+  ],
+  'Research': [
+    'Capstone Project Management', 'Thesis Advising',
+    'Research Methods', 'Technical Writing',
+    'IT Practicum Supervision', 'Academic Research',
+  ],
+  'Management': [
+    'Technopreneurship', 'IT Project Management',
+    'Entrepreneurship', 'Business Analysis',
+    'Agile / Scrum', 'IT Governance',
+  ],
+  'Mathematics': [
+    'Discrete Structures', 'Quantitative Methods',
+    'Statistics & Probability', 'Linear Algebra',
+    'Calculus', 'Numerical Methods',
+  ],
+  'General Education': [
+    'Professional Ethics', 'Purposive Communication',
+    'Gender & Development', 'Environmental Science',
+    'Art Appreciation', 'Philippine History',
+    'Contemporary World', 'Science, Technology & Society',
+    'Physical Education', 'NSTP',
+  ],
+};
 
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -52,9 +107,10 @@ export default function FacultyProfile() {
   const [toast, setToast]         = useState(null);
 
   // Expertise state
-  const [newSkill, setNewSkill]       = useState('');
-  const [newCategory, setNewCategory] = useState('');
-  const [addingExp, setAddingExp]     = useState(false);
+  const [newSkill, setNewSkill]           = useState('');
+  const [newSkillOther, setNewSkillOther] = useState('');
+  const [newCategory, setNewCategory]     = useState('');
+  const [addingExp, setAddingExp]         = useState(false);
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
@@ -93,16 +149,18 @@ export default function FacultyProfile() {
   };
 
   const handleAddExpertise = async () => {
-    if (!newCategory) return;
+    const skillName = newSkill === '__other__' ? newSkillOther.trim() : newSkill.trim();
+    if (!newCategory || !skillName) return;
     setAddingExp(true);
     const res = await httpClient.post(API_ENDPOINTS.FACULTY.ADD_EXPERTISE, {
-      skillName:      newSkill.trim() || null,
+      skillName,
       skill_category: newCategory,
     });
     setAddingExp(false);
     if (res.success) {
       setProfile(p => ({ ...p, expertise: [...(p.expertise || []), res.data] }));
       setNewSkill('');
+      setNewSkillOther('');
       setNewCategory('');
       showToast('Expertise added.');
     } else {
@@ -491,25 +549,43 @@ export default function FacultyProfile() {
                 <select
                   className="fp-expertise-select"
                   value={newCategory}
-                  onChange={e => setNewCategory(e.target.value)}
+                  onChange={e => { setNewCategory(e.target.value); setNewSkill(''); }}
                 >
-                  <option value="">Select Category</option>
-                  {EXPERTISE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  <option value="">Category</option>
+                  {Object.keys(EXPERTISE_MAP).map(c => <option key={c}>{c}</option>)}
                 </select>
-                <div className="fp-expertise-input-wrap">
+                {newCategory && newSkill === '__other__' ? (
                   <input
                     className="fp-expertise-input"
                     type="text"
-                    placeholder="e.g. React, Python, SQL…"
-                    value={newSkill}
-                    onChange={e => setNewSkill(e.target.value)}
-                    onKeyUp={e => e.key === 'Enter' && handleAddExpertise()}
+                    placeholder="Describe your specialization…"
+                    value={newSkillOther}
+                    onChange={e => setNewSkillOther(e.target.value)}
+                    autoFocus
                   />
-                </div>
+                ) : (
+                  <select
+                    className="fp-expertise-select"
+                    value={newSkill}
+                    onChange={e => { setNewSkill(e.target.value); setNewSkillOther(''); }}
+                    disabled={!newCategory}
+                  >
+                    <option value="">Specialization</option>
+                    {(EXPERTISE_MAP[newCategory] || []).map(s => (
+                      <option key={s}>{s}</option>
+                    ))}
+                    <option value="__other__">Others (specify)</option>
+                  </select>
+                )}
                 <button
                   className="fp-expertise-add-btn"
                   onClick={handleAddExpertise}
-                  disabled={!newCategory || addingExp}
+                  disabled={
+                    !newCategory ||
+                    !newSkill ||
+                    (newSkill === '__other__' && !newSkillOther.trim()) ||
+                    addingExp
+                  }
                 >
                   {addingExp ? '…' : 'Add'}
                 </button>

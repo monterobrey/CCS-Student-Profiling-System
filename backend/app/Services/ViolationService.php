@@ -12,20 +12,27 @@ use Illuminate\Validation\ValidationException;
 class ViolationService
 {
     /**
-     * Get all violations, optionally filtered by department.
+     * Get all violations, scoped by program (chair) or department (secretary) or all (dean).
      */
-    public function getAllViolations($departmentId = null)
+    public function getAllViolations($departmentId = null, $programId = null)
     {
         $query = StudentViolation::with(['student.user', 'student.section', 'student.program', 'faculty', 'course', 'actionByUser'])
             ->whereNotNull('faculty_id');
 
-        if ($departmentId) {
-            $query->whereHas('student', function($q) use ($departmentId) {
-                $q->whereHas('program', function($pq) use ($departmentId) {
+        if ($programId) {
+            // Chair: scope strictly to their program
+            $query->whereHas('student', function ($q) use ($programId) {
+                $q->where('program_id', $programId);
+            });
+        } elseif ($departmentId) {
+            // Secretary: scope to their department
+            $query->whereHas('student', function ($q) use ($departmentId) {
+                $q->whereHas('program', function ($pq) use ($departmentId) {
                     $pq->where('department_id', $departmentId);
                 });
             });
         }
+        // Dean: no scope — sees everything
 
         return $query->latest()->get();
     }

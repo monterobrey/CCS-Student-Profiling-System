@@ -28,47 +28,86 @@ class AutoScheduleService
     private array $categoryMap = [
         'Programming' => [
             'codes'    => ['CCS102','CCS103','CCS107','CCS108','ITP102','ITP107'],
-            'keywords' => ['programming','algorithm','data structure','object','integrative','computing'],
+            'keywords' => [
+                'programming','algorithm','data structure','object','integrative','computing',
+                'java','python','c++','c#','javascript','typescript','kotlin','swift',
+                'discrete','object-oriented',
+            ],
         ],
         'Database' => [
             'codes'    => ['CCS110','ITP104'],
-            'keywords' => ['database','information management','data','sql'],
+            'keywords' => [
+                'database','information management','data','sql',
+                'mysql','postgresql','mongodb','oracle','redis','analytics',
+                'warehousing','normalization',
+            ],
         ],
         'Networking' => [
             'codes'    => ['CCS111','ITP105'],
-            'keywords' => ['network','communication','tcp','cisco'],
+            'keywords' => [
+                'network','communication','tcp','cisco',
+                'wireless','vpn','firewall','cloud networking',
+            ],
         ],
         'Web Development' => [
             'codes'    => ['ITEW1','ITEW2','ITEW3','ITEW4','ITEW5','ITEW6','ITP110'],
-            'keywords' => ['web','electronic commerce','scripting','responsive','framework','security'],
+            'keywords' => [
+                'web','electronic commerce','scripting','responsive','framework',
+                'react','vue','angular','laravel','node','django','graphql',
+                'html','css','rest api','server-side','client-side',
+            ],
         ],
         'Mobile Development' => [
             'codes'    => ['ITP107'],
-            'keywords' => ['mobile','android','flutter','app'],
+            'keywords' => [
+                'mobile','android','flutter','ios','swift','kotlin',
+                'react native','cross-platform','app development',
+            ],
         ],
         'Systems' => [
             'codes'    => ['CCS109','ITP103','ITP106','ITP109','ITP111','CCS112'],
-            'keywords' => ['system','analysis','design','integration','architecture','platform','administration','emerging','hci','human computer'],
+            'keywords' => [
+                'system','analysis','design','integration','architecture',
+                'platform','administration','emerging','hci','human computer',
+                'infrastructure','operating system',
+            ],
         ],
         'Security' => [
             'codes'    => ['CCS113'],
-            'keywords' => ['security','assurance','information assurance'],
+            'keywords' => [
+                'security','assurance','information assurance',
+                'ethical hacking','penetration','cryptography',
+                'cybersecurity','forensics','secure software',
+            ],
         ],
         'Mathematics' => [
             'codes'    => ['MAT101','CCS104','ITP101'],
-            'keywords' => ['mathematics','discrete','quantitative','statistics'],
+            'keywords' => [
+                'mathematics','discrete','quantitative','statistics',
+                'linear algebra','calculus','numerical','probability',
+            ],
         ],
         'Research' => [
             'codes'    => ['ITP108','ITP112'],
-            'keywords' => ['capstone','research','thesis','practicum'],
+            'keywords' => [
+                'capstone','research','thesis','practicum',
+                'technical writing','project management','supervision',
+            ],
         ],
         'Management' => [
             'codes'    => ['TEC101','ENT101'],
-            'keywords' => ['technopreneurship','entrepreneurship','management','project'],
+            'keywords' => [
+                'technopreneurship','entrepreneurship','management','project',
+                'agile','scrum','governance','business analysis',
+            ],
         ],
         'General Education' => [
             'codes'    => ['ETH101','COM101','GAD101','PSY100','HIS101','SOC101','STS101','HMN101','ENV101','RIZ101','NSTP1','NSTP2','PED101','PED102','PED103','PED104','ACT101'],
-            'keywords' => ['ethics','communication','gender','self','history','contemporary','science technology','art','environment','rizal','nstp','physical education','accounting','professional issues'],
+            'keywords' => [
+                'ethics','communication','gender','self','history','contemporary',
+                'science technology','art','environment','rizal','nstp',
+                'physical education','accounting','professional issues','professional ethics',
+            ],
         ],
     ];
 

@@ -18,13 +18,25 @@ class ViolationController extends Controller
 
     /**
      * Get all violations (for Dean and Chair).
+     * Dean sees all. Chair sees only their program. Secretary sees their department.
      */
     public function index(Request $request)
     {
         $user = $request->user();
-        $departmentId = ($user->isDepartmentChair() || $user->isSecretary()) ? $user->faculty->department_id : null;
-        
-        $violations = $this->violationService->getAllViolations($departmentId);
+        $departmentId = null;
+        $programId    = null;
+
+        if ($user->isDepartmentChair() && $user->faculty) {
+            $programId = $user->faculty->program_id;
+            // If no program assigned yet, fall back to department scope
+            if (!$programId) {
+                $departmentId = $user->faculty->department_id;
+            }
+        } elseif ($user->isSecretary() && $user->faculty) {
+            $departmentId = $user->faculty->department_id;
+        }
+
+        $violations = $this->violationService->getAllViolations($departmentId, $programId);
         return ApiResponse::success($violations);
     }
 

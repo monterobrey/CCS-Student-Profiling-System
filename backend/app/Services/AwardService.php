@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\AcademicAward;
 use App\Models\Student;
 use App\Models\Faculty;
-use App\Models\Schedule;
 use Illuminate\Support\Facades\DB;
 
 class AwardService
@@ -37,12 +36,8 @@ class AwardService
                 $q->where('department_id', $departmentId)
             );
         } elseif ($user->isFaculty()) {
-            $sectionIds = Schedule::where('faculty_id', $user->faculty->id)
-                ->pluck('section_id')
-                ->unique();
-            $query->whereHas('student', fn($q) =>
-                $q->whereIn('section_id', $sectionIds)
-            );
+            // Only show awards this faculty member personally recommended
+            $query->where('faculty_id', $user->faculty->id);
         } elseif ($user->isStudent()) {
             $query->where('student_id', $user->student->id);
         }

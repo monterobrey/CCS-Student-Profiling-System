@@ -63,6 +63,7 @@ export const API_ENDPOINTS = {
   },
   CURRICULUM: {
     LIST: "/dean/curriculum",
+    STUDENT_LIST: "/student/curriculum",
     STORE: "/dean/curriculum",
     BULK: "/dean/curriculum/bulk",
     IMPORT: "/dean/curriculum/import",

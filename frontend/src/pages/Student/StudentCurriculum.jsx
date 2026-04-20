@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "../../services/studentService";
 import { curriculumService } from "../../services/curriculumService";
@@ -10,13 +10,6 @@ const getYearSuffix = (y) => {
   if (y === 3) return "rd";
   return "th";
 };
-
-const typeClass = (t) =>
-  `scur-type-${String(t || "other")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")}`;
 
 export default function StudentCurriculum() {
   const [filterYear, setFilterYear] = useState("all");
@@ -49,7 +42,7 @@ export default function StudentCurriculum() {
     queryKey: ["student-curriculum", String(programId || "")],
     queryFn: async () => {
       if (!programId) return [];
-      const res = await curriculumService.getAll(programId);
+      const res = await curriculumService.getForStudent(programId);
       if (!res.ok) throw new Error(res.message || "Failed to load curriculum");
       return res.data ?? [];
     },
@@ -168,59 +161,68 @@ export default function StudentCurriculum() {
           const totalCourses = year.semesters.reduce((sum, s) => sum + s.courses.length, 0);
           const yNum = Number(year.year);
           return (
-            <div key={year.year} className="scur-year">
-              <div className="scur-year-head">
+            <div key={year.year} className="scur-year-block" data-year={year.year}>
+              <div className="scur-year-block-header">
                 <span className="scur-year-pill">
-                  {year.year}
-                  {Number.isFinite(yNum) ? getYearSuffix(yNum) : ""} Year
+                  {year.year}{Number.isFinite(yNum) ? getYearSuffix(yNum) : ""} Year
                 </span>
-                <span className="scur-year-count">
-                  {totalCourses} subject{totalCourses !== 1 ? "s" : ""}
+                <span className="scur-year-course-count">
+                  {totalCourses} course{totalCourses !== 1 ? "s" : ""}
                 </span>
               </div>
 
-              <div className="scur-sem-grid">
-                {year.semesters.map((sem) => (
-                  <div key={sem.semester} className="scur-sem">
-                    <div className="scur-sem-head">
-                      <span className="scur-sem-label">{sem.semester} Semester</span>
-                      <span className="scur-sem-badge">{sem.courses.length} subjects</span>
-                    </div>
+              <div className="scur-semesters-stack">
+                {year.semesters.map((sem) => {
+                  const semTotalUnits = sem.courses.reduce(
+                    (sum, item) => sum + (Number(item.course?.units) || 0),
+                    0
+                  );
+                  return (
+                    <div key={sem.semester} className="scur-semester-box">
+                      <div className="scur-semester-box-header">
+                        <span className="scur-semester-label">{sem.semester} Semester</span>
+                        <span className="scur-semester-count-badge">{sem.courses.length} subjects</span>
+                      </div>
 
-                    <div className="scur-table-wrap">
-                      <table className="scur-table">
+                      <table className="scur-sem-table">
                         <thead>
                           <tr>
                             <th>Code</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th className="scur-num">Lec</th>
-                            <th className="scur-num">Lab</th>
-                            <th className="scur-num">Units</th>
+                            <th className="scur-unit-cell">Lec</th>
+                            <th className="scur-unit-cell">Lab</th>
+                            <th className="scur-unit-cell">Units</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sem.courses.map((item) => (
                             <tr key={item.id}>
                               <td>
-                                <span className="scur-code">{item.course?.course_code ?? "—"}</span>
+                                <span className="scur-code-badge">{item.course?.course_code ?? "—"}</span>
                               </td>
-                              <td className="scur-name">{item.course?.course_name ?? "—"}</td>
+                              <td>{item.course?.course_name ?? "—"}</td>
                               <td>
-                                <span className={`scur-type ${typeClass(item.course?.type)}`}>
+                                <span className={`scur-type-badge scur-type-${String(item.course?.type || "other").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
                                   {item.course?.type ?? "—"}
                                 </span>
                               </td>
-                              <td className="scur-num">{item.course?.lec_units ?? "—"}</td>
-                              <td className="scur-num">{item.course?.lab_units ?? "—"}</td>
-                              <td className="scur-num scur-units">{item.course?.units ?? "—"}</td>
+                              <td className="scur-unit-cell">{item.course?.lec_units ?? "—"}</td>
+                              <td className="scur-unit-cell">{item.course?.lab_units ?? "—"}</td>
+                              <td className="scur-unit-cell scur-unit-total">{item.course?.units ?? "—"}</td>
                             </tr>
                           ))}
                         </tbody>
+                        <tfoot>
+                          <tr className="scur-total-row">
+                            <td colSpan={5} className="scur-total-label">Total Units</td>
+                            <td className="scur-unit-cell scur-total-units">{semTotalUnits}</td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

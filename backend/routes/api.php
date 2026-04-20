@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Student Routes
     Route::middleware('role:student')->group(function () {
         Route::get('/student/profile', [StudentProfileController::class, 'show']);
+        Route::get('/student/curriculum', [CurriculumController::class, 'index']);
         Route::post('/student/profile', [StudentController::class, 'updateProfile']);
         Route::post('/student/guardian', [StudentProfileController::class, 'updateGuardian']);
         Route::post('/student/skills', [StudentProfileController::class, 'addSkill']);

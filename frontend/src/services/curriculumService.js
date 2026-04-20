@@ -5,11 +5,19 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api
 
 export const curriculumService = {
   /**
-   * Get curriculum entries, optionally filtered by program_id
+   * Get curriculum entries, optionally filtered by program_id (dean/secretary)
    */
   getAll: async (programId = null) => {
     const params = programId ? `?program_id=${programId}` : '';
     return httpClient.get(`${API_ENDPOINTS.CURRICULUM.LIST}${params}`);
+  },
+
+  /**
+   * Get curriculum entries for the logged-in student (student role)
+   */
+  getForStudent: async (programId = null) => {
+    const params = programId ? `?program_id=${programId}` : '';
+    return httpClient.get(`${API_ENDPOINTS.CURRICULUM.STUDENT_LIST}${params}`);
   },
 
   /**

@@ -1,69 +1,71 @@
-/* Student Curriculum (read-only) */
+/* ===========================
+   PAGE
+=========================== */
+
 .scur-page {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .scur-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
+  align-items: center;
 }
 
 .scur-title {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: #1a0a00;
-  margin: 0 0 4px;
+  margin: 0 0 2px;
 }
 
 .scur-sub {
-  font-size: 13.5px;
-  color: #9a7a6e;
+  font-size: 13px;
+  color: #9a8070;
   margin: 0;
 }
 
 .scur-program {
-  color: #FF6B1A;
+  color: #ff6b1a;
   font-weight: 700;
 }
 
+/* ===========================
+   FILTER BAR
+=========================== */
+
 .scur-filter {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  background: #fff;
+}
+
+.scur-search,
+.scur-filter select {
+  padding: 10px 14px;
+  border-radius: 10px;
   border: 1.5px solid #f0e8e0;
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 16px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+  color: #1a0a00;
+  transition: border-color 0.2s;
 }
 
 .scur-search {
   flex: 1;
-  min-width: 240px;
-  padding: 10px 12px;
-  border: 1.5px solid #e8d8d0;
-  border-radius: 10px;
-  font-size: 13.5px;
-  outline: none;
-  background: #fff;
-}
-.scur-search:focus {
-  border-color: #FF6B1A;
-  box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.10);
 }
 
-.scur-filter select {
-  padding: 10px 12px;
-  border: 1.5px solid #e8d8d0;
-  border-radius: 10px;
-  font-size: 13.5px;
-  background: #fff;
-  outline: none;
+.scur-search:focus,
+.scur-filter select:focus {
+  border-color: #ff6b1a;
 }
-.scur-filter select:focus { border-color: #FF6B1A; }
+
+/* ===========================
+   STATES
+=========================== */
 
 .scur-state {
   display: flex;
@@ -71,7 +73,7 @@
   align-items: center;
   justify-content: center;
   padding: 42px 0;
-  color: #9a7a6e;
+  color: #9a8070;
   font-size: 14px;
 }
 
@@ -80,11 +82,14 @@
   height: 18px;
   border-radius: 50%;
   border: 2.5px solid #f0e8e0;
-  border-top-color: #FF6B1A;
-  animation: scur-spin .7s linear infinite;
+  border-top-color: #ff6b1a;
+  animation: scur-spin 0.7s linear infinite;
   display: inline-block;
 }
-@keyframes scur-spin { to { transform: rotate(360deg); } }
+
+@keyframes scur-spin {
+  to { transform: rotate(360deg); }
+}
 
 .scur-empty {
   background: #fff;
@@ -93,175 +98,232 @@
   padding: 52px 24px;
   text-align: center;
 }
-.scur-empty-error { border-style: solid; border-color: #f5c6c6; }
+
+.scur-empty-error {
+  border-style: solid;
+  border-color: #f5c6c6;
+}
+
 .scur-empty-title {
   margin: 0 0 6px;
   font-size: 15px;
   font-weight: 700;
   color: #1a0a00;
 }
+
 .scur-empty-sub {
   margin: 0;
   font-size: 13px;
-  color: #9a7a6e;
+  color: #9a8070;
 }
 
 .scur-retry {
   margin-top: 14px;
   padding: 9px 14px;
   border-radius: 10px;
-  border: 1.5px solid #e8d8d0;
+  border: 1.5px solid #e0d8d0;
   background: #fff;
   cursor: pointer;
   font-weight: 600;
-  color: #5a3a2e;
-}
-.scur-retry:hover { background: #fff8f5; border-color: #ffd4b8; }
-
-.scur-year {
-  margin-bottom: 18px;
+  font-size: 13px;
+  color: #4a3020;
+  transition: border-color 0.2s;
 }
 
-.scur-year-head {
+.scur-retry:hover {
+  border-color: #ff6b1a;
+  color: #ff6b1a;
+}
+
+/* ===========================
+   YEAR BLOCK
+=========================== */
+
+.scur-year-block {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1.5px solid #f0e8e0;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(26, 10, 0, 0.04);
+}
+
+.scur-year-block[data-year="1"] { border-top: 4px solid #ff6b1a; }
+.scur-year-block[data-year="2"] { border-top: 4px solid #3b82f6; }
+.scur-year-block[data-year="3"] { border-top: 4px solid #10b981; }
+.scur-year-block[data-year="4"] { border-top: 4px solid #8b5cf6; }
+
+.scur-year-block-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 10px 2px 10px;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #fffaf8;
+  border-bottom: 1px solid #f0e8e0;
 }
 
 .scur-year-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #fff5ef;
-  border: 1px solid #ffd4b8;
-  color: #FF6B1A;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 800;
-  font-size: 12.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-.scur-year-count {
-  font-size: 12.5px;
-  color: #9a7a6e;
+.scur-year-block[data-year="1"] .scur-year-pill { background: #fff1e6; color: #ff6b1a; }
+.scur-year-block[data-year="2"] .scur-year-pill { background: #eff6ff; color: #3b82f6; }
+.scur-year-block[data-year="3"] .scur-year-pill { background: #f0fdf4; color: #10b981; }
+.scur-year-block[data-year="4"] .scur-year-pill { background: #f5f3ff; color: #8b5cf6; }
+
+.scur-year-course-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9a8070;
   font-weight: 600;
 }
 
-.scur-sem-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 14px;
+/* ===========================
+   SEMESTERS — stacked full-width
+=========================== */
+
+.scur-semesters-stack {
+  display: flex;
+  flex-direction: column;
 }
 
-.scur-sem {
-  background: #fff;
-  border: 1.5px solid #f0e8e0;
-  border-radius: 14px;
-  overflow: hidden;
+.scur-semester-box {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0e8e0;
 }
 
-.scur-sem-head {
-  padding: 14px 14px 12px;
+.scur-semester-box:last-child {
+  border-bottom: none;
+}
+
+.scur-semester-box-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  border-bottom: 1px solid #f5ede8;
-  background: linear-gradient(135deg, #fff 0%, #fffaf7 100%);
+  margin-bottom: 14px;
 }
-.scur-sem-label {
+
+.scur-semester-label {
+  font-size: 12px;
   font-weight: 800;
-  font-size: 13px;
-  color: #1a0a00;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9a8070;
 }
-.scur-sem-badge {
-  font-size: 11.5px;
-  color: #9a7a6e;
-  background: #fdf8f5;
-  border: 1px solid #f0e8e0;
-  padding: 3px 8px;
-  border-radius: 999px;
+
+.scur-semester-count-badge {
+  font-size: 11px;
   font-weight: 700;
-  white-space: nowrap;
+  background: #f5f0ec;
+  color: #9a8070;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-.scur-table-wrap {
-  width: 100%;
-  overflow: auto;
-}
+/* ===========================
+   COURSE TABLE
+=========================== */
 
-.scur-table {
+.scur-sem-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.scur-sem-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #b89f90;
+  border-bottom: 1px solid #f0e8e0;
+}
+
+.scur-sem-table td {
+  padding: 10px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #faf8f6;
+  color: #1a0a00;
+  vertical-align: middle;
+}
+
+.scur-sem-table tr:last-child td {
+  border-bottom: none;
+}
+
+.scur-sem-table tbody tr:hover td {
+  background: #faf8f6;
+}
+
+.scur-unit-cell {
+  text-align: center;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.scur-unit-total {
+  color: #1a0a00;
+  font-weight: 700;
   font-size: 13px;
 }
 
-.scur-table thead th {
-  text-align: left;
-  font-size: 11.5px;
-  letter-spacing: .3px;
-  color: #9a7a6e;
-  padding: 10px 14px;
-  background: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+/* ===========================
+   TOTAL ROW
+=========================== */
+
+.scur-total-row td {
+  border-top: 1.5px solid #f0e8e0 !important;
+  border-bottom: none !important;
+  background: #fffaf8;
+  padding: 10px 10px;
 }
 
-.scur-table tbody td {
-  padding: 10px 14px;
-  border-top: 1px solid #f5ede8;
-  vertical-align: top;
-  color: #1a0a00;
-}
-
-.scur-code {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #fdf8f5;
-  border: 1px solid #f0e8e0;
-  color: #5a3a2e;
+.scur-total-label {
+  font-size: 11px;
   font-weight: 800;
-  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #9a8070;
+  text-align: right;
+}
+
+.scur-total-units {
+  color: #ff6b1a !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+}
+
+/* ===========================
+   BADGES
+=========================== */
+
+.scur-code-badge {
+  background: #fff1e6;
+  color: #ff6b1a;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid #fde8d4;
   white-space: nowrap;
 }
 
-.scur-name {
-  min-width: 220px;
-  color: #2a140a;
-  font-weight: 600;
+.scur-type-badge {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.scur-num { text-align: right; white-space: nowrap; }
-.scur-units { font-weight: 900; color: #FF6B1A; }
-
-.scur-type {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 11.5px;
-  border: 1px solid #e8d8d0;
-  background: #fff;
-  color: #6b5b52;
-  white-space: nowrap;
-}
-
-/* common variants (fallback will still look fine) */
-.scur-type-major,
-.scur-type-core { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-.scur-type-elective { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-.scur-type-ge,
-.scur-type-general-education { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-.scur-type-minor { background: #fdf4ff; color: #7e22ce; border-color: #f5d0fe; }
-
-@media (max-width: 720px) {
-  .scur-filter { flex-direction: column; align-items: stretch; }
-  .scur-search { min-width: 0; }
-  .scur-sem-grid { grid-template-columns: 1fr; }
-}
-
+.scur-type-lec     { background: #e0f2fe; color: #0369a1; }
+.scur-type-lab     { background: #fef3c7; color: #92400e; }
+/* CSS can't use + in class names directly, handled via the replace in JSX producing "lec-lab" */
+.scur-type-lec-lab { background: #f0fdf4; color: #166534; }

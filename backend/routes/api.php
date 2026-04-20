@@ -19,6 +19,8 @@ use App\Http\Controllers\Functions\ScheduleController;
 use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
+use App\Http\Controllers\Functions\NotificationController;
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
@@ -30,6 +32,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user()->load($request->user()->role === 'student' ? 'student' : ($request->user()->isFacultyMember() ? 'faculty' : []));
     });
+
+    // Notifications (all roles)
+    Route::get('/notifications',           [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::post('/notifications/{id}/read',[NotificationController::class, 'markRead']);
 
     // Profiling Query Engine (Dean, Chair, Secretary)
     Route::get('/profiling/report', [ProfilingController::class, 'report'])->middleware('role:dean,department_chair,secretary');

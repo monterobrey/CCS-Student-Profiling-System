@@ -9,6 +9,7 @@ use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\StudentViolation;
 use App\Notifications\SetupPasswordNotification;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -19,6 +20,12 @@ use Illuminate\Validation\ValidationException;
  */
 class FacultyService
 {
+    protected NotificationService $notifications;
+
+    public function __construct(NotificationService $notifications)
+    {
+        $this->notifications = $notifications;
+    }
     /**
      * Create a new faculty member.
      */
@@ -162,18 +169,23 @@ class FacultyService
 
         DB::transaction(function () use ($facultyId, $data, &$violations) {
             foreach ($data['student_ids'] as $studentId) {
-                $violations[] = StudentViolation::create([
-                    'student_id' => $studentId,
-                    'faculty_id' => $facultyId,
-                    'course_id' => $data['course_id'] ?? null,
+                $violation = StudentViolation::create([
+                    'student_id'    => $studentId,
+                    'faculty_id'    => $facultyId,
+                    'course_id'     => $data['course_id'] ?? null,
                     'violationType' => $data['violationType'],
-                    'severity' => $data['severity'],
-                    'description' => $data['description'],
-                    'dateReported' => $data['dateReported'] ?? now()->toDateString(),
+                    'severity'      => $data['severity'],
+                    'description'   => $data['description'],
+                    'dateReported'  => $data['dateReported'] ?? now()->toDateString(),
                     'incident_time' => $data['incident_time'] ?? null,
-                    'location' => $data['location'] ?? null,
-                    'status' => 'Pending',
+                    'location'      => $data['location'] ?? null,
+                    'status'        => 'Pending',
                 ]);
+
+                $violation->load('student.user');
+                $this->notifications->violationReported($violation);
+
+                $violations[] = $violation;
             }
         });
 

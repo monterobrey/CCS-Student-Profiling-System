@@ -22,3 +22,4 @@ export { violationService } from './violationService';
 export { awardService } from './awardService';
 export { scheduleService } from './scheduleService';
 export { archiveService } from './archiveService';
+export { notificationService } from './notificationService';

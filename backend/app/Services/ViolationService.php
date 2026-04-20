@@ -3,14 +3,18 @@
 namespace App\Services;
 
 use App\Models\StudentViolation;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Service for student violation management.
- */
 class ViolationService
 {
+    protected NotificationService $notifications;
+
+    public function __construct(NotificationService $notifications)
+    {
+        $this->notifications = $notifications;
+    }
     /**
      * Get all violations, scoped by program (chair) or department (secretary) or all (dean).
      */
@@ -61,6 +65,10 @@ class ViolationService
 
         $violation->update($payload);
 
-        return $violation->load(['student.user', 'student.section', 'faculty', 'course', 'actionByUser']);
+        $violation->load(['student.user', 'student.section', 'faculty', 'course', 'actionByUser']);
+
+        $this->notifications->violationUpdated($violation);
+
+        return $violation;
     }
 }

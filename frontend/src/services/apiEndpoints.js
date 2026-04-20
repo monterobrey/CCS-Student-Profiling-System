@@ -84,6 +84,7 @@ export const API_ENDPOINTS = {
   },
   SCHEDULE: {
     LIST: "/schedules",
+    ACTIVE_SEMESTER: "/schedules/active-semester",
     CREATE: "/schedules",
     IMPORT: "/schedules/import",
     AUTO_GENERATE: "/schedules/auto-generate",

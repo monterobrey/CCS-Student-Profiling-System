@@ -5,11 +5,6 @@
   flex-direction: column;
   gap: 2px;
   overflow-x: hidden;
-  max-width: 1400px;        /* add this */
-  margin: 0 auto;           /* add this */
-  width: 100%;              /* add this */
-  padding: 0 24px;          /* add this */
-  box-sizing: border-box;   /* add this */
 }
 
 .page-header {

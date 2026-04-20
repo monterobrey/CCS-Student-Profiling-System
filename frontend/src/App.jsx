@@ -200,6 +200,14 @@ function App() {
               }
             />
             <Route
+              path="/department-chair/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <DepartmentChairAward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/department-chair/schedule"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>

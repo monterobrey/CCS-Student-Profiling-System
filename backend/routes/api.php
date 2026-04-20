@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:student')->group(function () {
         Route::get('/student/profile', [StudentProfileController::class, 'show']);
         Route::get('/student/curriculum', [CurriculumController::class, 'index']);
+        Route::get('/student/schedule', [FacultyScheduleController::class, 'studentSchedule']);
         Route::post('/student/profile', [StudentController::class, 'updateProfile']);
         Route::post('/student/guardian', [StudentProfileController::class, 'updateGuardian']);
         Route::post('/student/skills', [StudentProfileController::class, 'addSkill']);

@@ -1,201 +1,358 @@
-import { useState, useMemo } from 'react'
-import '../../styles/Student/StudentSchedule.css'
+import React, { useMemo, useState } from "react";
+import styles from "../../styles/Student/StudentSchedule.module.css";
+import { useStudentSchedule } from "../../hooks/useStudentSchedule";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const DAYS      = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const TIMES     = ['7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM']
-const CELL_H    = 72
-const START_HR  = 7
-const TODAY_COL = 2
-
-const MONTH_DATES = [
-  null, null, null, null, null, 1, 2,
-  3, 4, 5, 6, 7, 8, 9,
-  10, 11, 12, 13, 14, 15, 16,
-  17, 18, 19, 20, 21, 22, 23,
-  24, 25, 26, 27, 28, 29, 30,
-  31, null, null, null, null, null, null,
-]
-
-const INITIAL_EVENTS = [
-  { id: 1, name: 'IT Elective',      code: 'IT 401', room: 'Room 301', day: 0, start: '7:30 AM',  end: '9:00 AM',  bg: '#FF9800', fg: '#fff'    },
-  { id: 2, name: 'IT Elective',      code: 'IT 402', room: 'Room 302', day: 1, start: '8:30 AM',  end: '10:00 AM', bg: '#B2DFDB', fg: '#004D40' },
-  { id: 3, name: 'IT Elective',      code: 'IT 403', room: 'Room 303', day: 2, start: '7:00 AM',  end: '10:00 AM', bg: '#29B6F6', fg: '#fff'    },
-  { id: 4, name: 'Graphic Design',   code: 'GD 201', room: 'Lab 2',    day: 2, start: '10:30 AM', end: '12:00 PM', bg: '#66BB6A', fg: '#fff'    },
-  { id: 5, name: 'Event Faculty',    code: 'EF 101', room: 'Room 105', day: 3, start: '10:30 AM', end: '12:00 PM', bg: '#FFA726', fg: '#fff'    },
-  { id: 6, name: 'Class Exhibition', code: 'CE 301', room: 'Hall A',   day: 0, start: '1:00 PM',  end: '2:30 PM',  bg: '#EF9A9A', fg: '#7f0000' },
-  { id: 7, name: 'Design Review',    code: 'DR 201', room: 'Studio 1', day: 1, start: '1:30 PM',  end: '3:00 PM',  bg: '#FF8A65', fg: '#fff'    },
-  { id: 8, name: 'English Exam',     code: 'EN 102', room: 'Room 201', day: 4, start: '1:00 PM',  end: '2:30 PM',  bg: '#FFF176', fg: '#5d4037' },
-  { id: 9, name: 'Workshop',         code: 'WS 101', room: 'Lab 3',    day: 5, start: '10:00 AM', end: '12:00 PM', bg: '#CE93D8', fg: '#4a148c' },
-]
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function toMins(timeStr) {
-  const [time, mod] = timeStr.split(' ')
-  let [h, m] = time.split(':').map(Number)
-  if (!m) m = 0
-  if (mod === 'PM' && h !== 12) h += 12
-  if (mod === 'AM' && h === 12) h = 0
-  return h * 60 + m
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
 const StudentSchedule = () => {
-  const [events]       = useState(INITIAL_EVENTS)
-  const [weekOffset, setWeekOffset]   = useState(0)
-  const [selectedId, setSelectedId]   = useState(null)
+  const cx = (...classKeys) =>
+    classKeys
+      .filter(Boolean)
+      .map((k) => styles[k])
+      .filter(Boolean)
+      .join(" ");
 
-  const weekDates = useMemo(
-    () => DAYS.map((_, i) => 12 + weekOffset * 7 + i),
-    [weekOffset]
-  )
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const { data: schedules = [], isLoading } = useStudentSchedule();
 
-  const currentHighlight = weekDates[TODAY_COL]
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  const todayEvents = useMemo(
-    () => events.filter((e) => e.day === TODAY_COL),
-    [events]
-  )
+  const toMinutes = (timeValue) => {
+    if (!timeValue) return -1;
+    const [hours, minutes] = timeValue.slice(0, 5).split(":").map(Number);
+    return hours * 60 + minutes;
+  };
 
-  const getEventStyle = (ev) => {
-    const startMins = toMins(ev.start)
-    const endMins   = toMins(ev.end)
-    const top       = ((startMins - START_HR * 60) / 60) * CELL_H
-    const height    = ((endMins - startMins) / 60) * CELL_H - 4
-    const isActive  = selectedId === ev.id
-
-    return {
-      position:     'absolute',
-      top:          `${top}px`,
-      height:       `${height}px`,
-      left:         `calc(${ev.day} * (100% / 7) + 5px)`,
-      width:        `calc(100% / 7 - 10px)`,
-      background:   ev.bg,
-      color:        ev.fg,
-      zIndex:       isActive ? 50 : 1,
-      outline:      isActive ? '2px solid #1976D2' : 'none',
-      outlineOffset: '1px',
+  // Generate 30-min slots from 7:00 AM to 9:00 PM
+  const slotRanges = useMemo(() => {    const slots = [];
+    const START = 7 * 60;   // 7:00 AM in minutes
+    const END   = 21 * 60;  // 9:00 PM in minutes
+    for (let t = START; t < END; t += 30) {
+      const fmtTime = (mins) => {
+        const h24 = Math.floor(mins / 60);
+        const m   = mins % 60;
+        const suffix = h24 >= 12 ? "PM" : "AM";
+        const h12  = h24 % 12 || 12;
+        return `${h12}:${String(m).padStart(2, "0")} ${suffix}`;
+      };
+      slots.push({
+        label: `${fmtTime(t)} - ${fmtTime(t + 30)}`,
+        start: t,
+        end:   t + 30,
+      });
     }
-  }
+    return slots;
+  }, []);
 
-  const isToday = (colIdx) => colIdx === TODAY_COL && weekOffset === 0
+  const now = new Date();
+  const currentDay = days[now.getDay() - 1] || "";
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const toggleSelected = (id) => setSelectedId((prev) => (prev === id ? null : id))
+  const stats = useMemo(() => {
+    const total = schedules.length;
+    const today = schedules.filter((s) => s.dayOfWeek === currentDay).length;
+    const upcoming = schedules.filter(
+      (s) => s.dayOfWeek === currentDay && toMinutes(s.startTime) > currentMinutes
+    ).length;
+    const morning = schedules.filter((s) => toMinutes(s.startTime) < 12 * 60).length;
+    const afternoon = schedules.filter((s) => toMinutes(s.startTime) >= 12 * 60).length;
+    return { total, today, upcoming, morning, afternoon };
+  }, [schedules, currentDay, currentMinutes]);
+
+  const getScheduleForCell = (day, slot) =>
+    schedules.find((s) => {
+      if (s.dayOfWeek !== day) return false;
+      const start = toMinutes(s.startTime);
+      const end = toMinutes(s.endTime);
+      return start < slot.end && end > slot.start;
+    });
+
+  const isScheduleStartSlot = (schedule, slot) => {
+    if (!schedule) return false;
+    const start = toMinutes(schedule.startTime);
+    return start >= slot.start && start < slot.end;
+  };
+
+  const getSlotSpan = (schedule) => {
+    if (!schedule) return 1;
+    const start = toMinutes(schedule.startTime);
+    const end = toMinutes(schedule.endTime);
+    const duration = Math.max(30, end - start);
+    return Math.max(1, Math.ceil(duration / 30));
+  };
+
+  const getSubjectName = (schedule) =>
+    schedule?.course?.course_name ||
+    schedule?.course?.subject_name ||
+    schedule?.course?.name ||
+    "Untitled Subject";
+
+  const subjectPalettes = [
+    { bg: "#eff6ff", border: "#60a5fa", code: "#1d4ed8", text: "#1e3a8a", meta: "#1e40af" },
+    { bg: "#f0fdf4", border: "#4ade80", code: "#15803d", text: "#14532d", meta: "#166534" },
+    { bg: "#faf5ff", border: "#c084fc", code: "#7e22ce", text: "#581c87", meta: "#6b21a8" },
+    { bg: "#fff7ed", border: "#fb923c", code: "#c2410c", text: "#7c2d12", meta: "#9a3412" },
+    { bg: "#fef2f2", border: "#f87171", code: "#b91c1c", text: "#7f1d1d", meta: "#991b1b" },
+    { bg: "#ecfeff", border: "#22d3ee", code: "#0e7490", text: "#164e63", meta: "#155e75" },
+    { bg: "#fefce8", border: "#facc15", code: "#a16207", text: "#713f12", meta: "#854d0e" },
+  ];
+
+  const getSubjectPalette = (schedule) => {
+    const key = `${schedule?.course?.course_code || ""}-${getSubjectName(schedule)}`;
+    const hash = key.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return subjectPalettes[hash % subjectPalettes.length];
+  };
+
+  const getFacultyName = (schedule) => {
+    const f = schedule?.faculty;
+    if (!f) return "TBA";
+    if (f.user?.name) return f.user.name;
+    const first = f.first_name || f.user?.first_name || "";
+    const last = f.last_name || f.user?.last_name || "";
+    return [first, last].filter(Boolean).join(" ") || "TBA";
+  };
+
+  const formatTime = (t) => {
+    if (!t) return "—";
+    const [h, m] = t.slice(0, 5).split(":").map(Number);
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+  };
 
   return (
-    <div className="wrap">
-      {/* ── Main Calendar ── */}
-      <div className="main">
-        <div className="cal-area">
-          <div className="cal-inner">
-            {/* Day Headers */}
-            <div className="day-headers">
-              <div className="time-spacer"></div>
-              {DAYS.map((day, i) => (
-                <div key={day} className={`dh${isToday(i) ? ' today' : ''}`}>
-                  <span className="dh-name">{day.slice(0, 3)}</span>
-                  <span className="dh-num">{weekDates[i]}</span>
+    <div className={styles["faculty-page"]}>
+
+      {/* Header */}
+      <div className={styles["page-header"]}>
+        <div>
+          <h2 className={styles["page-title"]}>My Class Schedule</h2>
+          <p className={styles["page-sub"]}>Your enrolled subjects and class times for this semester.</p>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className={styles["stats-grid"]}>
+        <div className={cx("stat-card", "stat-card-blue")}>
+          <div className={cx("stat-icon", "stat-icon-blue")}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M6 10h12M8 14h8M10 18h4" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-blue")}>{stats.total}</span>
+            <span className={styles["stat-label"]}>TOTAL SUBJECTS</span>
+          </div>
+        </div>
+
+        <div className={cx("stat-card", "stat-card-green")}>
+          <div className={cx("stat-icon", "stat-icon-green")}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8 7V3m8 4V3M5 10h14M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-green")}>{stats.today}</span>
+            <span className={styles["stat-label"]}>TODAY'S CLASSES</span>
+          </div>
+        </div>
+
+        <div className={cx("stat-card", "stat-card-purple")}>
+          <div className={cx("stat-icon", "stat-icon-purple")}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 8v5l3 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={styles["stat-number"]}>{stats.upcoming}</span>
+            <span className={styles["stat-label"]}>UPCOMING</span>
+          </div>
+        </div>
+
+        <div className={cx("stat-card", "stat-card-orange")}>
+          <div className={cx("stat-icon", "stat-icon-orange")}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v3M12 18v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M3 12h3M18 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" strokeWidth="2" strokeLinecap="round" />
+              <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-orange")}>{stats.morning}</span>
+            <span className={styles["stat-label"]}>MORNING</span>
+          </div>
+        </div>
+
+        <div className={cx("stat-card", "stat-card-red")}>
+          <div className={cx("stat-icon", "stat-icon-red")}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3a9 9 0 1 0 9 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 7v6l4 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M21 12a9 9 0 0 0-9-9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className={styles["stat-content"]}>
+            <span className={cx("stat-number", "stat-number-red")}>{stats.afternoon}</span>
+            <span className={styles["stat-label"]}>AFTERNOON</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar */}
+      <div className={styles["calendar-card"]}>
+        {isLoading ? (
+          <div className={styles["loading-state"]}>
+            <div className={styles["spinner"]} />
+            <p>Loading your schedule...</p>
+          </div>
+        ) : schedules.length === 0 ? (
+          <div className={styles["empty-state"]}>
+            <svg viewBox="0 0 48 48" fill="none" width="48" height="48">
+              <rect x="6" y="8" width="36" height="34" rx="4" stroke="#e0d8d0" strokeWidth="2" />
+              <path d="M16 4v8M32 4v8M6 18h36" stroke="#e0d8d0" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <p>No schedule assigned yet.</p>
+            <span>Your class schedule will appear here once your section is assigned.</span>
+          </div>
+        ) : (
+          <div className={styles["calendar-wrapper"]}>
+            <div className={styles["calendar-grid"]}>
+              {/* Header */}
+              <div className={styles["time-header"]}></div>
+              {days.map((day) => (
+                <div
+                  key={day}
+                  className={cx("day-header", day === currentDay && "day-header-today")}
+                >
+                  {day}
                 </div>
               ))}
-            </div>
 
-            {/* Time Grid */}
-            <div className="time-grid">
-              <div className="time-col">
-                {TIMES.map((t) => (
-                  <div key={t} className="t-label">{t}</div>
-                ))}
-              </div>
-              <div className="grid-cols">
-                {/* Background cells */}
-                {DAYS.map((day, di) => (
-                  <div key={`col-${di}`} className="g-col">
-                    {TIMES.map((t) => (
-                      <div key={t} className="g-cell"></div>
-                    ))}
+              {/* Time Grid */}
+              {slotRanges.map((slot, i) => (
+                <React.Fragment key={i}>
+                  <div className={styles["time-label"]}>
+                    {slot.label}
                   </div>
-                ))}
-
-                {/* Event blocks */}
-                {events.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="evt"
-                    style={getEventStyle(ev)}
-                    onClick={() => toggleSelected(ev.id)}
-                  >
-                    <div className="evt-name">{ev.name}</div>
-                    <div className="evt-time">{ev.start} - {ev.end}</div>
-                  </div>
-                ))}
-              </div>
+                  {days.map((day, j) => {
+                    const schedule = getScheduleForCell(day, slot);
+                    const isStartSlot = isScheduleStartSlot(schedule, slot);
+                    const slotSpan = getSlotSpan(schedule);
+                    const palette = schedule ? getSubjectPalette(schedule) : null;
+                    const subjectName = getSubjectName(schedule);
+                    return (
+                      <div
+                        key={j}
+                        className={cx(
+                          "grid-cell",
+                          schedule && !isStartSlot && "grid-cell-continuation"
+                        )}
+                        onClick={() => schedule && isStartSlot && setSelectedSchedule(schedule)}
+                        style={{
+                          cursor: schedule && isStartSlot ? "pointer" : "default",
+                        }}
+                        title={
+                          schedule
+                            ? `${schedule.course?.course_code || ""} | ${subjectName} | ${schedule.room || "TBA"}`
+                            : ""
+                        }
+                      >
+                        {schedule && isStartSlot && (
+                          <div
+                            className={cx("subject-chip", "subject-chip-block")}
+                            style={{
+                              height: `calc(${slotSpan} * 35px - 4px)`,
+                              backgroundColor: palette?.bg,
+                              borderColor: palette?.border,
+                            }}
+                          >
+                            <div className={styles["subject-chip-code"]} style={{ color: palette?.code }}>
+                              {schedule.course?.course_code || "SUBJECT"}
+                            </div>
+                            <div className={styles["subject-chip-name"]} style={{ color: palette?.text }}>
+                              {subjectName}
+                            </div>
+                            <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
+                              {schedule.room || "TBA"}
+                            </div>
+                            <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
+                              {getFacultyName(schedule)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* ── Right Panel ── */}
-      <div className="right">
-        {/* Mini Calendar */}
-        <div className="mini-cal">
-          <div className="mini-hdr">
-            <h3>August 2020</h3>
-            <div className="mini-nav">
-              <button onClick={() => setWeekOffset((w) => w - 1)}>&#8249;</button>
-              <button onClick={() => setWeekOffset((w) => w + 1)}>&#8250;</button>
-            </div>
-          </div>
-          <div className="mini-days">
-            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-              <span key={i}>{d}</span>
-            ))}
-          </div>
-          <div className="mini-grid">
-            {MONTH_DATES.map((d, i) => (
-              <span
-                key={i}
-                className={[
-                  d === null ? 'empty' : '',
-                  d === currentHighlight ? 'cur' : '',
-                  d !== null && weekDates.includes(d) && d !== currentHighlight ? 'hi' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Class List */}
-        <div className="class-list">
-          <div className="cl-hdr">
-            <h3>Class list</h3>
-            <a href="#" onClick={(e) => e.preventDefault()}>View all</a>
-          </div>
-          <div className="cl-sub">Today, Aug 14</div>
-          {todayEvents.map((ev) => (
-            <div
-              key={`card-${ev.id}`}
-              className={`cl-card${selectedId === ev.id ? ' card-active' : ''}`}
-              style={{ background: ev.bg }}
-              onClick={() => toggleSelected(ev.id)}
-            >
-              <div className="cl-card-inner">
-                <div className="cl-dot" style={{ background: ev.fg, opacity: 0.6 }}></div>
-                <div className="cl-info">
-                  <h4 style={{ color: ev.fg }}>{ev.name}</h4>
-                  <p style={{ color: ev.fg }}>{ev.start} - {ev.end}</p>
-                </div>
+      {/* Subject Detail Modal */}
+      {selectedSchedule && (
+        <div className={styles["modal-overlay"]} onClick={() => setSelectedSchedule(null)}>
+          <div className={styles["modal-content"]} onClick={(e) => e.stopPropagation()}>
+            <div className={styles["modal-header-styled"]}>
+              <div className={styles["modal-title-info"]}>
+                <div className={styles["modal-course-badge"]}>Subject</div>
+                <h3>{selectedSchedule?.course?.course_code || "—"}</h3>
+                <p className={styles["modal-subtitle"]}>{getSubjectName(selectedSchedule)}</p>
               </div>
-              <div className="cl-arr" style={{ color: ev.fg, opacity: 0.5 }}>&#8250;</div>
+              <button className={styles["close-btn"]} onClick={() => setSelectedSchedule(null)}>
+                &times;
+              </button>
             </div>
-          ))}
+
+            <div className={styles["modal-body-styled"]}>
+              <table className={styles["students-table"]}>
+                <tbody>
+                  <tr>
+                    <td className={styles["detail-key"]}>Day</td>
+                    <td>{selectedSchedule.dayOfWeek || "—"}</td>
+                  </tr>
+                  <tr>
+                    <td className={styles["detail-key"]}>Time</td>
+                    <td>{formatTime(selectedSchedule.startTime)} – {formatTime(selectedSchedule.endTime)}</td>
+                  </tr>
+                  <tr>
+                    <td className={styles["detail-key"]}>Room</td>
+                    <td>{selectedSchedule.room || "TBA"}</td>
+                  </tr>
+                  <tr>
+                    <td className={styles["detail-key"]}>Instructor</td>
+                    <td>{getFacultyName(selectedSchedule)}</td>
+                  </tr>
+                  <tr>
+                    <td className={styles["detail-key"]}>Section</td>
+                    <td>{selectedSchedule.section?.section_name || "—"}</td>
+                  </tr>
+                  <tr>
+                    <td className={styles["detail-key"]}>Type</td>
+                    <td>
+                      <span className={cx(
+                        "status-badge",
+                        selectedSchedule.class_type === "lab" ? "status-inactive" : "status-active"
+                      )}>
+                        <span className={styles.dot} />
+                        {selectedSchedule.class_type === "lab" ? "Laboratory" : "Lecture"}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className={styles["modal-footer"]}>
+              <button className={styles["modal-close-footer-btn"]} onClick={() => setSelectedSchedule(null)}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
-  )
-}
+  );
+};
 
-export default StudentSchedule
+export default StudentSchedule;

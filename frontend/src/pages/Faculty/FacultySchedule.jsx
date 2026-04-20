@@ -16,33 +16,28 @@ const FacultySchedule = () => {
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-  const timeLabels = [
-    "7:00 AM","7:30 AM","8:00 AM","8:30 AM","9:00 AM","9:30 AM",
-    "10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM",
-    "1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM",
-    "4:00 PM","4:30 PM","5:00 PM","5:30 PM","6:00 PM","6:30 PM",
-    "7:00 PM","7:30 PM","8:00 PM","8:30 PM"
-  ];
-
   const toMinutes = (timeValue) => {
     if (!timeValue) return -1;
     const [hours, minutes] = timeValue.slice(0, 5).split(":").map(Number);
     return (hours * 60) + minutes;
   };
 
-  const slotRanges = useMemo(
-    () =>
-      timeLabels.map((label) => {
-        const [time, suffix] = label.split(" ");
-        const [rawHour, rawMinute] = time.split(":").map(Number);
-        let hour = rawHour % 12;
-        if (suffix === "PM") hour += 12;
-        const minute = rawMinute;
-        const start = (hour * 60) + minute;
-        return { label, start, end: start + 30 };
-      }),
-    [timeLabels]
-  );
+  const slotRanges = useMemo(() => {
+    const slots = [];
+    const START = 7 * 60;
+    const END   = 21 * 60;
+    const fmt = (mins) => {
+      const h24    = Math.floor(mins / 60);
+      const m      = mins % 60;
+      const suffix = h24 >= 12 ? "PM" : "AM";
+      const h12    = h24 % 12 || 12;
+      return `${h12}:${String(m).padStart(2, "0")} ${suffix}`;
+    };
+    for (let t = START; t < END; t += 30) {
+      slots.push({ label: `${fmt(t)} - ${fmt(t + 30)}`, start: t, end: t + 30 });
+    }
+    return slots;
+  }, []);
 
   const now = new Date();
   const currentDay = days[now.getDay() - 1] || "";
@@ -193,71 +188,86 @@ const FacultySchedule = () => {
       {/* Calendar */}
       <div className={styles["calendar-card"]}>
         <div className={styles["calendar-wrapper"]}>
-          <div className={styles["calendar-grid"]}>
+          {/* Outer table: time labels col + one col per day */}
+          <div className={styles["cal-outer"]}>
 
-            {/* Header */}
-            <div className={styles["time-header"]}></div>
-            {days.map((day) => (
-              <div key={day} className={styles["day-header"]}>{day}</div>
-            ))}
+            {/* Time label column */}
+            <div className={styles["time-col"]}>
+              {/* spacer for header row */}
+              <div className={styles["time-col-header"]} />
+              {slotRanges.map((slot, i) => (
+                <div key={i} className={styles["time-label"]}>{slot.label}</div>
+              ))}
+            </div>
 
-            {/* Time Grid */}
-            {slotRanges.map((slot, i) => (
-              <React.Fragment key={i}>
-                <div className={styles["time-label"]}>{slot.label}</div>
-                {days.map((day, j) => {
-                  const schedule = getScheduleForCell(day, slot);
-                  const isStartSlot = isScheduleStartSlot(schedule, slot);
-                  const slotSpan = getSlotSpan(schedule);
-                  const palette = schedule ? getSubjectPalette(schedule) : null;
-                  const subjectName = getSubjectName(schedule);
-                  return (
+            {/* One column per day */}
+            {days.map((day) => {
+              // Collect schedules for this day, sorted by start time
+              const daySchedules = schedules
+                .filter((s) => s.dayOfWeek === day)
+                .sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+
+              // Build rows: for each slot, either a schedule chip (spanning rows) or an empty cell
+              const GRID_START = slotRanges[0].start;
+              const rows = [];
+              let slotIdx = 0;
+
+              while (slotIdx < slotRanges.length) {
+                const slot = slotRanges[slotIdx];
+                const sched = daySchedules.find(
+                  (s) => toMinutes(s.startTime) >= slot.start && toMinutes(s.startTime) < slot.end
+                );
+
+                if (sched) {
+                  const span = getSlotSpan(sched);
+                  const palette = getSubjectPalette(sched);
+                  rows.push(
                     <div
-                      key={j}
-                      className={cx(
-                        "grid-cell",
-                        schedule && !isStartSlot && "grid-cell-continuation"
-                      )}
-                      onClick={() => schedule && setSelectedSection(schedule)}
-                      style={{
-                        backgroundColor: schedule && isStartSlot ? palette?.bg : undefined,
-                        cursor: schedule ? "pointer" : "default",
-                      }}
-                      title={
-                        schedule
-                          ? `${schedule.course?.course_code || ""} | ${subjectName} | ${schedule.section?.section_name || "No Section"} | ${schedule.room || "TBA"}`
-                          : ""
-                      }
+                      key={`sched-${sched.id}-${slotIdx}`}
+                      className={styles["day-sched-cell"]}
+                      style={{ gridRow: `span ${span}` }}
+                      onClick={() => setSelectedSection(sched)}
+                      title={`${sched.course?.course_code || ""} | ${getSubjectName(sched)} | ${sched.section?.section_name || ""} | ${sched.room || "TBA"}`}
                     >
-                      {schedule && isStartSlot && (
-                        <div
-                          className={cx("subject-chip", "subject-chip-block")}
-                          style={{
-                            height: `calc(${slotSpan} * 35px - 4px)`,
-                            backgroundColor: palette?.bg,
-                            borderColor: palette?.border,
-                          }}
-                        >
-                          <div className={styles["subject-chip-code"]} style={{ color: palette?.code }}>
-                            {schedule.course?.course_code || "SUBJECT"}
-                          </div>
-                          <div className={styles["subject-chip-name"]} style={{ color: palette?.text }}>
-                            {subjectName}
-                          </div>
-                          <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
-                            {schedule.section?.section_name || "No Section"}
-                          </div>
-                          <div className={styles["subject-chip-meta"]} style={{ color: palette?.meta }}>
-                            {schedule.room || "TBA"}
-                          </div>
+                      <div
+                        className={styles["subject-chip"]}
+                        style={{ backgroundColor: palette.bg, borderColor: palette.border }}
+                      >
+                        <div className={styles["subject-chip-code"]} style={{ color: palette.code }}>
+                          {sched.course?.course_code || "SUBJECT"}
                         </div>
-                      )}
+                        <div className={styles["subject-chip-name"]} style={{ color: palette.text }}>
+                          {getSubjectName(sched)}
+                        </div>
+                        <div className={styles["subject-chip-meta"]} style={{ color: palette.meta }}>
+                          {sched.section?.section_name || "No Section"}
+                        </div>
+                        <div className={styles["subject-chip-meta"]} style={{ color: palette.meta }}>
+                          {sched.room || "TBA"}
+                        </div>
+                      </div>
                     </div>
                   );
-                })}
-              </React.Fragment>
-            ))}
+                  slotIdx += span;
+                } else {
+                  rows.push(
+                    <div key={`empty-${slotIdx}`} className={styles["day-empty-cell"]} />
+                  );
+                  slotIdx += 1;
+                }
+              }
 
+              return (
+                <div key={day} className={styles["day-col"]}>
+                  <div className={cx("day-header", day === currentDay && "day-header-today")}>
+                    {day}
+                  </div>
+                  <div className={styles["day-col-body"]}>
+                    {rows}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

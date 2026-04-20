@@ -25,6 +25,24 @@ class FacultyScheduleController extends Controller
     }
 
     /**
+     * Get the authenticated student's schedule (based on their assigned section).
+     */
+    public function studentSchedule(Request $request)
+    {
+        $student = $request->user()->student;
+
+        if (!$student || !$student->section_id) {
+            return ApiResponse::success([]);
+        }
+
+        $schedules = Schedule::where('section_id', $student->section_id)
+            ->with(['course', 'section', 'faculty.user'])
+            ->get();
+
+        return ApiResponse::success($schedules);
+    }
+
+    /**
      * Get students in a specific section (only if the faculty teaches them).
      */
     public function getSectionStudents(Request $request, $section_id)

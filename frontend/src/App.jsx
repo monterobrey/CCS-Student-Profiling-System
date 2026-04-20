@@ -160,6 +160,14 @@ function App() {
               }
             />
             <Route
+              path="/dean/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <AwardsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dean/student-accounts"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
@@ -321,6 +329,14 @@ function App() {
             />
             <Route
               path="/secretary/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <AwardsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/awards/:id"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <AwardsList />

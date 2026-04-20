@@ -31,9 +31,9 @@ class AwardService
         if ($user->isDean() || $user->isSecretary()) {
             // Full visibility — no filter
         } elseif ($user->isDepartmentChair()) {
-            $departmentId = $user->faculty->department_id;
-            $query->whereHas('student.program', fn($q) =>
-                $q->where('department_id', $departmentId)
+            $programId = $user->faculty->program_id;
+            $query->whereHas('student', fn($q) =>
+                $q->where('program_id', $programId)
             );
         } elseif ($user->isFaculty()) {
             // Only show awards this faculty member personally recommended
@@ -54,6 +54,14 @@ class AwardService
     public function giveAward($user, array $data)
     {
         $isChair = $user->isDepartmentChair();
+
+        // Chair can only give awards to students in their own program
+        if ($isChair) {
+            $student = \App\Models\Student::findOrFail($data['student_id']);
+            if ($student->program_id !== $user->faculty->program_id) {
+                throw new \Exception('You can only give awards to students in your program.');
+            }
+        }
 
         return DB::transaction(function () use ($user, $data, $isChair) {
             $facultyId = $user->faculty->id;
@@ -114,9 +122,9 @@ class AwardService
 
         // Chair scope check
         if ($user->isDepartmentChair()) {
-            $deptId = $user->faculty->department_id;
-            if ($award->student->program->department_id !== $deptId) {
-                throw new \Exception('You can only approve awards for students in your department.');
+            $programId = $user->faculty->program_id;
+            if ($award->student->program_id !== $programId) {
+                throw new \Exception('You can only approve awards for students in your program.');
             }
         }
 
@@ -143,9 +151,9 @@ class AwardService
         }
 
         if ($user->isDepartmentChair()) {
-            $deptId = $user->faculty->department_id;
-            if ($award->student->program->department_id !== $deptId) {
-                throw new \Exception('You can only reject awards for students in your department.');
+            $programId = $user->faculty->program_id;
+            if ($award->student->program_id !== $programId) {
+                throw new \Exception('You can only reject awards for students in your program.');
             }
         }
 

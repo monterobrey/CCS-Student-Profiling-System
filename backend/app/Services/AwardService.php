@@ -85,10 +85,12 @@ class AwardService
             'student_id'     => $user->student->id,
             'faculty_id'     => null,
             'awardName'      => $data['awardName'],
+            'category'       => $data['category'] ?? null,
             'description'    => $data['description'] ?? '',
             'date_received'  => $data['date_received'],
+            'academic_year'  => $data['academic_year'] ?? null,
             'issued_by'      => 'Student Application',
-            'applied_by'     => false,              // student-applied
+            'applied_by'     => false,
             'recommended_by' => null,
             'approved_by'    => null,
             'status'         => 'pending',

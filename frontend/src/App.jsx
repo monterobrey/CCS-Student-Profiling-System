@@ -352,6 +352,14 @@ function App() {
               }
             />
             <Route
+              path="/student/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentAwards/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/student/profile"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>

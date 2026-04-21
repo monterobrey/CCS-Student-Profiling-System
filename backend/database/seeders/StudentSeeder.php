@@ -119,7 +119,7 @@ class StudentSeeder extends Seeder
 
                     $firstName     = $firstNames[array_rand($firstNames)];
                     $lastName      = $lastNames[array_rand($lastNames)];
-                    $studentNumber = "2026-" . str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
+                    $studentNumber = "2026" . str_pad($studentCount + 1, 5, '0', STR_PAD_LEFT);
                     $email         = strtolower($firstName . "." . Str::slug($lastName) . rand(1, 999) . "@gmail.com");
 
                     // Assign to section round-robin

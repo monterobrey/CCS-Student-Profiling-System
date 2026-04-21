@@ -11,8 +11,7 @@ const EMPTY_FILTERS = {
   section_id:        "",
   skill_name:        "",
   skill_category:    "",
-  academic_activity: "",
-  organization:      "",
+  org_id:            "",
   award_name:        "",
   gwa_min:           "",
   gwa_max:           "",
@@ -43,6 +42,14 @@ export default function ProfilingReport() {
     queryKey: ["sections"],
     queryFn: async () => {
       const res = await httpClient.get(API_ENDPOINTS.SECTIONS.LIST);
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
+
+  const { data: organizations = [] } = useQuery({
+    queryKey: ["organizations"],
+    queryFn: async () => {
+      const res = await httpClient.get(API_ENDPOINTS.ORGANIZATIONS.LIST);
       return res.ok ? (res.data ?? []) : [];
     },
   });
@@ -267,17 +274,6 @@ export default function ProfilingReport() {
               <div className="group-content">
 
                 <div className="form-group">
-                  <label>Academic Activity</label>
-                  <input
-                    name="academic_activity"
-                    type="text"
-                    placeholder="e.g. Research, Thesis"
-                    value={filters.academic_activity}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="form-group">
                   <label>Award Name</label>
                   <input
                     name="award_name"
@@ -297,14 +293,13 @@ export default function ProfilingReport() {
               <div className="group-content">
 
                 <div className="form-group">
-                  <label>Organization Name</label>
-                  <input
-                    name="organization"
-                    type="text"
-                    placeholder="e.g. GDSC, ACM"
-                    value={filters.organization}
-                    onChange={handleChange}
-                  />
+                  <label>Organization</label>
+                  <select name="org_id" value={filters.org_id} onChange={handleChange}>
+                    <option value="">All Organizations</option>
+                    {organizations.map(o => (
+                      <option key={o.id} value={o.id}>{o.organization_name}</option>
+                    ))}
+                  </select>
                 </div>
 
               </div>

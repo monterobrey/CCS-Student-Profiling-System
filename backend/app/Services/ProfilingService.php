@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Student;
+use App\Models\UniversityOrganization;
+use App\Models\StudentOrganization;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -11,10 +13,65 @@ use Illuminate\Support\Facades\DB;
 class ProfilingService
 {
     /**
+     * Bulk-ensure every student has their program's default org affiliation.
+     * This runs before filtering so students who have never logged in are still included.
+     */
+    private function ensureDefaultOrgAffiliations(): void
+    {
+        $defaultMap = [
+            'BSIT' => 'Society of Information Technology Students',
+            'BSCS' => 'Association of Computer Science Students',
+        ];
+
+        // Load the org IDs once
+        $orgs = UniversityOrganization::whereIn('organization_name', array_values($defaultMap))
+            ->pluck('id', 'organization_name');
+
+        // Load all active students with their program code
+        $students = Student::with('program')->whereNull('deleted_at')->get();
+
+        $inserts = [];
+        $now = now();
+
+        foreach ($students as $student) {
+            $programCode = $student->program?->program_code;
+            if (!isset($defaultMap[$programCode])) continue;
+
+            $orgName = $defaultMap[$programCode];
+            if (!isset($orgs[$orgName])) continue;
+
+            $orgId = $orgs[$orgName];
+
+            $alreadyLinked = StudentOrganization::where('student_id', $student->id)
+                ->where('org_id', $orgId)
+                ->exists();
+
+            if (!$alreadyLinked) {
+                $inserts[] = [
+                    'student_id' => $student->id,
+                    'org_id'     => $orgId,
+                    'role'       => 'Member',
+                    'dateJoined' => $student->created_at->toDateString(),
+                    'dateLeft'   => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if (!empty($inserts)) {
+            StudentOrganization::insert($inserts);
+        }
+    }
+
+    /**
      * Generate profiling report with filters.
      */
     public function generateReport($filters)
     {
+        // Ensure all students have their default program org before filtering
+        $this->ensureDefaultOrgAffiliations();
+
         $query = Student::query()
             ->with([
                 'user',

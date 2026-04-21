@@ -234,6 +234,25 @@ export default function StudentManagement() {
     if (!form.program_id)     errors.program_id     = 'Required';
     if (!form.year_level)     errors.year_level     = 'Required';
     if (!form.section_id)     errors.section_id     = 'Required';
+
+    // Check for duplicate student number (excluding current student if editing)
+    const duplicateStudentNumber = students.some(s => 
+      s.user?.student_number?.toLowerCase() === form.student_number.toLowerCase() &&
+      (!editingStudent || s.id !== editingStudent.id)
+    );
+    if (duplicateStudentNumber) {
+      errors.student_number = 'Student number is already taken';
+    }
+
+    // Check for duplicate email (excluding current student if editing)
+    const duplicateEmail = students.some(s => 
+      s.user?.email?.toLowerCase() === form.email.toLowerCase() &&
+      (!editingStudent || s.id !== editingStudent.id)
+    );
+    if (duplicateEmail) {
+      errors.email = 'Email is already taken';
+    }
+
     if (Object.keys(errors).length) { setFormErrors(errors); return; }
 
     setSaving(true);

@@ -336,7 +336,7 @@ const FacultyViolationManager = () => {
               {filteredReports.map((report) => {
                 const avatarColor = getAvatarColor(report.studentName);
                 return (
-                  <tr key={report.id} className={styles['row-hover']} onClick={() => setSelectedViolation(report)}>
+                  <tr key={report.id} className={styles['row-hover']} onClick={() => navigate(`/faculty/violations/${report.id}`)}>
                     <td>
                       <div className={styles['student-profile']}>
                         <div className={styles.avatar} style={{ background: avatarColor }}>
@@ -475,11 +475,11 @@ const FacultyViolationManager = () => {
 
       {/* ── Detail Modal (unchanged) ── */}
       {selectedViolation && (
-        <div className={styles['modal-backdrop']} onClick={() => setSelectedViolation(null)}>
+        <div className={styles['modal-backdrop']} onClick={() => navigate('/faculty/violations')}>
           <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
             <div className={styles['modal-header']}>
               <h3>Incident Report Details</h3>
-              <button className={styles['close-x']} onClick={() => setSelectedViolation(null)}>&times;</button>
+              <button className={styles['close-x']} onClick={() => navigate('/faculty/violations')}>&times;</button>
             </div>
             <div className={styles['modal-content']}>
               <div className={styles['detail-grid']}>

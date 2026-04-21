@@ -21,10 +21,22 @@ class ScheduleController extends Controller
 
     /**
      * Get all schedules (with filters).
+     * Chair: automatically scoped to their program.
      */
     public function index(Request $request)
     {
-        $schedules = $this->scheduleService->getAllSchedules($request->input('section_id'), $request->input('faculty_id'));
+        $user      = $request->user();
+        $programId = null;
+
+        if ($user->isDepartmentChair() && $user->faculty) {
+            $programId = $user->faculty->program_id;
+        }
+
+        $schedules = $this->scheduleService->getAllSchedules(
+            $request->input('section_id'),
+            $request->input('faculty_id'),
+            $programId
+        );
         return ApiResponse::success($schedules);
     }
 
@@ -94,14 +106,25 @@ class ScheduleController extends Controller
 
     /**
      * Auto-generate schedules based on curriculum and section load.
+     * Chair: program_id is locked to their own program — cannot generate for others.
      */
     public function autoGenerate(Request $request)
     {
         $data = $request->validate([
             'program_id' => 'required|exists:programs,id',
             'year_level' => 'required|integer|between:1,4',
-            'semester' => 'required|string|in:1st,2nd,Summer',
+            'semester'   => 'required|string|in:1st,2nd,Summer',
         ]);
+
+        $user = $request->user();
+
+        // Chair can only generate for their own program
+        if ($user->isDepartmentChair() && $user->faculty) {
+            $chairProgramId = (int) $user->faculty->program_id;
+            if ((int) $data['program_id'] !== $chairProgramId) {
+                return ApiResponse::error('You can only generate schedules for your own program.', 403);
+            }
+        }
 
         try {
             $result = $this->autoScheduleService->generate(

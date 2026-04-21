@@ -5,10 +5,17 @@ namespace App\Services;
 use App\Models\AcademicAward;
 use App\Models\Student;
 use App\Models\Faculty;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 
 class AwardService
 {
+    protected NotificationService $notifications;
+
+    public function __construct(NotificationService $notifications)
+    {
+        $this->notifications = $notifications;
+    }
     /*
     |--------------------------------------------------------------------------
     | SCOPED LIST
@@ -31,9 +38,9 @@ class AwardService
         if ($user->isDean() || $user->isSecretary()) {
             // Full visibility — no filter
         } elseif ($user->isDepartmentChair()) {
-            $departmentId = $user->faculty->department_id;
-            $query->whereHas('student.program', fn($q) =>
-                $q->where('department_id', $departmentId)
+            $programId = $user->faculty->program_id;
+            $query->whereHas('student', fn($q) =>
+                $q->where('program_id', $programId)
             );
         } elseif ($user->isFaculty()) {
             // Only show awards this faculty member personally recommended
@@ -55,22 +62,40 @@ class AwardService
     {
         $isChair = $user->isDepartmentChair();
 
+        // Chair can only give awards to students in their own program
+        if ($isChair) {
+            $student = \App\Models\Student::findOrFail($data['student_id']);
+            if ($student->program_id !== $user->faculty->program_id) {
+                throw new \Exception('You can only give awards to students in your program.');
+            }
+        }
+
         return DB::transaction(function () use ($user, $data, $isChair) {
             $facultyId = $user->faculty->id;
 
-            return AcademicAward::create([
+            $award = AcademicAward::create([
                 'student_id'     => $data['student_id'],
                 'faculty_id'     => $facultyId,
                 'awardName'      => $data['awardName'],
                 'description'    => $data['description'] ?? '',
                 'date_received'  => $data['date_received'],
                 'issued_by'      => $user->name,
-                'applied_by'     => true,           // admin-given
+                'applied_by'     => true,
                 'recommended_by' => $user->id,
                 'approved_by'    => $isChair ? $user->id : null,
                 'status'         => $isChair ? 'approved' : 'pending',
                 'approved_at'    => $isChair ? now() : null,
             ])->load(['student.program', 'student.section', 'faculty', 'recommender', 'approver']);
+
+            // If chair gave it → auto-approved, notify student
+            // If faculty gave it → pending, notify chair + dean
+            if ($isChair) {
+                $this->notifications->awardApproved($award);
+            } else {
+                $this->notifications->awardPendingApproval($award);
+            }
+
+            return $award;
         });
     }
 
@@ -81,19 +106,25 @@ class AwardService
     */
     public function applyForAward($user, array $data)
     {
-        return AcademicAward::create([
+        $award = AcademicAward::create([
             'student_id'     => $user->student->id,
             'faculty_id'     => null,
             'awardName'      => $data['awardName'],
+            'category'       => $data['category'] ?? null,
             'description'    => $data['description'] ?? '',
             'date_received'  => $data['date_received'],
+            'academic_year'  => $data['academic_year'] ?? null,
             'issued_by'      => 'Student Application',
-            'applied_by'     => false,              // student-applied
+            'applied_by'     => false,
             'recommended_by' => null,
             'approved_by'    => null,
             'status'         => 'pending',
             'approved_at'    => null,
         ])->load(['student.program', 'student.section']);
+
+        $this->notifications->awardApplied($award);
+
+        return $award;
     }
 
     /*
@@ -112,9 +143,9 @@ class AwardService
 
         // Chair scope check
         if ($user->isDepartmentChair()) {
-            $deptId = $user->faculty->department_id;
-            if ($award->student->program->department_id !== $deptId) {
-                throw new \Exception('You can only approve awards for students in your department.');
+            $programId = $user->faculty->program_id;
+            if ($award->student->program_id !== $programId) {
+                throw new \Exception('You can only approve awards for students in your program.');
             }
         }
 
@@ -124,7 +155,11 @@ class AwardService
             'approved_at' => now(),
         ]);
 
-        return $award->load(['student.program', 'student.section', 'faculty', 'recommender', 'approver']);
+        $award->load(['student.program', 'student.section', 'faculty', 'recommender', 'approver']);
+
+        $this->notifications->awardApproved($award);
+
+        return $award;
     }
 
     /*
@@ -141,18 +176,22 @@ class AwardService
         }
 
         if ($user->isDepartmentChair()) {
-            $deptId = $user->faculty->department_id;
-            if ($award->student->program->department_id !== $deptId) {
-                throw new \Exception('You can only reject awards for students in your department.');
+            $programId = $user->faculty->program_id;
+            if ($award->student->program_id !== $programId) {
+                throw new \Exception('You can only reject awards for students in your program.');
             }
         }
 
         $award->update([
             'status'      => 'rejected',
-            'approved_by' => $user->id,   // tracks who rejected
+            'approved_by' => $user->id,
             'action_taken' => $reason,
         ]);
 
-        return $award->load(['student.program', 'student.section', 'faculty', 'recommender', 'approver']);
+        $award->load(['student.program', 'student.section', 'faculty', 'recommender', 'approver']);
+
+        $this->notifications->awardRejected($award);
+
+        return $award;
     }
 }

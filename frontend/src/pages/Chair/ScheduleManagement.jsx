@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../context/AuthContext";
 import { scheduleService } from "../../services/scheduleService";
 import { httpClient } from "../../services/httpClient";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
@@ -13,8 +14,6 @@ const EMPTY_FORM = {
   dayOfWeek: "Monday", startTime: "08:00", endTime: "09:00", room: "",
 };
 
-const EMPTY_AUTO = { program_id: "", year_level: "1", semester: "1st" };
-
 const formatTime = (t) =>
   t ? new Date(`2000-01-01T${t}`).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
@@ -25,13 +24,19 @@ const formatDays = (days) =>
     .join("/");
 
 export default function ScheduleManagement() {
-  const queryClient = useQueryClient();
+  const queryClient  = useQueryClient();
   const fileInputRef = useRef(null);
+  const { user }     = useAuth();
+
+  // Chair's own program — locked, cannot be changed
+  const chairProgramId = user?.faculty?.program_id
+    ? String(user.faculty.program_id)
+    : null;
 
   // ── Restore filters from cache on mount (survives navigation) ────────────
   const cachedFilters = queryClient.getQueryData(["schedule-filters"]);
 
-  const [filterProgram,   setFilterProgram]   = useState(cachedFilters?.filterProgram   ?? "");
+  const [filterProgram,   setFilterProgram]   = useState(cachedFilters?.filterProgram   ?? chairProgramId ?? "");
   const [filterYear,      setFilterYear]      = useState(cachedFilters?.filterYear      ?? "");
   const [activeSectionId, setActiveSectionId] = useState(cachedFilters?.activeSectionId ?? "");
 
@@ -46,7 +51,7 @@ export default function ScheduleManagement() {
 
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [form,       setForm]       = useState(EMPTY_FORM);
-  const [autoForm,   setAutoForm]   = useState(EMPTY_AUTO);
+  const [autoForm,   setAutoForm]   = useState({ program_id: chairProgramId ?? "", year_level: "1", semester: "1st" });
   const [assignForm, setAssignForm] = useState({ faculty_id: "" });
 
   const [saving,     setSaving]     = useState(false);
@@ -102,6 +107,49 @@ export default function ScheduleManagement() {
     enabled: showAddModal && !!form.section_id,
   });
 
+  // ── Derived: which semesters already have schedules for the auto-form selection ──
+  const availableSemesters = useMemo(() => {
+    if (!autoForm.program_id || !autoForm.year_level) {
+      return [{ value: "1st", label: "1st Semester", enabled: true }];
+    }
+
+    // Get section IDs for this program + year
+    const sectionIds = new Set(
+      sections
+        .filter(s =>
+          String(s.program_id) === String(autoForm.program_id) &&
+          String(s.year_level) === String(autoForm.year_level)
+        )
+        .map(s => s.id)
+    );
+
+    // Which semesters already have schedules for these sections
+    const existingSemesters = new Set(
+      schedules
+        .filter(s => sectionIds.has(s.section_id) && s.semester)
+        .map(s => s.semester)
+    );
+
+    const has1st = existingSemesters.has("1st");
+    const has2nd = existingSemesters.has("2nd");
+
+    return [
+      { value: "1st",    label: "1st Semester",  enabled: true },
+      { value: "2nd",    label: "2nd Semester",   enabled: has1st },
+      { value: "Summer", label: "Summer",          enabled: has1st && has2nd },
+    ];
+  }, [autoForm.program_id, autoForm.year_level, schedules, sections]);
+
+  // Auto-correct semester selection when program/year changes
+  useEffect(() => {
+    const current = availableSemesters.find(s => s.value === autoForm.semester);
+    if (current && !current.enabled) {
+      // Reset to first enabled semester
+      const first = availableSemesters.find(s => s.enabled);
+      if (first) setAutoForm(f => ({ ...f, semester: first.value }));
+    }
+  }, [availableSemesters]);
+
   // ── Toast ─────────────────────────────────────────────────────────────────
 
   const showToast = (type, message) => {
@@ -109,24 +157,37 @@ export default function ScheduleManagement() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Auto-select BSIT 1st Year by default ────────────────────────────────
+  // ── Auto-select chair's program + first year that has schedules ────────────
   useEffect(() => {
-    if (programs.length > 0 && !filterProgram && !cachedFilters?.filterProgram) {
-      const bsit = programs.find(p => p.program_code === "BSIT");
-      if (bsit) {
-        setFilterProgram(bsit.id);
-        setFilterYear("1");
-        persistFilters({ filterProgram: bsit.id, filterYear: "1" });
-      }
-    }
-  }, [programs, filterProgram, cachedFilters]);
+    if (!programs.length || !sections.length) return;
+
+    const targetProgram = chairProgramId ?? (programs[0] ? String(programs[0].id) : null);
+    if (!targetProgram) return;
+
+    // Already have a filter set (from cache or previous interaction) — keep it
+    if (filterProgram && filterYear) return;
+
+    // Find the first year level that has existing schedules for this program
+    const yearsWithSchedules = ["1", "2", "3", "4"].filter(y =>
+      sections
+        .filter(s => String(s.program_id) === String(targetProgram) && String(s.year_level) === y)
+        .some(s => schedules.some(sch => sch.section_id === s.id))
+    );
+
+    // Default to first year with schedules; if none exist yet, fall back to year 1
+    const defaultYear = yearsWithSchedules.length > 0 ? yearsWithSchedules[0] : "1";
+
+    setFilterProgram(targetProgram);
+    setFilterYear(defaultYear);
+    persistFilters({ filterProgram: targetProgram, filterYear: defaultYear, activeSectionId: "" });
+  }, [programs, sections, schedules, chairProgramId]);
 
   // ── Derived: filtered sections (tabs) ────────────────────────────────────
 
   const filteredSections = useMemo(() => {
     if (!filterProgram || !filterYear) return [];
     return sections
-      .filter((s) => s.program_id === filterProgram && s.year_level === filterYear)
+      .filter((s) => String(s.program_id) === String(filterProgram) && String(s.year_level) === String(filterYear))
       .sort((a, b) => a.section_name.localeCompare(b.section_name));
   }, [sections, filterProgram, filterYear]);
 
@@ -165,8 +226,8 @@ export default function ScheduleManagement() {
       .filter((item) => {
         if (activeSectionId) return item.section_id === activeSectionId;
         const sec = item.section;
-        if (filterProgram && sec?.program_id !== filterProgram) return false;
-        if (filterYear    && sec?.year_level  !== filterYear)   return false;
+        if (filterProgram && String(sec?.program_id) !== String(filterProgram)) return false;
+        if (filterYear    && String(sec?.year_level)  !== String(filterYear))   return false;
         return true;
       })
       .sort((a, b) =>
@@ -212,10 +273,21 @@ export default function ScheduleManagement() {
         showToast("success", res.message || "Schedules generated successfully.");
         setShowAutoModal(false);
         setAutoConflicts([]);
-        queryClient.invalidateQueries({ queryKey: ["schedules"] });
-        queryClient.invalidateQueries({ queryKey: ["sections"] });
+
+        // 1. Immediately refetch so the page shows the new schedules right away
+        await queryClient.invalidateQueries({ queryKey: ["schedules"] });
+        await queryClient.invalidateQueries({ queryKey: ["sections"] });
+
+        // 2. Auto-navigate the filter to the just-generated program + year
+        //    so the user lands directly on what was generated
+        const generatedYear = String(autoForm.year_level);
+        setFilterYear(generatedYear);
+        persistFilters({
+          filterProgram: String(autoForm.program_id),
+          filterYear:    generatedYear,
+          activeSectionId: "",
+        });
       } else {
-        // Backend sends conflicts array in res.errors (ApiResponse::error(..., 422, $conflicts))
         const conflicts = Array.isArray(res.errors) ? res.errors : [];
         if (conflicts.length > 0) {
           setAutoConflicts(conflicts);
@@ -330,7 +402,10 @@ export default function ScheduleManagement() {
           <p className="page-sub">Manage and assign class schedules per section.</p>
         </div>
         <div className="header-actions">
-          <button className="outline-btn" onClick={() => setShowAutoModal(true)}>
+          <button className="outline-btn" onClick={() => {
+            setAutoForm({ program_id: chairProgramId ?? "", year_level: "1", semester: "1st" });
+            setShowAutoModal(true);
+          }}>
             Auto-Generate
           </button>
           <button className="outline-btn" onClick={() => fileInputRef.current.click()} disabled={importing}>
@@ -345,16 +420,33 @@ export default function ScheduleManagement() {
 
       {/* FILTERS */}
       <div className="filter-bar pcard">
-        <select value={filterProgram} onChange={(e) => {
-          setFilterProgram(e.target.value);
-          setFilterYear("");
-          persistFilters({ filterProgram: e.target.value, filterYear: "", activeSectionId: "" });
-        }}>
-          <option value="">Select Program</option>
-          {programs.map((p) => (
-            <option key={p.id} value={p.id}>{p.program_code}</option>
-          ))}
-        </select>
+        {chairProgramId ? (
+          <div style={{
+            padding: "8px 14px",
+            background: "#faf8f6",
+            border: "1.5px solid #f0e8e0",
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#1a0a00",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}>
+            {programs.find(p => String(p.id) === String(chairProgramId))?.program_code ?? "Your Program"}
+          </div>
+        ) : (
+          <select value={filterProgram} onChange={(e) => {
+            setFilterProgram(e.target.value);
+            setFilterYear("");
+            persistFilters({ filterProgram: e.target.value, filterYear: "", activeSectionId: "" });
+          }}>
+            <option value="">Select Program</option>
+            {programs.map((p) => (
+              <option key={p.id} value={p.id}>{p.program_code}</option>
+            ))}
+          </select>
+        )}
         <select value={filterYear} onChange={(e) => {
           setFilterYear(e.target.value);
           persistFilters({ filterYear: e.target.value, activeSectionId: "" });
@@ -385,7 +477,19 @@ export default function ScheduleManagement() {
             {isLoading ? (
               <div className="loading-state">Loading schedules...</div>
             ) : groupedSchedules.length === 0 ? (
-              <div className="empty-state">No schedules for this section yet.</div>
+              <div className="empty-state">
+                <svg viewBox="0 0 48 48" fill="none" width="40" height="40">
+                  <rect x="6" y="8" width="36" height="34" rx="4" stroke="#f0e8e0" strokeWidth="2.5"/>
+                  <path d="M16 6v4M32 6v4M6 18h36" stroke="#f0e8e0" strokeWidth="2.5" strokeLinecap="round"/>
+                  <path d="M16 28h16M16 34h10" stroke="#f0e8e0" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                <p className="empty-state-title">No schedules yet</p>
+                <p className="empty-state-sub">This section doesn't have any schedules. Use Auto-Generate or add one manually.</p>
+                <div className="empty-state-actions">
+                  <button className="outline-btn" onClick={() => setShowAutoModal(true)}>Auto-Generate</button>
+                  <button className="primary-btn" onClick={() => { setForm({ ...EMPTY_FORM, section_id: String(activeSectionId) }); setShowAddModal(true); }}>+ Add Manually</button>
+                </div>
+              </div>
             ) : (
               <table className="data-table">
                 <thead>
@@ -452,9 +556,30 @@ export default function ScheduleManagement() {
         </div>
       ) : (
         <div className="pcard empty-state">
-          {filterProgram && filterYear
-            ? "No sections found for the selected program and year."
-            : "Select a program and year level to view schedules."}
+          {filterProgram && filterYear ? (
+            <>
+              <svg viewBox="0 0 48 48" fill="none" width="40" height="40">
+                <rect x="6" y="8" width="36" height="34" rx="4" stroke="#f0e8e0" strokeWidth="2.5"/>
+                <path d="M16 6v4M32 6v4M6 18h36" stroke="#f0e8e0" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M24 26v8M20 30h8" stroke="#FF6B1A" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <p className="empty-state-title">No sections found</p>
+              <p className="empty-state-sub">
+                There are no sections for this program and year level yet. Auto-generate will create them automatically.
+              </p>
+              <button className="primary-btn" onClick={() => setShowAutoModal(true)}>Auto-Generate Schedules</button>
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 48 48" fill="none" width="40" height="40">
+                <rect x="6" y="8" width="36" height="34" rx="4" stroke="#f0e8e0" strokeWidth="2.5"/>
+                <path d="M16 6v4M32 6v4M6 18h36" stroke="#f0e8e0" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M16 28h16M16 34h10" stroke="#f0e8e0" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <p className="empty-state-title">Select a year level</p>
+              <p className="empty-state-sub">Choose a year level above to view or manage schedules.</p>
+            </>
+          )}
         </div>
       )}
 
@@ -643,16 +768,18 @@ export default function ScheduleManagement() {
 
             <div className="modal-body">
               <div className="field">
-                <label>Program <span className="req">*</span></label>
-                <select
-                  value={autoForm.program_id}
-                  onChange={(e) => setAutoForm({ ...autoForm, program_id: e.target.value })}
-                >
-                  <option value="">Select program</option>
-                  {programs.map((p) => (
-                    <option key={p.id} value={p.id}>{p.program_code} — {p.program_name}</option>
-                  ))}
-                </select>
+                <label>Program</label>
+                <div style={{
+                  padding: "10px 14px",
+                  background: "#faf8f6",
+                  border: "1.5px solid #f0e8e0",
+                  borderRadius: 10,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#1a0a00",
+                }}>
+                  {programs.find(p => String(p.id) === String(autoForm.program_id))?.program_code ?? "—"}
+                </div>
               </div>
 
               <div className="field">
@@ -673,10 +800,17 @@ export default function ScheduleManagement() {
                   value={autoForm.semester}
                   onChange={(e) => setAutoForm({ ...autoForm, semester: e.target.value })}
                 >
-                  <option value="1st">1st Semester</option>
-                  <option value="2nd">2nd Semester</option>
-                  <option value="Summer">Summer</option>
+                  {availableSemesters.map(s => (
+                    <option key={s.value} value={s.value} disabled={!s.enabled}>
+                      {s.label}{!s.enabled ? " (complete 1st sem first)" : ""}
+                    </option>
+                  ))}
                 </select>
+                {availableSemesters.find(s => s.value === "2nd" && !s.enabled) && (
+                  <p className="field-hint" style={{ marginTop: 4, color: "#b89f90", fontSize: 11 }}>
+                    Generate 1st semester schedules first before proceeding to 2nd semester.
+                  </p>
+                )}
               </div>
 
               {autoConflicts.length > 0 && (

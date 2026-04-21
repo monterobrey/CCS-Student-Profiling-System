@@ -154,18 +154,53 @@ class AutoScheduleService
             return ($item->course->lab_units * 10) + $item->course->units;
         });
 
-        // 5. Track faculty load (units assigned) and time slots per faculty
-        //    facultyLoad[faculty_id] = total units assigned so far
-        //    facultySlots[faculty_id] = [ ['day'=>..,'start'=>..,'end'=>..], ... ]
-        $facultyLoad  = $allFaculty->pluck('id')->mapWithKeys(fn($id) => [$id => 0])->toArray();
+        // 5. Track faculty load ONLY for the current semester being generated.
+        //    Pre-seed with units already assigned in OTHER semesters so we don't
+        //    double-count, but we DO want to know their existing cross-semester load
+        //    for tiebreaking. Slots are only tracked within this generation run.
+        $existingLoadBySemester = Schedule::whereIn('faculty_id', $allFaculty->pluck('id'))
+            ->where('schedules.semester', '!=', $semester)
+            ->whereNotNull('faculty_id')
+            ->join('courses', 'schedules.course_id', '=', 'courses.id')
+            ->selectRaw('faculty_id, SUM(courses.units) as total_units')
+            ->groupBy('faculty_id')
+            ->pluck('total_units', 'faculty_id')
+            ->toArray();
+
+        // facultyLoad starts with their OTHER-semester load as a baseline for tiebreaking
+        $facultyLoad  = $allFaculty->pluck('id')->mapWithKeys(fn($id) => [
+            $id => (int) ($existingLoadBySemester[$id] ?? 0)
+        ])->toArray();
+
+        // facultySlots only tracks THIS generation run (current semester)
         $facultySlots = $allFaculty->pluck('id')->mapWithKeys(fn($id) => [$id => []])->toArray();
+
+        // Pre-load existing slots from OTHER semesters so faculty conflict check
+        // prevents double-booking across semesters
+        $existingSlots = Schedule::whereIn('faculty_id', $allFaculty->pluck('id'))
+            ->whereNotNull('faculty_id')
+            ->select('faculty_id', 'dayOfWeek', 'startTime', 'endTime')
+            ->get();
+
+        foreach ($existingSlots as $slot) {
+            $fid = $slot->faculty_id;
+            if (isset($facultySlots[$fid])) {
+                $facultySlots[$fid][] = [
+                    'day'   => $slot->dayOfWeek,
+                    'start' => $slot->startTime,
+                    'end'   => $slot->endTime,
+                ];
+            }
+        }
 
         $generatedSchedules = [];
         $conflicts          = [];
 
         DB::beginTransaction();
         try {
-            Schedule::whereIn('section_id', $sections->pluck('id'))->delete();
+            Schedule::whereIn('section_id', $sections->pluck('id'))
+                ->where('semester', $semester)
+                ->delete();
 
             foreach ($sections as $section) {
                 $vacantDay = $sectionVacantDays[$section->id];
@@ -180,7 +215,8 @@ class AutoScheduleService
                         $placed = $this->placeSubject(
                             $section, $course, 'lab', $course->lab_units,
                             $vacantDay, $generatedSchedules,
-                            $matchedFaculty, $facultyLoad, $facultySlots
+                            $matchedFaculty, $facultyLoad, $facultySlots,
+                            $semester
                         );
                         if (!$placed) {
                             $conflicts[] = "Could not place Lab for {$course->course_code} ({$course->lab_units} units) in {$section->section_name}";
@@ -191,7 +227,8 @@ class AutoScheduleService
                         $placed = $this->placeSubject(
                             $section, $course, 'lec', $course->lec_units,
                             $vacantDay, $generatedSchedules,
-                            $matchedFaculty, $facultyLoad, $facultySlots
+                            $matchedFaculty, $facultyLoad, $facultySlots,
+                            $semester
                         );
                         if (!$placed) {
                             $conflicts[] = "Could not place Lec for {$course->course_code} ({$course->lec_units} units) in {$section->section_name}";
@@ -307,7 +344,8 @@ class AutoScheduleService
         &$generatedSchedules,
         ?Faculty $preferredFaculty,
         array &$facultyLoad,
-        array &$facultySlots
+        array &$facultySlots,
+        string $semester
     ) {
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -368,6 +406,7 @@ class AutoScheduleService
                         $sched = Schedule::create([
                             'section_id' => $section->id,
                             'course_id'  => $course->id,
+                            'semester'   => $semester,
                             'class_type' => $type,
                             'dayOfWeek'  => $day,
                             'startTime'  => $startTime,

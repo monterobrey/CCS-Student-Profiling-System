@@ -14,8 +14,9 @@ class ScheduleService
 {
     /**
      * Get all schedules with optional filtering.
+     * Chair: scoped to their program's sections only.
      */
-    public function getAllSchedules($sectionId = null, $facultyId = null)
+    public function getAllSchedules($sectionId = null, $facultyId = null, $programId = null)
     {
         $query = Schedule::with(['course', 'faculty.user', 'section.program']);
 
@@ -25,6 +26,10 @@ class ScheduleService
 
         if ($facultyId) {
             $query->where('faculty_id', $facultyId);
+        }
+
+        if ($programId) {
+            $query->whereHas('section', fn($q) => $q->where('program_id', $programId));
         }
 
         return $query->get();

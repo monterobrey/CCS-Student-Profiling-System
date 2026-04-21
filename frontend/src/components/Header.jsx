@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 import "./AppLayout.css";
 
 export default function Header({ user, role, portalLabel }) {
@@ -61,12 +62,7 @@ const handleSettings = () => {
 
         <div className="topbar-separator"></div>
 
-        <button className="icon-btn notification-btn" title="Notifications">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.46 5.36 5.82 7.93 5.82 11v5l-2 2v1h16.36v-1l-2-2z" fill="currentColor"/>
-            <circle cx="19" cy="17" r="2.5" fill="#FF6B1A"/>
-          </svg>
-        </button>
+        <NotificationBell />
 
         <div className="topbar-separator"></div>
 

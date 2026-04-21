@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 import { awardService, studentService } from "../../services";
 import styles from "../../styles/Chair/DepartmentChairAward.module.css";
 
@@ -11,24 +12,26 @@ const TABS = [
 ];
 
 const PREDEFINED_AWARDS = [
-  "Dean's List",
-  "President's List",
-  "Academic Excellence Award",
-  "Best Thesis Award",
-  "Leadership Award",
-  "Community Service Award",
-  "Outstanding Student Award",
-  "Scholar of the Year",
-  "Others",
+  "Dean's List", "President's List", "Academic Excellence Award",
+  "Best Thesis Award", "Leadership Award", "Community Service Award",
+  "Outstanding Student Award", "Scholar of the Year", "Others",
 ];
 
+const AVATAR_COLORS = ["#FF6B1A", "#e85500", "#c94000", "#3d1500", "#7c3d1a", "#b85c00"];
+
 const EMPTY_FORM = {
-  student_ids:   [],
-  awardName:     "",
-  customAward:   "",
-  description:   "",
-  date_received: "",
+  student_ids: [], awardName: "", customAward: "", description: "", date_received: "",
 };
+
+function getAvatarColor(name = "") {
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+}
+
+function getInitials(a) {
+  const f = a.student?.first_name?.[0] ?? "";
+  const l = a.student?.last_name?.[0] ?? "";
+  return (f + l).toUpperCase() || "?";
+}
 
 function getActionTaker(a) {
   if (!a) return "—";
@@ -36,17 +39,14 @@ function getActionTaker(a) {
   return actor?.name || actor?.email || (a.approved_by ? `User #${a.approved_by}` : "—");
 }
 
+/* ─── Student Selector ──────────────────────────────────── */
 function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
   const [query, setQuery] = useState("");
   const [open,  setOpen]  = useState(false);
   const ref               = useRef(null);
 
   const cx = (...names) =>
-    names
-      .filter(Boolean)
-      .map((name) => styles[name])
-      .filter(Boolean)
-      .join(" ");
+    names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(" ");
 
   const selected = students.find(s => s.id === value);
 
@@ -68,11 +68,11 @@ function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
   }, []);
 
   return (
-    <div className={styles["student-selector"]} ref={ref}>
-      <div className={styles["student-selector-input"]} onClick={() => setOpen(o => !o)}>
+    <div className={styles.studentSelector} ref={ref}>
+      <div className={styles.studentSelectorInput} onClick={() => setOpen(o => !o)}>
         {selected
-          ? <span className={styles["ss-selected"]}>{selected.last_name}, {selected.first_name} — {selected.program?.program_code}</span>
-          : <span className={styles["ss-placeholder"]}>Search student...</span>
+          ? <span className={styles.ssSelected}>{selected.last_name}, {selected.first_name} — {selected.program?.program_code}</span>
+          : <span className={styles.ssPlaceholder}>Search student...</span>
         }
         <svg viewBox="0 0 16 16" fill="none" width="12" height="12" style={{ flexShrink: 0 }}>
           <path d="M3 6l5 5 5-5" stroke="#a38d82" strokeWidth="1.5" strokeLinecap="round"/>
@@ -80,8 +80,8 @@ function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
       </div>
 
       {open && (
-        <div className={styles["ss-dropdown"]}>
-          <div className={styles["ss-search-wrap"]}>
+        <div className={styles.ssDropdown}>
+          <div className={styles.ssSearchWrap}>
             <svg viewBox="0 0 18 18" fill="none" width="13" height="13">
               <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM16 16l-3.5-3.5" stroke="#a38d82" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
@@ -94,21 +94,21 @@ function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
               onClick={e => e.stopPropagation()}
             />
           </div>
-          <div className={styles["ss-list"]}>
+          <div className={styles.ssList}>
             {filtered.length === 0
-              ? <div className={styles["ss-empty"]}>No students found</div>
+              ? <div className={styles.ssEmpty}>No students found</div>
               : filtered.map(s => (
                   <div
                     key={s.id}
-                    className={cx("ss-option", s.id === value && "ss-option-active")}
+                    className={cx("ssOption", s.id === value && "ssOptionActive")}
                     onClick={() => { onChange(s.id); setOpen(false); setQuery(""); }}
                   >
-                    <div className={styles["ss-avatar"]} style={{ background: s.color ?? "#FF6B1A" }}>
+                    <div className={styles.ssAvatar} style={{ background: getAvatarColor(s.first_name ?? "") }}>
                       {s.first_name?.charAt(0)}
                     </div>
                     <div>
-                      <p className={styles["ss-name"]}>{s.last_name}, {s.first_name}</p>
-                      <p className={styles["ss-prog"]}>{s.program?.program_code}</p>
+                      <p className={styles.ssName}>{s.last_name}, {s.first_name}</p>
+                      <p className={styles.ssProg}>{s.program?.program_code}</p>
                     </div>
                   </div>
                 ))
@@ -118,21 +118,20 @@ function StudentSelector({ students, value, onChange, onRemove, showRemove }) {
       )}
 
       {showRemove && (
-        <button className={styles["ss-remove"]} onClick={onRemove} title="Remove">✕</button>
+        <button className={styles.ssRemove} onClick={onRemove} title="Remove">✕</button>
       )}
     </div>
   );
 }
 
+/* ─── Main Component ────────────────────────────────────── */
 export default function DepartmentChairAward() {
   const queryClient = useQueryClient();
+  const navigate    = useNavigate();
+  const { id }      = useParams();
 
   const cx = (...names) =>
-    names
-      .filter(Boolean)
-      .map((name) => styles[name])
-      .filter(Boolean)
-      .join(" ");
+    names.filter(Boolean).map(n => styles[n]).filter(Boolean).join(" ");
 
   const [activeTab,    setActiveTab]    = useState("pending");
   const [search,       setSearch]       = useState("");
@@ -165,9 +164,7 @@ export default function DepartmentChairAward() {
   };
 
   const formatDate = (d) =>
-    d ? new Date(d).toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric",
-    }) : "—";
+    d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
   const resolvedAwardName = form.awardName === "Others" ? form.customAward : form.awardName;
 
@@ -180,9 +177,13 @@ export default function DepartmentChairAward() {
 
   const safeAwards = useMemo(() => (awards ?? []).filter(Boolean), [awards]);
 
+  // ── Detail view derived from URL param ──
+  const viewingAward = id ? safeAwards.find(a => String(a.id) === String(id)) : null;
+  const openDetail   = (a) => navigate(`/department-chair/awards/${a.id}`);
+  const closeDetail  = ()  => navigate("/department-chair/awards");
+
   const filteredAwards = useMemo(() => {
-    let result = safeAwards;
-    if (activeTab !== "all") result = result.filter(a => a?.status === activeTab);
+    let result = activeTab === "all" ? safeAwards : safeAwards.filter(a => a?.status === activeTab);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(a =>
@@ -211,22 +212,15 @@ export default function DepartmentChairAward() {
     setSaving(true);
     try {
       const results = await Promise.all(
-        validIds.map(id =>
-          awardService.give({ ...form, student_id: id, awardName: resolvedAwardName })
-        )
+        validIds.map(id => awardService.give({ ...form, student_id: id, awardName: resolvedAwardName }))
       );
       const allOk = results.every(r => r.ok);
       if (allOk) {
         showToast("success", `Award given to ${validIds.length} student(s).`);
         setShowModal(false);
         setForm(EMPTY_FORM);
-        const created = results
-          .map(r => r?.data)
-          .filter(Boolean);
-        queryClient.setQueryData(["awards"], (old = []) => [
-          ...created,
-          ...(old ?? []).filter(Boolean),
-        ]);
+        const created = results.map(r => r?.data).filter(Boolean);
+        queryClient.setQueryData(["awards"], (old = []) => [...created, ...(old ?? []).filter(Boolean)]);
         queryClient.invalidateQueries({ queryKey: ["awards"] });
         queryClient.invalidateQueries({ queryKey: ["dean-summary"] });
       } else {
@@ -245,9 +239,7 @@ export default function DepartmentChairAward() {
       if (res.ok) {
         showToast("success", "Award approved.");
         queryClient.setQueryData(["awards"], (old = []) =>
-          (old ?? [])
-            .filter(Boolean)
-            .map(a => a.id === res.data.id ? res.data : a)
+          (old ?? []).filter(Boolean).map(a => a.id === res.data.id ? res.data : a)
         );
         queryClient.invalidateQueries({ queryKey: ["dean-summary"] });
       } else showToast("error", res.message || "Failed to approve.");
@@ -261,9 +253,7 @@ export default function DepartmentChairAward() {
         showToast("success", "Award rejected.");
         setRejectId(null); setRejectReason("");
         queryClient.setQueryData(["awards"], (old = []) =>
-          (old ?? [])
-            .filter(Boolean)
-            .map(a => a.id === res.data.id ? res.data : a)
+          (old ?? []).filter(Boolean).map(a => a.id === res.data.id ? res.data : a)
         );
       } else showToast("error", res.message || "Failed to reject.");
     } catch { showToast("error", "Failed to reject."); }
@@ -275,33 +265,40 @@ export default function DepartmentChairAward() {
       {toast && <div className={cx("toast", `toast-${toast.type}`)}>{toast.message}</div>}
 
       {/* HEADER */}
-      <div className={styles["award-header-clean"]}>
+      <div className={styles.header}>
         <div>
-          <h2 className={styles["page-title"]}>Awards</h2>
-          <p className={styles["page-sub"]}>Review, approve, and give awards to students in your department.</p>
+          <h2 className={styles.pageTitle}>Awards &amp; Recognition</h2>
+          <p className={styles.pageSub}>Review, approve, and give awards to students in your department.</p>
         </div>
-        <button className={styles["btn-primary"]} onClick={() => { setForm(EMPTY_FORM); setShowModal(true); }}>
-          + Give Award
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className={styles.headerBadge}>
+            <span className={styles.headerDot} />
+            {counts.pending} Pending
+          </div>
+          <button className={styles.btnPrimary} onClick={() => { setForm(EMPTY_FORM); setShowModal(true); }}>
+            + Give Award
+          </button>
+        </div>
       </div>
 
       {/* CONTROLS */}
-      <div className={styles["controls-row"]}>
-        <div className={styles["filter-tabs"]}>
+      <div className={styles.controlsRow}>
+        <div className={styles.filterTabs}>
           {TABS.map(t => (
             <button
               key={t.key}
-              className={cx("filter-tab", activeTab === t.key && "active")}
+              className={cx("filterTab", activeTab === t.key && "active")}
               onClick={() => setActiveTab(t.key)}
             >
               {t.label}
-              {counts[t.key] > 0 && <span className={styles["tab-count"]}>{counts[t.key]}</span>}
+              {counts[t.key] > 0 && <span className={styles.tabCount}>{counts[t.key]}</span>}
             </button>
           ))}
         </div>
-        <div className={styles["search-wrap"]}>
-          <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
-            <path d="M8 15A7 7 0 108 1a7 7 0 000 14zM18 18l-4-4" stroke="#a38d82" strokeWidth="2" strokeLinecap="round"/>
+        <div className={styles.searchWrap}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="6" cy="6" r="4.5" stroke="#b89f90" strokeWidth="1.3"/>
+            <path d="M9.5 9.5l2.5 2.5" stroke="#b89f90" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
           <input
             type="text"
@@ -309,119 +306,133 @@ export default function DepartmentChairAward() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          {search && <button className={styles["search-clear"]} onClick={() => setSearch("")}>✕</button>}
+          {search && <button className={styles.searchClear} onClick={() => setSearch("")}>×</button>}
         </div>
       </div>
 
       {/* TABLE */}
       {isLoading ? (
-        <div className={styles["loading-state"]}><div className={styles.spinner} /><p>Loading awards...</p></div>
+        <div className={styles.loadingState}>
+          <div className={styles.spinner} />
+          <p>Loading awards...</p>
+        </div>
       ) : (
-        <div className={styles["awards-table-container"]}>
+        <div className={styles.tableContainer}>
+          <div className={styles.awardsList}>
 
-          {/* Header — inside container so grid aligns */}
-          <div className={cx("ach-row", "ach-header")}>
-            <div className={styles["ach-col"]}>Award</div>
-            <div className={styles["ach-col"]}>Student</div>
-            <div className={styles["ach-col"]}>Date</div>
-            <div className={styles["ach-col"]}>Status</div>
-            <div className={cx("ach-col", "action-col")}>Action</div>
-          </div>
-
-          {filteredAwards.length === 0 ? (
-            <div className={styles["empty-state"]}>
-              <p>No awards found.</p>
-              <span>Try adjusting filters or search.</span>
+            {/* Header */}
+            <div className={cx("row", "headerRow")}>
+              <div className={styles.col}>Award</div>
+              <div className={styles.col}>Student</div>
+              <div className={styles.col}>Date</div>
+              <div className={styles.col}>Status</div>
+              <div className={cx("col", "actionCol")}>Action</div>
             </div>
-          ) : (
-            <div className={styles["awards-list"]}>
-              {filteredAwards.map(a => (
-                <div className={styles["ach-row"]} key={a.id}>
+
+            {filteredAwards.length === 0 ? (
+              <div className={styles.emptyState}>
+                No awards found.
+                <span>{search ? "Try adjusting your search or filters." : "No awards in this category yet."}</span>
+              </div>
+            ) : (
+              filteredAwards.map(a => (
+                <div
+                  className={styles.row}
+                  key={a.id}
+                  onClick={() => openDetail(a)}
+                  style={{ cursor: "pointer" }}
+                >
 
                   {/* Award */}
-                  <div className={cx("ach-col", "ach-info-col")}>
+                  <div className={cx("col", "infoCol")}>
                     <div>
-                      <p className={styles["ach-title"]}>{a.awardName}</p>
-                      <p className={styles["ach-meta"]}>
+                      <p className={styles.awardTitle}>{a.awardName}</p>
+                      <p className={styles.awardMeta}>
                         {a.applied_by
-                          ? `Recommender: ${a.recommender?.name ?? "Admin"}`
-                          : "Student Application"}
+                          ? `Given by ${a.recommender?.name ?? "Admin"}`
+                          : "Student application"}
                       </p>
                     </div>
                   </div>
 
                   {/* Student */}
-                  <div className={styles["ach-col"]}>
-                    <p className={styles["ach-student-name"]}>
-                      {a.student?.first_name} {a.student?.last_name}
-                    </p>
-                    <p className={styles["ach-student-prog"]}>
-                      {a.student?.program?.program_code}
-                    </p>
+                  <div className={styles.col}>
+                    <div className={styles.studentCell}>
+                      <div
+                        className={styles.avatar}
+                        style={{ background: getAvatarColor(a.student?.first_name ?? "") }}
+                      >
+                        {getInitials(a)}
+                      </div>
+                      <div>
+                        <p className={styles.studentName}>
+                          {a.student?.first_name} {a.student?.last_name}
+                        </p>
+                        <p className={styles.studentMeta}>
+                          {a.student?.program?.program_code}
+                          {a.student?.section?.section_name ? ` · ${a.student.section.section_name}` : ""}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Date */}
-                  <div className={styles["ach-col"]}>
-                    <p className={styles["ach-date"]}>{formatDate(a.date_received)}</p>
-                    {a.action_taken && (
-                      <p className={styles["ach-reason"]} title={a.action_taken}>
-                        Note: {a.action_taken}
-                      </p>
-                    )}
+                  <div className={styles.col}>
+                    <p className={styles.date}>{formatDate(a.date_received)}</p>
+                    {a.action_taken && <p className={styles.reason}>{a.action_taken}</p>}
                   </div>
 
                   {/* Status */}
-                  <div className={styles["ach-col"]}>
-                    <span className={cx("ach-status", `as-${a.status}`)}>{a.status}</span>
+                  <div className={styles.col}>
+                    <span className={cx("status", `status-${a.status}`)}>{a.status}</span>
                   </div>
 
                   {/* Action */}
-                  <div className={cx("ach-col", "action-col")}>
+                  <div className={cx("col", "actionCol")} onClick={e => e.stopPropagation()}>
                     {a.status === "pending" ? (
-                      <div className={styles["ach-actions"]}>
-                        <button className={styles["btn-approve"]} onClick={() => handleApprove(a.id)}>Approve</button>
-                        <button className={styles["btn-reject"]} onClick={() => { setRejectId(a.id); setRejectReason(""); }}>Reject</button>
+                      <div className={styles.actions}>
+                        <button className={styles.btnApprove} onClick={() => handleApprove(a.id)}>Approve</button>
+                        <button className={styles.btnReject} onClick={() => { setRejectId(a.id); setRejectReason(""); }}>Reject</button>
                       </div>
                     ) : (
-                      <div className={styles["ach-resolved-block"]}>
-                        <span className={styles["ach-resolved"]}>
+                      <div className={styles.resolvedBlock}>
+                        <span className={styles.resolvedText}>
                           {a.status === "approved" ? "Approved" : "Rejected"}
                         </span>
-                        <span className={styles["ach-action-by"]}>
-                          Action taken by {getActionTaker(a)}
+                        <span className={styles.actionTakenBy}>
+                          by {getActionTaker(a)}
                         </span>
                       </div>
                     )}
                   </div>
 
                 </div>
-              ))}
-            </div>
-          )}
-
+              ))
+            )}
+          </div>
         </div>
       )}
 
       {/* GIVE AWARD MODAL */}
       {showModal && (
-        <div className={styles["modal-overlay"]} onClick={() => !saving && setShowModal(false)}>
+        <div className={styles.modalOverlay} onClick={() => !saving && setShowModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles["modal-header"]}>
+            <div className={styles.modalHeader}>
               <h3>Give Award to Student(s)</h3>
-              <button className={styles["modal-close"]} onClick={() => setShowModal(false)} disabled={saving}>×</button>
+              <button className={styles.modalClose} onClick={() => setShowModal(false)} disabled={saving}>×</button>
             </div>
-            <div className={styles["modal-body"]}>
+            <div className={styles.modalBody}>
 
-              <div className={styles["form-group"]}>
+              <div className={styles.formGroup}>
                 <label>
                   Student(s) <span className={styles.req}>*</span>
-                  <span className={styles["label-hint"]}> — add multiple if needed</span>
+                  <span className={styles.labelHint}> — add multiple if needed</span>
                 </label>
                 {form.student_ids.length === 0 && (
-                  <p className={styles["ss-hint"]}>Click "+ Add Student" to begin.</p>
+                  <p className={styles.ssHint}>Click "+ Add Student" to begin.</p>
                 )}
                 {form.student_ids.map((id, idx) => (
-                  <div key={idx} className={styles["student-slot"]}>
+                  <div key={idx} className={styles.studentSlot}>
                     <StudentSelector
                       students={students}
                       value={id}
@@ -431,7 +442,7 @@ export default function DepartmentChairAward() {
                     />
                   </div>
                 ))}
-                <button className={styles["btn-add-student"]} onClick={addStudentSlot}>
+                <button className={styles.btnAddStudent} onClick={addStudentSlot}>
                   <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
                     <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
@@ -439,21 +450,19 @@ export default function DepartmentChairAward() {
                 </button>
               </div>
 
-              <div className={styles["form-group"]}>
+              <div className={styles.formGroup}>
                 <label>Award Name <span className={styles.req}>*</span></label>
                 <select
+                  className={styles.awardSelect}
                   value={form.awardName}
                   onChange={e => setForm({ ...form, awardName: e.target.value, customAward: "" })}
-                  className={styles["award-select"]}
                 >
                   <option value="">Select an award...</option>
-                  {PREDEFINED_AWARDS.map(a => (
-                    <option key={a} value={a}>{a}</option>
-                  ))}
+                  {PREDEFINED_AWARDS.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
                 {form.awardName === "Others" && (
                   <input
-                    className={styles["award-custom-input"]}
+                    className={styles.awardCustomInput}
                     type="text"
                     placeholder="Specify award name..."
                     value={form.customAward}
@@ -462,7 +471,7 @@ export default function DepartmentChairAward() {
                 )}
               </div>
 
-              <div className={styles["form-group"]}>
+              <div className={styles.formGroup}>
                 <label>Description</label>
                 <textarea
                   rows="3"
@@ -472,7 +481,7 @@ export default function DepartmentChairAward() {
                 />
               </div>
 
-              <div className={styles["form-group"]}>
+              <div className={styles.formGroup}>
                 <label>Date Received <span className={styles.req}>*</span></label>
                 <input
                   type="date"
@@ -482,14 +491,12 @@ export default function DepartmentChairAward() {
               </div>
 
             </div>
-            <div className={styles["modal-footer"]}>
-              <button className={styles["btn-secondary"]} onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
-              <button className={styles["btn-primary"]} onClick={handleGive} disabled={saving}>
+            <div className={styles.modalFooter}>
+              <button className={styles.btnSecondary} onClick={() => setShowModal(false)} disabled={saving}>Cancel</button>
+              <button className={styles.btnPrimary} onClick={handleGive} disabled={saving}>
                 {saving
                   ? "Saving..."
-                  : `Give Award${form.student_ids.filter(Boolean).length > 1
-                      ? ` (${form.student_ids.filter(Boolean).length})`
-                      : ""}`
+                  : `Give Award${form.student_ids.filter(Boolean).length > 1 ? ` (${form.student_ids.filter(Boolean).length})` : ""}`
                 }
               </button>
             </div>
@@ -499,14 +506,14 @@ export default function DepartmentChairAward() {
 
       {/* REJECT MODAL */}
       {rejectId && (
-        <div className={styles["modal-overlay"]} onClick={() => setRejectId(null)}>
-          <div className={cx("modal", "modal-sm")} onClick={e => e.stopPropagation()}>
-            <div className={styles["modal-header"]}>
+        <div className={styles.modalOverlay} onClick={() => setRejectId(null)}>
+          <div className={cx("modal", "modalSm")} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
               <h3>Reject Award</h3>
-              <button className={styles["modal-close"]} onClick={() => setRejectId(null)}>×</button>
+              <button className={styles.modalClose} onClick={() => setRejectId(null)}>×</button>
             </div>
-            <div className={styles["modal-body"]}>
-              <div className={styles["form-group"]}>
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
                 <label>Reason (optional)</label>
                 <textarea
                   rows="3"
@@ -516,13 +523,128 @@ export default function DepartmentChairAward() {
                 />
               </div>
             </div>
-            <div className={styles["modal-footer"]}>
-              <button className={styles["btn-secondary"]} onClick={() => setRejectId(null)}>Cancel</button>
-              <button className={styles["btn-reject"]} onClick={handleReject}>Confirm Reject</button>
+            <div className={styles.modalFooter}>
+              <button className={styles.btnSecondary} onClick={() => setRejectId(null)}>Cancel</button>
+              <button className={styles.btnReject} onClick={handleReject}>Confirm Reject</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* DETAIL MODAL */}
+      {viewingAward && (() => {
+        const a     = viewingAward;
+        const COLOR = { approved: "#10b981", pending: "#f59e0b", rejected: "#ef4444" };
+        const LABEL = { approved: "Approved", pending: "Pending Approval", rejected: "Rejected" };
+        const color = COLOR[a.status] ?? "#9ca3af";
+        const label = LABEL[a.status] ?? a.status;
+        return (
+          <div className={styles.modalOverlay} onClick={e => { if (e.target === e.currentTarget) closeDetail(); }}>
+            <div className={cx("modal", "modalSm")} onClick={e => e.stopPropagation()}>
+
+              {/* hero */}
+              <div className={styles.detailHero} style={{ background: `linear-gradient(135deg,${color}20 0%,${color}08 100%)`, borderBottom: `3px solid ${color}28` }}>
+                <div className={styles.detailHeroIcon} style={{ background: color + "22", border: `2px solid ${color}40` }}>
+                  <svg viewBox="0 0 20 20" fill="none" width="22" height="22" style={{ color }}>
+                    <path d="M10 2l2 6h6l-5 3.5 2 6L10 14.5l-5 3.5 2-6L2 8h6l2-6z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className={styles.detailHeroText}>
+                  <h3 className={styles.detailTitle}>{a.awardName}</h3>
+                  <div className={styles.detailHeroMeta}>
+                    <span className={cx("status", `status-${a.status}`)}>{label}</span>
+                    {a.category     && <span className={styles.detailChip}>{a.category}</span>}
+                    {a.academic_year && <span className={styles.detailChip}>{a.academic_year}</span>}
+                  </div>
+                </div>
+                <button className={styles.modalClose} onClick={closeDetail}>×</button>
+              </div>
+
+              {/* student block */}
+              <div className={styles.detailStudentBlock}>
+                <div className={styles.avatar} style={{ background: getAvatarColor(a.student?.first_name ?? ""), width: 40, height: 40, fontSize: 14 }}>
+                  {getInitials(a)}
+                </div>
+                <div>
+                  <p className={styles.studentName}>{a.student?.first_name} {a.student?.last_name}</p>
+                  <p className={styles.studentMeta}>
+                    {a.student?.program?.program_code}
+                    {a.student?.section?.section_name ? ` · ${a.student.section.section_name}` : ""}
+                  </p>
+                </div>
+              </div>
+
+              {/* info rows */}
+              <div className={styles.detailBody}>
+                <div className={styles.detailRow}>
+                  <span className={styles.detailRowLabel}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    Date Received
+                  </span>
+                  <span className={styles.detailRowValue}>{formatDate(a.date_received)}</span>
+                </div>
+                <div className={styles.detailRow}>
+                  <span className={styles.detailRowLabel}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    {a.applied_by ? "Given By" : "Submitted By"}
+                  </span>
+                  <span className={styles.detailRowValue}>{a.issued_by || "—"}</span>
+                </div>
+                {a.recommender?.name && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailRowLabel}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      Recommended By
+                    </span>
+                    <span className={styles.detailRowValue}>{a.recommender.name}</span>
+                  </div>
+                )}
+                {a.status !== "pending" && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailRowLabel}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      Action Taken By
+                    </span>
+                    <span className={styles.detailRowValue}>{getActionTaker(a)}</span>
+                  </div>
+                )}
+                {a.description && (
+                  <div className={cx("detailRow", "detailRowBlock")}>
+                    <span className={styles.detailRowLabel}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                      Description
+                    </span>
+                    <p className={styles.detailRowDesc}>{a.description}</p>
+                  </div>
+                )}
+                {a.action_taken && a.status === "rejected" && (
+                  <div className={cx("detailRow", "detailRowBlock", "detailRowDanger")}>
+                    <span className={styles.detailRowLabel}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      Rejection Reason
+                    </span>
+                    <p className={styles.detailRowDesc}>{a.action_taken}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* footer */}
+              <div className={styles.modalFooter}>
+                {a.status === "pending" && (
+                  <>
+                    <button className={styles.btnReject} onClick={() => { closeDetail(); setRejectId(a.id); setRejectReason(""); }}>Reject</button>
+                    <button className={styles.btnApprove} onClick={() => { handleApprove(a.id); closeDetail(); }}>Approve</button>
+                  </>
+                )}
+                {a.status !== "pending" && (
+                  <button className={styles.btnSecondary} onClick={closeDetail}>Close</button>
+                )}
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );

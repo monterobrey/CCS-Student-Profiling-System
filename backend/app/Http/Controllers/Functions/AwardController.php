@@ -56,8 +56,10 @@ class AwardController extends Controller
     {
         $data = $request->validate([
             'awardName'     => 'required|string|max:255',
+            'category'      => 'nullable|string|max:100',
             'description'   => 'nullable|string',
             'date_received' => 'required|date',
+            'academic_year' => 'nullable|string|max:50',
         ]);
 
         $award = $this->awardService->applyForAward($request->user(), $data);

@@ -160,6 +160,14 @@ function App() {
               }
             />
             <Route
+              path="/dean/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <AwardsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dean/student-accounts"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
@@ -193,6 +201,14 @@ function App() {
             />
             <Route
               path="/department-chair/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <DepartmentChairAward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/department-chair/awards/:id"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
                   <DepartmentChairAward />
@@ -320,6 +336,14 @@ function App() {
               }
             />
             <Route
+              path="/secretary/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <AwardsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/faculty/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
@@ -345,6 +369,14 @@ function App() {
             />
             <Route
               path="/student/awards"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <StudentAwards/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/awards/:id"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
                   <StudentAwards/>

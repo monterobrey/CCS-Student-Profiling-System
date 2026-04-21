@@ -65,9 +65,10 @@ export default function CourseManagement() {
       c.course_name.toLowerCase().includes(search.toLowerCase());
 
     // Match against primary program_id OR any curriculum program
-    const matchesProgram = !filterProgram || 
-      c.program_id === filterProgram ||
-      c.curriculum_programs?.some(p => p.id === filterProgram);
+    const pid = Number(filterProgram);
+    const matchesProgram = !filterProgram ||
+      c.program_id === pid ||
+      c.curriculum_programs?.some(p => p.id === pid);
 
     return matchesSearch && matchesProgram;
   }), [courses, search, filterProgram]);
@@ -118,7 +119,7 @@ export default function CourseManagement() {
     setForm({
       course_code:   course.course_code,
       course_name:   course.course_name,
-      program_id:    course.program_id,
+      program_id:    String(course.program_id),
       year_level:    course.year_level,
       semester:      course.semester,
       type:          course.type,

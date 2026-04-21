@@ -156,17 +156,6 @@ class AnalyticsService
             ['sem' => "Current", 'gwa' => round($avgGwa, 2), 'pct' => 90],
         ];
 
-        // ── Students by program (department-scoped for chair, all for dean) ──
-        $studentsByProgram = DB::table('students')
-            ->join('programs', 'students.program_id', '=', 'programs.id')
-            ->when($departmentId, fn($q) => $q->where('programs.department_id', $departmentId))
-            ->whereNull('students.deleted_at')
-            ->select('programs.program_code', DB::raw('COUNT(*) as total'))
-            ->groupBy('programs.program_code')
-            ->orderByDesc('total')
-            ->pluck('total', 'programs.program_code')
-            ->toArray();
-
         return [
             'total_students' => $totalStudents,
             'total_faculty' => $totalFaculty,
@@ -184,7 +173,6 @@ class AnalyticsService
                                       NonAcademicActivity::where('status', 'pending')->count(),
             'account_requests' => $accountRequests,
             'faculty_workload' => $facultyWorkload,
-            'students_by_program' => $studentsByProgram,
             'pending_achievements' => $pendingAchievements,
             'recent_awards' => $recentAwards
         ];

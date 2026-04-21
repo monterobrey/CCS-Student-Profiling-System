@@ -133,11 +133,10 @@ const ChairDashboard = () => {
     refetchOnReconnect: true,
   });
 
-  const distribution = useMemo(() => perfData.distribution ?? [], [perfData]);
-  // scope_label is the chair's program code (e.g. "BSIT"), returned by the academic-performance endpoint
-  const programLabel = useMemo(() => perfData.scope_label ?? null, [perfData]);
-  // students_by_program from dean-summary is department-scoped — shows all programs (BSIT, BSCS, etc.)
-  const studentsByProgram = useMemo(() => summaryData.students_by_program ?? {}, [summaryData]);
+  const distribution   = useMemo(() => perfData.distribution   ?? [], [perfData]);
+  const programLabel   = useMemo(() => perfData.scope_label    ?? null, [perfData]);
+  // total_students from academic-performance is scoped to the chair's program only
+  const programStudentCount = useMemo(() => perfData.total_students ?? 0, [perfData]);
 
   const chairStats = useMemo(() => ({
     totalStudents:    summaryData.total_students      ?? 0,
@@ -231,28 +230,10 @@ const ChairDashboard = () => {
             </div>
           </div>
           <div className="hero-right">
-            <div className="hero-stat-card hero-stat-card--enrollment">
-              <span className="hsc-label">Total Students</span>
-              <span className="hsc-value">{chairStats.totalStudents}</span>
+            <div className="hero-stat-card">
+              <span className="hsc-label">{programLabel ? `Total ${programLabel} Students` : 'Total Students'}</span>
+              <span className="hsc-value">{programStudentCount}</span>
               <span className="hsc-sub">Enrolled this semester</span>
-              <div className="hsc-program-breakdown">
-                {Object.keys(studentsByProgram).length === 0 ? (
-                  <span className="hsc-no-data">No program data</span>
-                ) : (() => {
-                    const total = Object.values(studentsByProgram).reduce((sum, n) => sum + n, 0);
-                    return Object.entries(studentsByProgram).map(([code, count]) => {
-                      const pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
-                      return (
-                        <div key={code} className="hsc-program-row">
-                          <span className="hsc-program-pill">{code}</span>
-                          <span className="hsc-program-count">{count}</span>
-                          <span className="hsc-program-pct">{pct}%</span>
-                        </div>
-                      );
-                    });
-                  })()
-                }
-              </div>
             </div>
             <div className="hero-stat-card accent">
               <span className="hsc-label">Avg GWA</span>

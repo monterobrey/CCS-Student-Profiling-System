@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { analyticsService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/Dean/DeanDashboard.css';
 
 export default function DeanDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   // ── Cached query — staleTime: Infinity, never auto-refetches ──
   const { data: summary = {}, isLoading } = useQuery({
     queryKey: ['dean-summary'],
@@ -139,10 +141,10 @@ export default function DeanDashboard() {
               <strong>{active_violations} student violations</strong> requiring attention this week.
             </p>
             <div className="hero-actions">
-              <button className="hero-btn-primary">
+              <button className="hero-btn-primary" onClick={() => navigate('/dean/awards')}>
                 Pending Approvals <span className="hero-btn-badge">{pendingApprovalsCount}</span>
               </button>
-              <button className="hero-btn-ghost">Generate Report</button>
+              <button className="hero-btn-ghost" onClick={() => navigate('/dean/performance')}>Generate Report</button>
             </div>
           </div>
           <div className="hero-right">
@@ -227,7 +229,7 @@ export default function DeanDashboard() {
               <h3 className="card-title">Top Performing Students</h3>
               <p className="card-sub">Ranked by GWA · current semester</p>
             </div>
-            <a href="#" className="card-link">View all →</a>
+            <a href="/dean/performance" className="card-link">View all →</a>
           </div>
           <div className="student-list">
             {top_students.map((s, i) => (
@@ -257,7 +259,7 @@ export default function DeanDashboard() {
               <h3 className="card-title">Student Violations</h3>
               <p className="card-sub">Active cases this semester</p>
             </div>
-            <a href="#" className="card-link">View all →</a>
+            <a href="/dean/violations" className="card-link">View all →</a>
           </div>
           <div className="violation-list">
             {recent_violations.map((v, i) => (

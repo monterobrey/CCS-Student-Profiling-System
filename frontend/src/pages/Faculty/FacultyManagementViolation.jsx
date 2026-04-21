@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { facultyService } from '../../services';
 import styles from '../../styles/Faculty/FacultyManagementViolation.module.css';
@@ -84,6 +84,7 @@ const FacultyViolationManager = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const { id: urlId } = useParams();
 
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [studentSearch,      setStudentSearch]      = useState('');
@@ -152,6 +153,17 @@ const FacultyViolationManager = () => {
     setStudentDropdownOpen(false);
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate, students]);
+
+  // Sync detail modal with URL :id param
+  useEffect(() => {
+    if (!violations.length) return;
+    if (urlId) {
+      const match = violations.find((v) => String(v.id) === String(urlId));
+      setSelectedViolation(match ?? null);
+    } else {
+      setSelectedViolation(null);
+    }
+  }, [urlId, violations]);
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -324,7 +336,7 @@ const FacultyViolationManager = () => {
               {filteredReports.map((report) => {
                 const avatarColor = getAvatarColor(report.studentName);
                 return (
-                  <tr key={report.id} className={styles['row-hover']} onClick={() => setSelectedViolation(report)}>
+                  <tr key={report.id} className={styles['row-hover']} onClick={() => navigate(`/faculty/violations/${report.id}`)}>
                     <td>
                       <div className={styles['student-profile']}>
                         <div className={styles.avatar} style={{ background: avatarColor }}>
@@ -463,11 +475,11 @@ const FacultyViolationManager = () => {
 
       {/* ── Detail Modal (unchanged) ── */}
       {selectedViolation && (
-        <div className={styles['modal-backdrop']} onClick={() => setSelectedViolation(null)}>
+        <div className={styles['modal-backdrop']} onClick={() => navigate('/faculty/violations')}>
           <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
             <div className={styles['modal-header']}>
               <h3>Incident Report Details</h3>
-              <button className={styles['close-x']} onClick={() => setSelectedViolation(null)}>&times;</button>
+              <button className={styles['close-x']} onClick={() => navigate('/faculty/violations')}>&times;</button>
             </div>
             <div className={styles['modal-content']}>
               <div className={styles['detail-grid']}>

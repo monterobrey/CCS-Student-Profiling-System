@@ -99,6 +99,9 @@ const { role, logout } = useAuth();
       ],
       [ROLES.FACULTY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
+        { name: "My Profile", items: [
+          { path: "profile", meta: { title: "My Profile", icon: "profile" } }
+        ]},
         { name: "My Classes", items: [
           { path: "schedule", meta: { title: "My Schedule", icon: "schedule" } },
           { path: "subjects", meta: { title: "My Subjects", icon: "courses" } }
@@ -107,9 +110,6 @@ const { role, logout } = useAuth();
           { path: "students", meta: { title: "Student Profiles", icon: "profile" } },
           { path: "violations", meta: { title: "Record Violation", icon: "violations" } },
           { path: "awards", meta: { title: "Recommend Awards", icon: "awards" } }
-        ]},
-        { name: "My Profile", items: [
-          { path: "profile", meta: { title: "My Profile", icon: "profile" } }
         ]},
         { name: "Account", items: [
           { path: "settings", meta: { title: "Account Settings", icon: "settings" } }

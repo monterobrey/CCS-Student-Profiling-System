@@ -352,6 +352,14 @@ function App() {
               }
             />
             <Route
+              path="/faculty/profile"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <FacultyProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/student/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
@@ -574,14 +582,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
                   <FacultyRecommendAward />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/faculty/profile"
-              element={
-                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
-                  <FacultyProfile />
                 </ProtectedRoute>
               }
             />

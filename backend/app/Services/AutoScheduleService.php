@@ -15,7 +15,10 @@ use Carbon\Carbon;
 class AutoScheduleService
 {
     private $operatingStart    = '07:30';
-    private $operatingEnd      = '18:30';
+    private $operatingEnd      = '21:00';   // hard ceiling
+    private $preferredEnd      = '17:00';   // prefer to finish by 5 PM
+    private $lunchStart        = '12:00';
+    private $lunchEnd          = '13:00';
     private $slotIncrement     = 30; // minutes
     private $studentsPerSection = 50;
 
@@ -349,6 +352,7 @@ class AutoScheduleService
     ) {
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+        // Build candidate day groups based on unit count and type
         $patterns = [];
         if ($type === 'lab') {
             $patterns = [['days' => 1, 'hoursPerMeeting' => $units]];
@@ -369,7 +373,7 @@ class AutoScheduleService
         }
 
         foreach ($patterns as $pattern) {
-            $validDays = array_filter($days, fn($d) => $d !== $vacantDay);
+            $validDays = array_values(array_filter($days, fn($d) => $d !== $vacantDay));
 
             $dayGroups = [];
             if ($pattern['days'] === 3) {
@@ -383,58 +387,126 @@ class AutoScheduleService
             foreach ($dayGroups as $group) {
                 if (count(array_intersect($group, [$vacantDay])) > 0) continue;
 
-                $time     = Carbon::createFromFormat('H:i', $this->operatingStart);
-                $endLimit = Carbon::createFromFormat('H:i', $this->operatingEnd);
+                // Try to find an independent best slot for each day in the group.
+                // Each day can land on a different time — that's intentional.
+                $placements = [];
+                $allPlaced  = true;
 
-                while ($time->copy()->addMinutes($pattern['hoursPerMeeting'] * 60)->lte($endLimit)) {
-                    $startTime = $time->format('H:i');
-                    $endTime   = $time->copy()->addMinutes($pattern['hoursPerMeeting'] * 60)->format('H:i');
-
-                    // Check section slot availability
-                    if (!$this->isValidSlot($section, $group, $startTime, $endTime, $generatedSchedules)) {
-                        $time->addMinutes($this->slotIncrement);
-                        continue;
-                    }
-
-                    // Find a faculty that is free during this slot
-                    $assignedFaculty = $this->findAvailableFaculty(
-                        $preferredFaculty, $group, $startTime, $endTime, $facultySlots
+                foreach ($group as $day) {
+                    $slot = $this->findBestSlotForDay(
+                        $section, $day, $pattern['hoursPerMeeting'],
+                        $generatedSchedules, $preferredFaculty, $facultySlots
                     );
 
-                    // Place the schedule
-                    foreach ($group as $day) {
-                        $sched = Schedule::create([
-                            'section_id' => $section->id,
-                            'course_id'  => $course->id,
-                            'semester'   => $semester,
-                            'class_type' => $type,
-                            'dayOfWeek'  => $day,
-                            'startTime'  => $startTime,
-                            'endTime'    => $endTime,
-                            'room'       => $type === 'lab' ? 'Laboratory' : 'Lecture Room',
-                            'faculty_id' => $assignedFaculty?->id,
-                        ]);
-                        $generatedSchedules[] = $sched;
+                    if ($slot === null) {
+                        $allPlaced = false;
+                        break;
                     }
 
-                    // Update faculty tracking
+                    $placements[$day] = $slot;
+                }
+
+                if (!$allPlaced) continue;
+
+                // Commit all placements for this group
+                foreach ($group as $day) {
+                    ['start' => $startTime, 'end' => $endTime, 'faculty' => $assignedFaculty] = $placements[$day];
+
+                    $sched = Schedule::create([
+                        'section_id' => $section->id,
+                        'course_id'  => $course->id,
+                        'semester'   => $semester,
+                        'class_type' => $type,
+                        'dayOfWeek'  => $day,
+                        'startTime'  => $startTime,
+                        'endTime'    => $endTime,
+                        'room'       => $type === 'lab' ? 'Laboratory' : 'Lecture Room',
+                        'faculty_id' => $assignedFaculty?->id,
+                    ]);
+                    $generatedSchedules[] = $sched;
+
                     if ($assignedFaculty) {
                         $facultyLoad[$assignedFaculty->id] = ($facultyLoad[$assignedFaculty->id] ?? 0) + $units;
-                        foreach ($group as $day) {
-                            $facultySlots[$assignedFaculty->id][] = [
-                                'day'   => $day,
-                                'start' => $startTime,
-                                'end'   => $endTime,
-                            ];
-                        }
+                        $facultySlots[$assignedFaculty->id][] = [
+                            'day'   => $day,
+                            'start' => $startTime,
+                            'end'   => $endTime,
+                        ];
                     }
-
-                    return true;
                 }
+
+                return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Find the earliest available slot for a single day.
+     *
+     * Rules:
+     *  - Skip the 12:00–13:00 lunch window (slot must not overlap it).
+     *  - Prefer slots that end by 17:00; fall back to slots up to operatingEnd.
+     *  - Returns ['start' => ..., 'end' => ..., 'faculty' => ...] or null.
+     */
+    private function findBestSlotForDay(
+        $section,
+        string $day,
+        float $hoursPerMeeting,
+        array &$generatedSchedules,
+        ?Faculty $preferredFaculty,
+        array &$facultySlots
+    ): ?array {
+        $durationMins = (int) round($hoursPerMeeting * 60);
+        $time         = Carbon::createFromFormat('H:i', $this->operatingStart);
+        $hardEnd      = Carbon::createFromFormat('H:i', $this->operatingEnd);
+        $lunchStart   = Carbon::createFromFormat('H:i', $this->lunchStart);
+        $lunchEnd     = Carbon::createFromFormat('H:i', $this->lunchEnd);
+
+        // Two passes: first try to finish by preferredEnd, then allow up to operatingEnd
+        $ceilings = [
+            Carbon::createFromFormat('H:i', $this->preferredEnd),
+            $hardEnd,
+        ];
+
+        foreach ($ceilings as $ceiling) {
+            $cursor = $time->copy();
+
+            while ($cursor->copy()->addMinutes($durationMins)->lte($ceiling)) {
+                $startTime = $cursor->format('H:i');
+                $endTime   = $cursor->copy()->addMinutes($durationMins)->format('H:i');
+
+                $slotStart = Carbon::createFromFormat('H:i', $startTime);
+                $slotEnd   = Carbon::createFromFormat('H:i', $endTime);
+
+                // Skip if slot overlaps the lunch window (12:00–13:00)
+                if ($slotStart->lt($lunchEnd) && $slotEnd->gt($lunchStart)) {
+                    // Jump cursor to end of lunch
+                    $cursor = $lunchEnd->copy();
+                    continue;
+                }
+
+                // Check section availability for this single day
+                if (!$this->isValidSlot($section, [$day], $startTime, $endTime, $generatedSchedules)) {
+                    $cursor->addMinutes($this->slotIncrement);
+                    continue;
+                }
+
+                // Find available faculty
+                $assignedFaculty = $this->findAvailableFaculty(
+                    $preferredFaculty, [$day], $startTime, $endTime, $facultySlots
+                );
+
+                return [
+                    'start'   => $startTime,
+                    'end'     => $endTime,
+                    'faculty' => $assignedFaculty,
+                ];
+            }
+        }
+
+        return null;
     }
 
     /**

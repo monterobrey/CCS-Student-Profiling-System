@@ -23,6 +23,21 @@ const formatDays = (days) =>
     .map((d) => DAY_SHORT[d])
     .join("/");
 
+// Render days from daySlots: always "M/Th" style
+const formatSlotDays = (daySlots) =>
+  daySlots
+    .map((s) => DAY_SHORT[s.day])
+    .join("/");
+
+// Render times from daySlots:
+// - All same time → "8:00 AM – 9:00 AM"
+// - Different times → "8:00 AM – 9:00 AM / 9:00 AM – 10:00 AM"
+const formatSlotTimes = (daySlots) => {
+  const times = daySlots.map((s) => `${formatTime(s.startTime)} – ${formatTime(s.endTime)}`);
+  const unique = [...new Set(times)];
+  return unique.join(" / ");
+};
+
 export default function ScheduleManagement() {
   const queryClient  = useQueryClient();
   const fileInputRef = useRef(null);
@@ -210,16 +225,27 @@ export default function ScheduleManagement() {
   // ── Derived: grouped schedules ────────────────────────────────────────────
 
   const groupedSchedules = useMemo(() => {
+    // Group all entries by section + course + type into one row.
+    // Each day entry keeps its own time, sorted by day order.
     const grouped = {};
 
     schedules.forEach((item) => {
       const key = `${item.section_id}-${item.course_id}-${item.class_type}`;
       if (!grouped[key]) {
-        grouped[key] = { ...item, days: [item.dayOfWeek], ids: [item.id] };
+        grouped[key] = {
+          ...item,
+          ids: [item.id],
+          daySlots: [{ day: item.dayOfWeek, startTime: item.startTime, endTime: item.endTime }],
+        };
       } else {
-        grouped[key].days.push(item.dayOfWeek);
         grouped[key].ids.push(item.id);
+        grouped[key].daySlots.push({ day: item.dayOfWeek, startTime: item.startTime, endTime: item.endTime });
       }
+    });
+
+    // Sort each row's day slots by day order
+    Object.values(grouped).forEach((row) => {
+      row.daySlots.sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day));
     });
 
     return Object.values(grouped)
@@ -517,8 +543,8 @@ export default function ScheduleManagement() {
                           {item.class_type?.toUpperCase()}
                         </span>
                       </td>
-                      <td>{formatDays(item.days)}</td>
-                      <td>{formatTime(item.startTime)} – {formatTime(item.endTime)}</td>
+                      <td>{formatSlotDays(item.daySlots)}</td>
+                      <td>{formatSlotTimes(item.daySlots)}</td>
                       <td>{item.room}</td>
                       <td>
                         {item.faculty ? (
@@ -541,10 +567,10 @@ export default function ScheduleManagement() {
                             </button>
                           )}
                           <button className="delete-btn-sm" onClick={() => deleteSchedule(item)} title="Delete schedule">
-                              <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-                                <path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </button>
+                            <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+                              <path d="M3 4h10M6 4V2h4v2M5 4v9h6V4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -109,7 +109,7 @@ const ChairDashboard = () => {
   }, []);
 
   const { data: summaryData = {}, isLoading } = useQuery({
-    queryKey: ['dean-summary'],
+    queryKey: ['chair-summary'],
     queryFn: async () => {
       const res = await analyticsService.getDeanSummary();
       return res.ok ? (res.data ?? {}) : {};
@@ -136,9 +136,8 @@ const ChairDashboard = () => {
   const distribution = useMemo(() => perfData.distribution ?? [], [perfData]);
   // scope_label is the chair's program code (e.g. "BSIT"), returned by the academic-performance endpoint
   const programLabel = useMemo(() => perfData.scope_label ?? null, [perfData]);
-  // by_program gives per-program student counts scoped to the chair's department
-  const byProgram    = useMemo(() => perfData.by_program   ?? [], [perfData]);
-  const perfTotal    = useMemo(() => perfData.total_students ?? 0, [perfData]);
+  // students_by_program from dean-summary is department-scoped — shows all programs (BSIT, BSCS, etc.)
+  const studentsByProgram = useMemo(() => summaryData.students_by_program ?? {}, [summaryData]);
 
   const chairStats = useMemo(() => ({
     totalStudents:    summaryData.total_students      ?? 0,
@@ -237,27 +236,21 @@ const ChairDashboard = () => {
               <span className="hsc-value">{chairStats.totalStudents}</span>
               <span className="hsc-sub">Enrolled this semester</span>
               <div className="hsc-program-breakdown">
-                {byProgram.length === 0 ? (
+                {Object.keys(studentsByProgram).length === 0 ? (
                   <span className="hsc-no-data">No program data</span>
-                ) : byProgram
-                    .slice()
-                    .sort((a, b) => b.students - a.students)
-                    .map((p) => {
-                      const total = perfTotal > 0 ? perfTotal : chairStats.totalStudents;
-                      const pct   = total > 0 ? Math.round((p.students / total) * 100) : 0;
-                      const COLORS = {
-                        BSIT: '#38bdf8',
-                        BSCS: '#4ade80',
-                      };
-                      const color = COLORS[p.name] ?? '#94a3b8';
+                ) : (() => {
+                    const total = Object.values(studentsByProgram).reduce((sum, n) => sum + n, 0);
+                    return Object.entries(studentsByProgram).map(([code, count]) => {
+                      const pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
                       return (
-                        <div key={p.name} className="hsc-program-row">
-                          <span className="hsc-program-pill" style={{ color }}>{p.name}</span>
-                          <span className="hsc-program-count" style={{ color }}>{p.students}</span>
+                        <div key={code} className="hsc-program-row">
+                          <span className="hsc-program-pill">{code}</span>
+                          <span className="hsc-program-count">{count}</span>
                           <span className="hsc-program-pct">{pct}%</span>
                         </div>
                       );
-                    })
+                    });
+                  })()
                 }
               </div>
             </div>

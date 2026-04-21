@@ -46,9 +46,9 @@ const StudentAwards = () => {
   const { id }      = useParams();
 
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [form,           setForm]           = useState(EMPTY_FORM);
-  const [submitting,     setSubmitting]     = useState(false);
-  const [toast,          setToast]          = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   // ── Cached query ──
   const { data: awards = [], isLoading } = useQuery({
@@ -58,6 +58,8 @@ const StudentAwards = () => {
       return res.ok ? (res.data ?? []) : [];
     },
   });
+
+  
 
   // ── Detail view derived from URL param ──
   const viewingAward = id ? awards.find((a) => String(a.id) === String(id)) : null;
@@ -124,7 +126,7 @@ const StudentAwards = () => {
       {/* HEADER */}
       <div className="saw-page-header">
         <div>
-          <h2 className="saw-page-title">Awards &amp; Recognition</h2>
+          <h2 className="saw-page-title">My Achievements</h2>
           <p className="saw-page-sub">Your submitted and approved academic achievements.</p>
         </div>
         <button className="saw-primary-btn" onClick={() => setShowApplyModal(true)}>
@@ -134,6 +136,8 @@ const StudentAwards = () => {
           Apply for Award
         </button>
       </div>
+
+      
 
       {/* LIST */}
       {isLoading ? (
@@ -172,35 +176,25 @@ const StudentAwards = () => {
               const color = cfg.color;
 
               return (
-                <div className="saw-award-row" key={award.id} onClick={() => openDetail(award)} style={{ cursor: "pointer" }}>
-                  {/* left accent bar */}
-                  <div className="saw-award-accent" style={{ background: color }} />
-
-                  {/* icon */}
-                  <div className="saw-award-icon" style={{ background: color + "18" }}>
-                    <AwardIcon color={color} />
-                  </div>
-
-                  {/* text */}
-                  <div className="saw-award-info">
-                    <p className="saw-award-title">{award.awardName}</p>
-                    <p className="saw-award-meta">
+                <div className="saw-card" key={award.id} onClick={() => openDetail(award)} style={{ cursor: "pointer" }}>
+                  <div className="saw-card-border" style={{ background: color }} />
+                  <div className="saw-card-content">
+                    <div className="saw-card-header">
+                      <div className="saw-card-icon" style={{ background: color + "15", color }}>
+                        <AwardIcon color={color} />
+                      </div>
+                      <span className="saw-card-badge" style={{ background: color + "15", color }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <h3 className="saw-card-title">{award.awardName}</h3>
+                    <p className="saw-card-meta">
                       {[award.category, award.academic_year, award.issued_by].filter(Boolean).join(" · ") || "No details recorded"}
                     </p>
                     {award.action_taken && award.status === "rejected" && (
-                      <p className="saw-award-reason">Reason: {award.action_taken}</p>
+                      <p className="saw-card-reason">Reason: {award.action_taken}</p>
                     )}
-                  </div>
-
-                  {/* right: badge + date */}
-                  <div className="saw-award-right">
-                    <span
-                      className="saw-award-badge"
-                      style={{ background: color + "18", color }}
-                    >
-                      {cfg.label}
-                    </span>
-                    <span className="saw-award-date">{formatDate(award.date_received)}</span>
+                    <span className="saw-card-date">{formatDate(award.date_received)}</span>
                   </div>
                 </div>
               );

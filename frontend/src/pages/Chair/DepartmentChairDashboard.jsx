@@ -211,7 +211,7 @@ const ChairDashboard = () => {
         <div className="hero-body">
           <div className="hero-left">
             <p className="hero-eyebrow"><span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester</p>
-            <h2 className="hero-greeting">{greeting}, {displayName} 👋</h2>
+<h2 className="hero-greeting">{greeting}, {displayName}</h2>
             <p className="chair-hero-desc">
               Department avg GWA is <strong>{chairStats.avgGwa}</strong>. 
               You have <strong>{chairStats.pendingAwards} awards</strong> awaiting approval and <strong>{chairStats.activeViolations} active violations</strong> this semester.

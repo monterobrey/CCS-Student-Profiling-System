@@ -90,12 +90,11 @@ const FacultyDashboard = () => {
 
   const stats = useMemo(() => {
     const gwaVal = avgGwa != null ? Number(avgGwa).toFixed(2) : 'N/A';
-    const gwaFill =
-      avgGwa != null ? `${Math.max(0, Math.min(100, ((3 - Number(avgGwa)) / 2) * 100))}%` : '0%';
-    const subjFill = totalSubjects > 0 ? `${Math.min(100, totalSubjects * 15)}%` : '0%';
-    const studFill = totalStudents > 0 ? `${Math.min(100, (totalStudents / 120) * 100)}%` : '0%';
-    const violFill = totalStudents > 0 ? `${Math.min(100, (violationCount / totalStudents) * 100)}%` : violationCount > 0 ? '40%' : '0%';
-    const awardFill = awardsPendingCount > 0 ? `${Math.min(100, awardsPendingCount * 20)}%` : '0%';
+    const gwaFill = avgGwa != null ? `${Math.max(0, Math.min(100, ((3 - Number(avgGwa)) / 2) * 100))}%` : '0%';
+    const subjFill = totalSubjects > 0 ? `${Math.min(100, (totalSubjects / 10) * 100)}%` : '0%';
+    const studFill = totalStudents > 0 ? `${Math.min(100, (totalStudents / 150) * 100)}%` : '0%';
+    const violFill = totalStudents > 0 ? `${Math.min(100, (violationCount / totalStudents) * 100)}%` : '0%';
+    const awardFill = awardsPendingCount > 0 ? `${Math.min(100, (awardsPendingCount / 30) * 100)}%` : '0%';
 
     return [
       {
@@ -170,7 +169,7 @@ const FacultyDashboard = () => {
             <p className="hero-eyebrow">
               <span className="eyebrow-dot"></span>Academic Year 2026-2027 · 2nd Semester
             </p>
-            <h2 className="hero-greeting">{greeting} 👋</h2>
+            <h2 className="hero-greeting">{greeting}</h2>
             <p className="faculty-hero-desc">
               {isLoading && 'Loading your dashboard…'}
               {isError && !isLoading && 'Could not load dashboard data. Please refresh or try again later.'}
@@ -226,6 +225,9 @@ const FacultyDashboard = () => {
                 <span className={`faculty-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
               </div>
               <span className="faculty-stat-label">{stat.label}</span>
+              <div className="faculty-stat-bar">
+                <div className="faculty-stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
+              </div>
             </div>
           </div>
         ))}

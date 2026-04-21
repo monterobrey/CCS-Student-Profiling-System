@@ -115,8 +115,7 @@ const StudentDashboard = () => {
             </div>
             <h1 className="sd-hero-heading">
               Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"},{" "}
-              <span className="sd-hero-name">{firstName}</span>{" "}
-              <span className="sd-wave">👋</span>
+              <span className="sd-hero-name">{firstName}</span>
             </h1>
             <div className="sd-hero-chips">
               <span className="sd-hero-chip">

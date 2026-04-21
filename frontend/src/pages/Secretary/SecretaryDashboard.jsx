@@ -111,7 +111,7 @@ export default function SecretaryDashboard() {
               <span className="eyebrow-dot"></span>
               Academic Year 2026-2027 · 2nd Semester
             </p>
-            <h2 className="hero-greeting">{greeting} 👋</h2>
+            <h2 className="hero-greeting">{greeting}</h2>
             <p className="secretary-hero-desc">
               You have <strong>{pending_awards} pending awards</strong> for approval and{' '}
               <strong>{faculty_present_today} faculty members</strong> with schedules today.

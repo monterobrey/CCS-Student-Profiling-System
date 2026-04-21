@@ -246,19 +246,14 @@ const ChairDashboard = () => {
                       const total = perfTotal > 0 ? perfTotal : chairStats.totalStudents;
                       const pct   = total > 0 ? Math.round((p.students / total) * 100) : 0;
                       const COLORS = {
-                        BSIT: { bar: '#38bdf8', pill: 'rgba(56,189,248,0.18)',  text: '#38bdf8' },
-                        BSCS: { bar: '#a78bfa', pill: 'rgba(167,139,250,0.18)', text: '#a78bfa' },
+                        BSIT: '#38bdf8',
+                        BSCS: '#4ade80',
                       };
-                      const c = COLORS[p.name] ?? { bar: '#94a3b8', pill: 'rgba(148,163,184,0.18)', text: '#94a3b8' };
+                      const color = COLORS[p.name] ?? '#94a3b8';
                       return (
                         <div key={p.name} className="hsc-program-row">
-                          <div className="hsc-program-meta">
-                            <span className="hsc-program-pill" style={{ background: c.pill, color: c.text }}>{p.name}</span>
-                            <span className="hsc-program-count">{p.students}</span>
-                          </div>
-                          <div className="hsc-program-bar-track">
-                            <div className="hsc-program-bar-fill" style={{ width: `${pct}%`, background: c.bar }} />
-                          </div>
+                          <span className="hsc-program-pill" style={{ color }}>{p.name}</span>
+                          <span className="hsc-program-count" style={{ color }}>{p.students}</span>
                           <span className="hsc-program-pct">{pct}%</span>
                         </div>
                       );

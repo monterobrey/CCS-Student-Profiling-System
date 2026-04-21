@@ -578,6 +578,14 @@ function App() {
               }
             />
             <Route
+              path="/faculty/violations/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <FacultyManagementViolation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/faculty/awards"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>

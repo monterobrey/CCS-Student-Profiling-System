@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { facultyService } from '../../services';
 import styles from '../../styles/Faculty/FacultyManagementViolation.module.css';
@@ -84,6 +84,7 @@ const FacultyViolationManager = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const { id: urlId } = useParams();
 
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [studentSearch,      setStudentSearch]      = useState('');
@@ -152,6 +153,17 @@ const FacultyViolationManager = () => {
     setStudentDropdownOpen(false);
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate, students]);
+
+  // Sync detail modal with URL :id param
+  useEffect(() => {
+    if (!violations.length) return;
+    if (urlId) {
+      const match = violations.find((v) => String(v.id) === String(urlId));
+      setSelectedViolation(match ?? null);
+    } else {
+      setSelectedViolation(null);
+    }
+  }, [urlId, violations]);
 
   useEffect(() => {
     const onClickOutside = (e) => {

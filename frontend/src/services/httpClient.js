@@ -72,14 +72,17 @@ const request = async (endpoint, options = {}) => {
       window.location.href = getLoginPathForRole();
     }
 
+    // Return standardized response
+    // Use data.success if available (from ApiResponse), otherwise use response.ok
     return {
       status: response.status,
-      ok: response.ok,
+      ok: data.success !== undefined ? data.success : response.ok,
       ...data, // Contains: success, message, data, errors, code
     };
   } catch (error) {
     console.error('Network error:', error);
     return {
+      ok: false,
       success: false,
       message: 'Network error. Please check your connection.',
       code: 0,

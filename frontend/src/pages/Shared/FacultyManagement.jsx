@@ -109,13 +109,16 @@ export default function FacultyManagement() {
   =========================== */
 
   const miniStats = useMemo(() => [
-    { label: 'Total Faculty',  value: faculty.length,                                              color: '#3b82f6', iconBg: '#eff6ff'  },
-    { label: 'Active',         value: faculty.filter(f => f.user?.status === 'active').length,     color: '#16a34a', iconBg: '#f0fdf4'  },
-    { label: 'Pending Setup',  value: faculty.filter(f => f.user?.status === 'pending').length,    color: '#f97316', iconBg: '#f3f4f6'  },
+    { label: 'Total Faculty',  value: faculty.filter(f => f && f.user).length,                     color: '#3b82f6', iconBg: '#eff6ff'  },
+    { label: 'Active',         value: faculty.filter(f => f && f.user?.status === 'active').length,     color: '#16a34a', iconBg: '#f0fdf4'  },
+    { label: 'Pending Setup',  value: faculty.filter(f => f && f.user?.status === 'pending').length,    color: '#f97316', iconBg: '#f3f4f6'  },
   ], [faculty]);
 
   const filteredFaculty = useMemo(() => {
     return faculty.filter(f => {
+      // Skip malformed entries
+      if (!f || !f.user) return false;
+      
       const fullName    = `${f.last_name}, ${f.first_name} ${f.middle_name || ''}`.toLowerCase();
       const email       = f.user?.email?.toLowerCase() || '';
       const status      = f.user?.status || '';
@@ -199,11 +202,13 @@ export default function FacultyManagement() {
       if (res.ok) {
         showToast('success', res.message || (editingFaculty ? 'Faculty updated.' : 'Faculty created.'));
         setShowModal(false);
-        // Update cache directly
-        queryClient.setQueryData(['faculty'], (old = []) => {
-          if (editingFaculty) return old.map(f => f.id === res.data.id ? res.data : f);
-          return [...old, res.data];
-        });
+        // Update cache directly - only if res.data exists and is valid
+        if (res.data) {
+          queryClient.setQueryData(['faculty'], (old = []) => {
+            if (editingFaculty) return old.map(f => f.id === res.data.id ? res.data : f);
+            return [...old, res.data];
+          });
+        }
       } else {
         const firstError = res.errors ? Object.values(res.errors)[0]?.[0] : null;
         showToast('error', firstError || res.message || 'Failed to save faculty.');

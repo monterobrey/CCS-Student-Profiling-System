@@ -585,6 +585,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/faculty/awards/:id"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <FacultyRecommendAward />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route path="/" element={<Navigate to="/faculty/login" replace />} />

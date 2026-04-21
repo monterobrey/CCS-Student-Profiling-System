@@ -4,7 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { awardService } from "../../services";
 import "../../styles/Student/StudentAwards.css";
 
-const EMPTY_FORM = { awardName: "", category: "", description: "", date_received: "", academic_year: "" };
+const EMPTY_FORM = { awardName: "", category: "", description: "", academic_year: "" };
+
+const today = () => new Date().toISOString().split("T")[0];
 
 const CATEGORIES = [
   { value: "Academic Honor",      emoji: "🎓", desc: "Latin honors, Dean's list" },
@@ -85,8 +87,8 @@ const StudentAwards = () => {
      APPLY
   =========================== */
   const submitApplication = async () => {
-    if (!form.awardName || !form.date_received) {
-      showToast("error", "Award name and date are required.");
+    if (!form.awardName) {
+      showToast("error", "Award name is required.");
       return;
     }
     setSubmitting(true);
@@ -95,7 +97,7 @@ const StudentAwards = () => {
         awardName:     form.awardName,
         category:      form.category      || undefined,
         description:   form.description   || undefined,
-        date_received: form.date_received,
+        date_received: today(),
         academic_year: form.academic_year || undefined,
       });
       if (res.ok) {
@@ -269,28 +271,18 @@ const StudentAwards = () => {
                 <span className="saw-char-count">{form.awardName.length}/100</span>
               </div>
 
-              {/* Date + Academic Year */}
-              <div className="saw-two-col">
-                <div className="saw-form-group">
-                  <label>Date of Award / Event <span className="saw-req">*</span></label>
-                  <input
-                    type="date"
-                    value={form.date_received}
-                    onChange={(e) => setForm({ ...form, date_received: e.target.value })}
-                  />
-                </div>
-                <div className="saw-form-group">
-                  <label>Academic Year</label>
-                  <select
-                    value={form.academic_year}
-                    onChange={(e) => setForm({ ...form, academic_year: e.target.value })}
-                  >
-                    <option value="">Select semester</option>
-                    {ACADEMIC_YEARS.map((y) => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Academic Year */}
+              <div className="saw-form-group">
+                <label>Academic Year</label>
+                <select
+                  value={form.academic_year}
+                  onChange={(e) => setForm({ ...form, academic_year: e.target.value })}
+                >
+                  <option value="">Select semester</option>
+                  {ACADEMIC_YEARS.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Description */}
@@ -324,7 +316,7 @@ const StudentAwards = () => {
               <button
                 className="saw-primary-btn"
                 onClick={submitApplication}
-                disabled={submitting || !form.awardName || !form.date_received}
+                disabled={submitting || !form.awardName}
               >
                 {submitting ? "Submitting..." : (
                   <>

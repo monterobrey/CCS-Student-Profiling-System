@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 import { awardService } from "../../services";
 import { httpClient } from "../../services/httpClient";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
@@ -26,7 +27,9 @@ const avatarColor = (name = "") => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COL
 const initials = (first = "", last = "") =>
   `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase() || "?";
 
-const EMPTY_FORM = { awardName: "", description: "", date_received: "" };
+const today = () => new Date().toISOString().split("T")[0];
+
+const EMPTY_FORM = { awardName: "", description: "", date_received: today() };
 
 function StarIcon({ size = 20 }) {
   return (
@@ -66,11 +69,12 @@ function XIcon({ size = 20 }) {
 
 export default function FacultyRecommendAward() {
   const queryClient = useQueryClient();
+  const navigate    = useNavigate();
+  const { id }      = useParams();
   const dropdownRef = useRef(null);
 
   const [activeTab,        setActiveTab]        = useState("all");
   const [showModal,        setShowModal]        = useState(false);
-  const [selectedDetail,   setSelectedDetail]   = useState(null);
   const [form,             setForm]             = useState(EMPTY_FORM);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentSearch,    setStudentSearch]    = useState("");
@@ -99,6 +103,11 @@ export default function FacultyRecommendAward() {
   });
 
   const allStudents = myStudentsData.students ?? [];
+
+  // ── Detail view derived from URL param ──
+  const viewingAward = id ? awards.find(a => String(a.id) === String(id)) : null;
+  const openDetail   = (a) => navigate(`/faculty/awards/${a.id}`);
+  const closeDetail  = ()  => navigate("/faculty/awards");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -156,7 +165,7 @@ export default function FacultyRecommendAward() {
 
   // ── Submit — one award per selected student ──
   const handleSubmit = async () => {
-    if (!selectedStudents.length || !form.awardName || !form.date_received) {
+    if (!selectedStudents.length || !form.awardName) {
       showToast("error", "Select at least one student and fill in all required fields.");
       return;
     }
@@ -281,7 +290,7 @@ export default function FacultyRecommendAward() {
                   <tr
                     key={a.id}
                     className={styles["row-hover"]}
-                    onClick={() => setSelectedDetail(a)}
+                    onClick={() => openDetail(a)}
                   >
                     <td>
                       <div className={styles["student-cell"]}>
@@ -418,14 +427,6 @@ export default function FacultyRecommendAward() {
                     onChange={e => setForm({ ...form, awardName: e.target.value })}
                   />
                 </div>
-                <div className={styles["modal-field"]}>
-                  <label>Date Received <span className={styles.req}>*</span></label>
-                  <input
-                    type="date"
-                    value={form.date_received}
-                    onChange={e => setForm({ ...form, date_received: e.target.value })}
-                  />
-                </div>
                 <div className={cx("modal-field", "full")}>
                   <label>Description <span className={styles.optional}>(optional)</span></label>
                   <textarea
@@ -454,7 +455,7 @@ export default function FacultyRecommendAward() {
               <button
                 className={styles["btn-submit"]}
                 onClick={handleSubmit}
-                disabled={saving || !selectedStudents.length || !form.awardName || !form.date_received}
+                disabled={saving || !selectedStudents.length || !form.awardName}
               >
                 {saving
                   ? "Submitting..."
@@ -467,13 +468,13 @@ export default function FacultyRecommendAward() {
       )}
 
       {/* ── Detail Modal ── */}
-      {selectedDetail && (() => {
-        const a = selectedDetail;
+      {viewingAward && (() => {
+        const a = viewingAward;
         const meta = STATUS_META[a.status] ?? STATUS_META.pending;
         const color = avatarColor(a.student?.last_name ?? "");
         const ini = initials(a.student?.first_name, a.student?.last_name);
         return (
-          <div className={styles["modal-backdrop"]} onClick={() => setSelectedDetail(null)}>
+          <div className={styles["modal-backdrop"]} onClick={(e) => { if (e.target === e.currentTarget) closeDetail(); }}>
             <div className={styles["modal-box"]} onClick={e => e.stopPropagation()}>
               <div className={styles["modal-header"]}>
                 <div className={styles["modal-header-left"]}>
@@ -486,7 +487,7 @@ export default function FacultyRecommendAward() {
                     </p>
                   </div>
                 </div>
-                <button className={styles["close-x"]} onClick={() => setSelectedDetail(null)}>&times;</button>
+                <button className={styles["close-x"]} onClick={closeDetail}>&times;</button>
               </div>
 
               <div className={styles["modal-content"]}>
@@ -532,7 +533,7 @@ export default function FacultyRecommendAward() {
               </div>
 
               <div className={styles["modal-actions"]}>
-                <button className={styles["btn-cancel"]} onClick={() => setSelectedDetail(null)}>Close</button>
+                <button className={styles["btn-cancel"]} onClick={closeDetail}>Close</button>
               </div>
             </div>
           </div>

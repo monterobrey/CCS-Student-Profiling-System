@@ -134,6 +134,11 @@ const ChairDashboard = () => {
   });
 
   const distribution = useMemo(() => perfData.distribution ?? [], [perfData]);
+  // scope_label is the chair's program code (e.g. "BSIT"), returned by the academic-performance endpoint
+  const programLabel = useMemo(() => perfData.scope_label ?? null, [perfData]);
+  // by_program gives per-program student counts scoped to the chair's department
+  const byProgram    = useMemo(() => perfData.by_program   ?? [], [perfData]);
+  const perfTotal    = useMemo(() => perfData.total_students ?? 0, [perfData]);
 
   const chairStats = useMemo(() => ({
     totalStudents:    summaryData.total_students      ?? 0,
@@ -154,12 +159,12 @@ const ChairDashboard = () => {
     const maxFaculty  = Math.max(chairStats.totalFaculty,  1);
     return [
       {
-        label: 'Total Students',
+        label: programLabel ? `Total ${programLabel} Students` : 'Total Students',
         value: chairStats.totalStudents.toString(),
         delta: 'Enrolled', deltaClass: 'positive',
         fill: chairStats.totalStudents > 0 ? '100%' : '0%',
         iconBg: '#fff5ef', iconColor: '#FF6B1A',
-        route: '/students',
+        route: '/department-chair/student-accounts',
         iconPath: '<path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
       },
       {
@@ -168,7 +173,7 @@ const ChairDashboard = () => {
         delta: 'Active', deltaClass: 'positive',
         fill: chairStats.totalFaculty > 0 ? `${Math.min((chairStats.totalFaculty / maxStudents) * 100, 100)}%` : '0%',
         iconBg: '#eff6ff', iconColor: '#3b82f6',
-        route: '/faculty',
+        route: '/department-chair/faculty-accounts',
         iconPath: '<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
       },
       {
@@ -177,7 +182,7 @@ const ChairDashboard = () => {
         delta: 'This semester', deltaClass: 'positive',
         fill: parseFloat(chairStats.avgGwa) > 0 ? `${Math.min((parseFloat(chairStats.avgGwa) / 4.0) * 100, 100)}%` : '0%',
         iconBg: '#f5f3ff', iconColor: '#8b5cf6',
-        route: '/chair/performance',
+        route: '/department-chair/performance',
         iconPath: '<path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
       },
       {
@@ -186,7 +191,7 @@ const ChairDashboard = () => {
         delta: 'This semester', deltaClass: chairStats.activeViolations > 0 ? 'negative' : 'positive',
         fill: chairStats.activeViolations > 0 ? `${Math.min((chairStats.activeViolations / Math.max(chairStats.totalStudents, 1)) * 100, 100)}%` : '0%',
         iconBg: '#fff1f2', iconColor: '#ef4444',
-        route: '/chair/violations',
+        route: '/department-chair/violations',
         iconPath: '<path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
       },
       {
@@ -195,7 +200,7 @@ const ChairDashboard = () => {
         delta: 'To approve', deltaClass: chairStats.pendingAwards > 0 ? 'warning' : 'positive',
         fill: chairStats.pendingAwards > 0 ? `${Math.min((chairStats.pendingAwards / Math.max(chairStats.totalStudents, 1)) * 100, 100)}%` : '0%',
         iconBg: '#fffbeb', iconColor: '#f59e0b',
-        route: '/chair/awards',
+        route: '/department-chair/awards',
         iconPath: '<path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
       },
     ];
@@ -217,7 +222,7 @@ const ChairDashboard = () => {
               You have <strong>{chairStats.pendingAwards} awards</strong> awaiting approval and <strong>{chairStats.activeViolations} active violations</strong> this semester.
             </p>
             <div className="hero-actions">
-              <Link to="/students" className="hero-btn-primary">
+              <Link to="/department-chair/student-accounts" className="hero-btn-primary">
                 <svg viewBox="0 0 18 18" fill="none" style={{ width: '14px', height: '14px' }}>
                   <path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
@@ -227,10 +232,39 @@ const ChairDashboard = () => {
             </div>
           </div>
           <div className="hero-right">
-            <div className="hero-stat-card">
+            <div className="hero-stat-card hero-stat-card--enrollment">
               <span className="hsc-label">Total Students</span>
               <span className="hsc-value">{chairStats.totalStudents}</span>
-              <span className="hsc-sub">Enrolled</span>
+              <span className="hsc-sub">Enrolled this semester</span>
+              <div className="hsc-program-breakdown">
+                {byProgram.length === 0 ? (
+                  <span className="hsc-no-data">No program data</span>
+                ) : byProgram
+                    .slice()
+                    .sort((a, b) => b.students - a.students)
+                    .map((p) => {
+                      const total = perfTotal > 0 ? perfTotal : chairStats.totalStudents;
+                      const pct   = total > 0 ? Math.round((p.students / total) * 100) : 0;
+                      const COLORS = {
+                        BSIT: { bar: '#38bdf8', pill: 'rgba(56,189,248,0.18)',  text: '#38bdf8' },
+                        BSCS: { bar: '#a78bfa', pill: 'rgba(167,139,250,0.18)', text: '#a78bfa' },
+                      };
+                      const c = COLORS[p.name] ?? { bar: '#94a3b8', pill: 'rgba(148,163,184,0.18)', text: '#94a3b8' };
+                      return (
+                        <div key={p.name} className="hsc-program-row">
+                          <div className="hsc-program-meta">
+                            <span className="hsc-program-pill" style={{ background: c.pill, color: c.text }}>{p.name}</span>
+                            <span className="hsc-program-count">{p.students}</span>
+                          </div>
+                          <div className="hsc-program-bar-track">
+                            <div className="hsc-program-bar-fill" style={{ width: `${pct}%`, background: c.bar }} />
+                          </div>
+                          <span className="hsc-program-pct">{pct}%</span>
+                        </div>
+                      );
+                    })
+                }
+              </div>
             </div>
             <div className="hero-stat-card accent">
               <span className="hsc-label">Avg GWA</span>
@@ -302,7 +336,7 @@ const ChairDashboard = () => {
         <div className="card">
           <div className="card-header">
             <div><h3 className="card-title">Top Performing Students</h3><p className="card-sub">Ranked by GWA · current semester</p></div>
-            <Link to="/students" className="card-link">View all →</Link>
+            <Link to="/department-chair/student-accounts" className="card-link">View all →</Link>
           </div>
           <div className="student-list">
             {chairTopStudents.map((s, i) => (
@@ -323,7 +357,7 @@ const ChairDashboard = () => {
         <div className="card">
           <div className="card-header">
             <div><h3 className="card-title">Pending Award Approvals</h3><p className="card-sub">Awaiting your review</p></div>
-            <Link to="/chair/awards" className="card-link">View all →</Link>
+            <Link to="/department-chair/awards" className="card-link">View all →</Link>
           </div>
           <div className="student-list">
             {chairPendingAwards.map((ach) => (
@@ -342,7 +376,7 @@ const ChairDashboard = () => {
               <path d="M8 1l1.5 4.5H14l-4 2.9 1.5 4.6L8 10.2 4.5 13l1.5-4.6-4-2.9h4.5L8 1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span>{chairStats.pendingAwards} awards need your approval</span>
-            <Link to="/chair/awards" className="approve-now-link">Approve Now →</Link>
+            <Link to="/department-chair/awards" className="approve-now-link">Approve Now →</Link>
           </div>
         </div>
       </div>

@@ -654,3 +654,76 @@
 .dist-item-stats { display: flex; flex-direction: column; align-items: flex-end; width: 44px; flex-shrink: 0; font-size: 13px; }
 .dist-item-pct { font-size: 10px; color: #b89f90; }
 .dash-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px; color: #9a8070; font-size: 13px; }
+
+/* ── Hero enrollment breakdown card ── */
+.chair-dashboard-home .hero-stat-card--enrollment {
+  min-width: 210px;
+  gap: 4px;
+}
+
+.chair-dashboard-home .hsc-program-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chair-dashboard-home .hsc-no-data {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+
+.chair-dashboard-home .hsc-program-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chair-dashboard-home .hsc-program-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.chair-dashboard-home .hsc-program-pill {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.chair-dashboard-home .hsc-program-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.chair-dashboard-home .hsc-program-bar-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.chair-dashboard-home .hsc-program-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.chair-dashboard-home .hsc-program-pct {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+  font-family: 'Outfit', sans-serif;
+}

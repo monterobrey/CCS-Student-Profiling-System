@@ -56,6 +56,8 @@
   flex: 1;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s, box-shadow 0.15s;
+  padding: 10px 12px;
 }
 
 .faculty-violation-page .mini-stat-border {

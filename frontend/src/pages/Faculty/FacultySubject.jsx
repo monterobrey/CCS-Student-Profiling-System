@@ -250,11 +250,8 @@ export default function FacultySubjects() {
                   Loading subjects…
                 </div>
               ) : filteredSubjects.length === 0 ? (
-                <div className="empty-subjects">
-                  <div className="empty-icon-box">📚</div>
-                  <h3>No subjects found</h3>
-                  <p>Your assigned subjects for this semester will appear here once finalised by the department.</p>
-                  <button className="refresh-btn" onClick={() => refetch()}>Refresh List</button>
+                <div className="empty-msg">
+                  No subjects found
                 </div>
               ) : (
                 filteredSubjects.map(subject => (
@@ -263,6 +260,7 @@ export default function FacultySubjects() {
                     className="subject-card"
                     type="button"
                     onClick={() => openRoster(subject)}
+                    style={{ borderTopColor: subject.color }}
                   >
                     <div className="subject-icon-wrap" style={{ background: subject.color + '22' }}>
                       <BookIcon color={subject.color} size={20} />

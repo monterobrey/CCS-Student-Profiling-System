@@ -113,73 +113,79 @@ const FacultySchedule = () => {
       <div className={styles["stats-grid"]}>
 
         <div className={cx("stat-card", "stat-card-blue")}>
-          <div className={cx("stat-icon", "stat-icon-blue")} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 6h16M6 10h12M8 14h8M10 18h4" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div className={styles["stat-content"]}>
-            <span className={cx("stat-number", "stat-number-blue")}>{stats.total}</span>
-            <span className={styles["stat-label"]}>TOTAL CLASSES</span>
+          <div className={styles["stat-border"]} style={{ background: '#3b82f6' }} />
+          <div className={styles["stat-card-content"]}>
+            <div className={cx("stat-icon", "stat-icon-blue")} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 6h16M6 10h12M8 14h8M10 18h4" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className={styles["stat-content"]}>
+              <span className={cx("stat-number", "stat-number-blue")}>{stats.total}</span>
+              <span className={styles["stat-label"]}>TOTAL CLASSES</span>
+            </div>
           </div>
         </div>
 
         <div className={cx("stat-card", "stat-card-green")}>
-          <div className={cx("stat-icon", "stat-icon-green")} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 7V3m8 4V3M5 10h14M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className={styles["stat-content"]}>
-            <span className={cx("stat-number", "stat-number-green")}>{stats.today}</span>
-            <span className={styles["stat-label"]}>TODAY'S CLASSES</span>
+          <div className={styles["stat-border"]} style={{ background: '#22c55e' }} />
+          <div className={styles["stat-card-content"]}>
+            <div className={cx("stat-icon", "stat-icon-green")} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7V3m8 4V3M5 10h14M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className={styles["stat-content"]}>
+              <span className={cx("stat-number", "stat-number-green")}>{stats.today}</span>
+              <span className={styles["stat-label"]}>TODAY'S CLASSES</span>
+            </div>
           </div>
         </div>
 
         <div className={cx("stat-card", "stat-card-purple")}>
-          <div className={cx("stat-icon", "stat-icon-purple")} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 8v5l3 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className={styles["stat-content"]}>
-            <span className={styles["stat-number"]}>{stats.upcoming}</span>
-            <span className={styles["stat-label"]}>UPCOMING</span>
+          <div className={styles["stat-border"]} style={{ background: '#a855f7' }} />
+          <div className={styles["stat-card-content"]}>
+            <div className={cx("stat-icon", "stat-icon-purple")} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v5l3 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className={styles["stat-content"]}>
+              <span className={cx("stat-number", "stat-number-purple")}>{stats.upcoming}</span>
+              <span className={styles["stat-label"]}>UPCOMING</span>
+            </div>
           </div>
         </div>
 
         <div className={cx("stat-card", "stat-card-orange")}>
-          <div className={cx("stat-icon", "stat-icon-orange")} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3v3" strokeWidth="2" strokeLinecap="round" />
-              <path d="M12 18v3" strokeWidth="2" strokeLinecap="round" />
-              <path d="M4.22 4.22l2.12 2.12" strokeWidth="2" strokeLinecap="round" />
-              <path d="M17.66 17.66l2.12 2.12" strokeWidth="2" strokeLinecap="round" />
-              <path d="M3 12h3" strokeWidth="2" strokeLinecap="round" />
-              <path d="M18 12h3" strokeWidth="2" strokeLinecap="round" />
-              <path d="M4.22 19.78l2.12-2.12" strokeWidth="2" strokeLinecap="round" />
-              <path d="M17.66 6.34l2.12-2.12" strokeWidth="2" strokeLinecap="round" />
-              <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className={styles["stat-content"]}>
-            <span className={cx("stat-number", "stat-number-orange")}>{stats.morning}</span>
-            <span className={styles["stat-label"]}>MORNING</span>
+          <div className={styles["stat-border"]} style={{ background: '#f97316' }} />
+          <div className={styles["stat-card-content"]}>
+            <div className={cx("stat-icon", "stat-icon-orange")} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v1M4.22 4.22l.9.9M2 12h1M4.22 19.78l.9-.9M12 22v-1M19.78 19.78l.9-.9M22 12h-1M19.78 4.22l-.9.9" />
+                <circle cx="12" cy="12" r="4" fill="none" />
+              </svg>
+            </div>
+            <div className={styles["stat-content"]}>
+              <span className={cx("stat-number", "stat-number-orange")}>{stats.morning}</span>
+              <span className={styles["stat-label"]}>MORNING</span>
+            </div>
           </div>
         </div>
 
         <div className={cx("stat-card", "stat-card-red")}>
-          <div className={cx("stat-icon", "stat-icon-red")} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3a9 9 0 1 0 9 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 7v6l4 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M21 12a9 9 0 0 0-9-9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className={styles["stat-content"]}>
-            <span className={cx("stat-number", "stat-number-red")}>{stats.afternoon}</span>
-            <span className={styles["stat-label"]}>AFTERNOON</span>
+          <div className={styles["stat-border"]} style={{ background: '#ef4444' }} />
+          <div className={styles["stat-card-content"]}>
+            <div className={cx("stat-icon", "stat-icon-red")} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            </div>
+            <div className={styles["stat-content"]}>
+              <span className={cx("stat-number", "stat-number-red")}>{stats.afternoon}</span>
+              <span className={styles["stat-label"]}>AFTERNOON</span>
+            </div>
           </div>
         </div>
 

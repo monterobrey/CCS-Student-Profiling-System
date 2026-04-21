@@ -58,10 +58,60 @@ export default function FacultyStudentsByClass() {
   );
 
   const stats = useMemo(() => [
-    { label: 'Students Handled', value: students.length, color: 'blue', iconPath: <><path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></> },
-    { label: 'Programs', value: programs.length, color: 'purple', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M6 6h1m-1 3h1m4-3h1m-1 3h1M6 13v-3a1 1 0 011-1h4a1 1 0 011-1v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
-    { label: 'Sections', value: sections.length, color: 'orange', iconPath: <><path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></> },
-    { label: 'Subjects', value: subjectOptions.length, color: 'green', iconPath: <><rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></> },
+    {
+      label: 'Students Handled',
+      value: students.length,
+      sub: '',
+      hint: '',
+      color: '#FF6B1A',
+      iconBg: '#fff5ef',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="#FF6B1A" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Programs',
+      value: programs.length,
+      sub: '',
+      hint: '',
+      color: '#8b5cf6',
+      iconBg: '#f3f0ff',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+          <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Sections',
+      value: sections.length,
+      sub: '',
+      hint: '',
+      color: '#f59e0b',
+      iconBg: '#fff9ed',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M10 12a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 0114 0" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Subjects',
+      value: subjectOptions.length,
+      sub: '',
+      hint: '',
+      color: '#10b981',
+      iconBg: '#eefaf5',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="#10b981" strokeWidth="1.4">
+          <rect x="2" y="2" width="14" height="14" rx="2" />
+          <path d="M5 6h8M5 9h6M5 12h4" strokeLinecap="round" />
+        </svg>
+      ),
+    },
   ], [students.length, programs.length, sections.length, subjectOptions.length]);
 
   const getColor = (id) => COLORS[id % COLORS.length];
@@ -74,7 +124,7 @@ export default function FacultyStudentsByClass() {
   const cx = (...names) => names.filter(Boolean).join(' ');
 
   return (
-    <div className={styles.facultyPage}>
+    <div className={`${styles.facultyPage} ${styles['faculty-students-page']}`}>
       <div className={styles.pageHeader}>
         <div>
           <h2 className={styles.pageTitle}>My Students</h2>
@@ -84,15 +134,20 @@ export default function FacultyStudentsByClass() {
         </div>
       </div>
 
-      <div className={styles.studentStats}>
+      <div className={styles.miniStats}>
         {stats.map((stat, idx) => (
-          <div key={idx} className={cx(styles.statCard, styles[stat.color])}>
-            <div className={cx(styles.statIconWrapper, styles[stat.color])}>
-              <svg viewBox="0 0 20 20" fill="none">{stat.iconPath}</svg>
-            </div>
-            <div className={styles.statInfo}>
-              <span className={styles.statNumber}>{stat.value}</span>
-              <span className={styles.statLabel}>{stat.label}</span>
+          <div key={idx} className={styles.miniStatCard}>
+            <div className={styles.miniStatBorder} style={{ background: stat.color }} />
+            <div className={styles.miniStatContent}>
+              <div className={styles.miniStatIcon} style={{ background: stat.iconBg }}>
+                {stat.icon}
+              </div>
+              <div className={styles.miniStatInfo}>
+                <span className={styles.miniStatValue} style={{ color: stat.color }}>
+                  {stat.value}
+                </span>
+                <span className={styles.miniStatLabel}>{stat.label}</span>
+              </div>
             </div>
           </div>
         ))}
@@ -190,7 +245,7 @@ export default function FacultyStudentsByClass() {
               })}
               {!students.length && !isLoading && (
                 <tr>
-                  <td colSpan={6} className={styles.emptyRow}>No students found for the selected filters.</td>
+                  <td colSpan={6} className={styles['empty-msg']}>No students found for the selected filters.</td>
                 </tr>
               )}
             </tbody>

@@ -13,14 +13,25 @@ const statIcons = {
     </>
   ),
   students: (
-    <path d="M9 8a3 3 0 100-6 3 3 0 000 6zM2 16a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
   ),
   gwa: <path d="M2 13l3-5 3 3 3-4 5 6H2z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />,
   violations: (
-    <path d="M9 5v4M9 11.5v.5M2.5 14h13a1 1 0 00.87-1.5L10 2.5a1 1 0 00-1.74 0L2.5 12.5A1 1 0 002.5 14z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
   ),
   awards: (
-    <path d="M9 1.5l1.6 4.8H16l-4.2 3.1 1.6 4.9L9 11.1l-4.4 3.2 1.6-4.9L2 7.3h5.4L9 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" />
+    </svg>
   ),
 };
 
@@ -200,22 +211,21 @@ const FacultyDashboard = () => {
             key={stat.label}
             className="faculty-stat-card"
             onClick={() => stat.route && navigate(stat.route)}
-            style={{ borderTop: `3px solid ${stat.iconColor}` }}
           >
-            <div className="faculty-stat-top">
-              <div className="faculty-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
-                <svg viewBox="0 0 18 18" fill="none">
-                  {stat.iconPath}
-                </svg>
+            <div className="faculty-stat-border" style={{ background: stat.iconColor }} />
+            <div className="faculty-stat-card-content">
+              <div className="faculty-stat-top">
+                <div className="faculty-stat-icon" style={{ background: stat.iconBg, color: stat.iconColor }}>
+                  <svg viewBox="0 0 18 18" fill="none">
+                    {stat.iconPath}
+                  </svg>
+                </div>
               </div>
-            </div>
-            <div className="faculty-stat-bottom">
-              <span className="faculty-stat-value">{isLoading ? '—' : stat.value}</span>
-              <span className={`faculty-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
-            </div>
-            <span className="faculty-stat-label">{stat.label}</span>
-            <div className="faculty-stat-bar">
-              <div className="faculty-stat-bar-fill" style={{ width: stat.fill, background: stat.iconColor }}></div>
+              <div className="faculty-stat-bottom">
+                <span className="faculty-stat-value" style={{ color: stat.iconColor }}>{isLoading ? '—' : stat.value}</span>
+                <span className={`faculty-stat-delta ${stat.deltaClass}`}>{stat.delta}</span>
+              </div>
+              <span className="faculty-stat-label">{stat.label}</span>
             </div>
           </div>
         ))}

@@ -28,34 +28,50 @@
 
 /* Stats */
 .faculty-page .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
   gap: 16px;
   margin-top: -1px;
 }
 
 .faculty-page .stat-card {
   background: #fff;
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  gap: 12px;
   border: 1px solid #f0e8e0;
-  transition: 0.2s;
+  border-radius: 12px;
+  flex: 1;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s, box-shadow 0.15s;
+  padding: 10px 12px;
 }
 
 .faculty-page .stat-card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.faculty-page .stat-card-blue { border-top: 4px solid #3b82f6; }
-.faculty-page .stat-card-green { border-top: 4px solid #22c55e; }
-.faculty-page .stat-card-purple { border-top: 4px solid #a855f7; }
-.faculty-page .stat-card-orange { border-top: 4px solid #f97316; }
-.faculty-page .stat-card-red { border-top: 4px solid #ef4444; }
+.faculty-page .stat-border {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.faculty-page .stat-border-blue { background: #3b82f6; }
+.faculty-page .stat-border-green { background: #22c55e; }
+.faculty-page .stat-border-purple { background: #a855f7; }
+.faculty-page .stat-border-orange { background: #f97316; }
+.faculty-page .stat-border-red { background: #ef4444; }
 
 .faculty-page .stat-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.faculty-page .stat-card-content {
+  display: flex;
   align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  flex: 1;
 }
 
 .faculty-page .stat-icon {
@@ -94,18 +110,26 @@
 }
 
 .faculty-page .stat-number {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1;
   display: block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
+.faculty-page .stat-number-blue { color: #3b82f6; }
+.faculty-page .stat-number-green { color: #22c55e; }
+.faculty-page .stat-number-purple { color: #a855f7; }
+.faculty-page .stat-number-orange { color: #f97316; }
+.faculty-page .stat-number-red { color: #ef4444; }
 
 .faculty-page .stat-label {
   font-size: 11px;
-  color: #9ca3af;
+  color: #9a8070;
   text-transform: uppercase;
   display: block;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 /* Calendar */

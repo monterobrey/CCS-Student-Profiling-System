@@ -37,6 +37,33 @@ function StarIcon({ size = 20 }) {
   );
 }
 
+function ClockIcon({ size = 20 }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width={size} height={size} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function CheckIcon({ size = 20 }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width={size} height={size}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  );
+}
+
+function XIcon({ size = 20 }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width={size} height={size} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export default function FacultyRecommendAward() {
   const queryClient = useQueryClient();
   const dropdownRef = useRef(null);
@@ -185,16 +212,16 @@ export default function FacultyRecommendAward() {
       {/* ── Stats ── */}
       <div className={styles["mini-stats"]}>
         {[
-          { label: "Total Submitted", color: "#FF6B1A", iconBg: "#fff5ef", count: counts.all      },
-          { label: "Pending Approval",color: "#f59e0b", iconBg: "#fffbeb", count: counts.pending  },
-          { label: "Approved",        color: "#10b981", iconBg: "#ecfdf5", count: counts.approved },
-          { label: "Rejected",        color: "#ef4444", iconBg: "#fef2f2", count: counts.rejected },
+          { label: "Total Submitted", color: "#FF6B1A", iconBg: "#fff5ef", count: counts.all,      icon: <StarIcon size={20} /> },
+          { label: "Pending Approval",color: "#f59e0b", iconBg: "#fffbeb", count: counts.pending,  icon: <ClockIcon size={20} /> },
+          { label: "Approved",        color: "#10b981", iconBg: "#ecfdf5", count: counts.approved, icon: <CheckIcon size={20} /> },
+          { label: "Rejected",        color: "#ef4444", iconBg: "#fef2f2", count: counts.rejected, icon: <XIcon size={20} /> },
         ].map(card => (
           <div className={styles["mini-stat-card"]} key={card.label}>
             <div className={styles["mini-stat-border"]} style={{ background: card.color }} />
             <div className={styles["mini-stat-content"]}>
               <div className={styles["mini-stat-icon"]} style={{ background: card.iconBg, color: card.color }}>
-                <StarIcon size={20} />
+                {card.icon}
               </div>
               <div className={styles["mini-stat-info"]}>
                 <span className={styles["mini-stat-value"]} style={{ color: card.color }}>
@@ -233,9 +260,7 @@ export default function FacultyRecommendAward() {
           </div>
         ) : filteredAwards.length === 0 ? (
           <div className={styles["empty-msg"]}>
-            <div className={styles["empty-icon"]}><StarIcon size={28} /></div>
-            <p className={styles["empty-title"]}>No awards in this category</p>
-            <p className={styles["empty-sub"]}>Recommendations you submit will appear here.</p>
+            No awards in this category.
           </div>
         ) : (
           <table className={styles.table}>

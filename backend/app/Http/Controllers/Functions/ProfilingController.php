@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Functions;
 use App\Http\Controllers\Controller;
 use App\Models\Program;
 use App\Models\Department;
+use App\Models\UniversityOrganization;
 use App\Services\ProfilingService;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,16 @@ class ProfilingController extends Controller
     public function getDepartments()
     {
         return ApiResponse::success(Department::all());
+    }
+
+    /**
+     * Get all university organizations (for dropdown filters).
+     */
+    public function getOrganizations()
+    {
+        return ApiResponse::success(
+            UniversityOrganization::orderBy('organization_name')->get(['id', 'organization_name', 'organization_type'])
+        );
     }
 
     /**

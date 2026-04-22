@@ -19,8 +19,10 @@ const PREDEFINED_AWARDS = [
 
 const AVATAR_COLORS = ["#FF6B1A", "#e85500", "#c94000", "#3d1500", "#7c3d1a", "#b85c00"];
 
+const today = () => new Date().toISOString().split("T")[0];
+
 const EMPTY_FORM = {
-  student_ids: [], awardName: "", customAward: "", description: "", date_received: "",
+  student_ids: [], awardName: "", customAward: "", description: "", date_received: today(),
 };
 
 function getAvatarColor(name = "") {
@@ -205,7 +207,7 @@ export default function DepartmentChairAward() {
 
   const handleGive = async () => {
     const validIds = form.student_ids.filter(Boolean);
-    if (validIds.length === 0 || !resolvedAwardName || !form.date_received) {
+    if (validIds.length === 0 || !resolvedAwardName) {
       showToast("error", "Please fill in all required fields and select at least one student.");
       return;
     }
@@ -478,15 +480,6 @@ export default function DepartmentChairAward() {
                   placeholder="Describe the achievement..."
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Date Received <span className={styles.req}>*</span></label>
-                <input
-                  type="date"
-                  value={form.date_received}
-                  onChange={e => setForm({ ...form, date_received: e.target.value })}
                 />
               </div>
 

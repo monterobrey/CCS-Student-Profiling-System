@@ -52,11 +52,22 @@ class FacultySeeder extends Seeder
         ];
 
         foreach ($instructors as $ins) {
+            // Determine role based on email
+            $role = 'faculty'; // default role
+            
+            if ($ins['email'] === 'arcelito.quiatchon@pnc.edu.ph' || $ins['email'] === 'evangelina.magaling@pnc.edu.ph') {
+                $role = 'department_chair';
+            } elseif ($ins['email'] === 'gima.montecillo@pnc.edu.ph') {
+                $role = 'dean';
+            } elseif ($ins['email'] === 'giamae.gaviola@pnc.edu.ph') {
+                $role = 'secretary';
+            }
+            
             $user = User::firstOrCreate(
                 ['email' => $ins['email']],
                 [
                     'password'        => Hash::make('password'),
-                    'role'            => 'faculty',
+                    'role'            => $role,
                     'status'          => 'active',
                     'password_set_at' => now(),
                 ]

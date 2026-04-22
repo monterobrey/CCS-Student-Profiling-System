@@ -74,6 +74,9 @@ export const API_ENDPOINTS = {
   PROGRAMS: {
     LIST: "/programs",
   },
+  ORGANIZATIONS: {
+    LIST: "/organizations",
+  },
   SECTIONS: {
     LIST: "/sections",
   },

@@ -162,23 +162,35 @@ class FacultyController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'nullable|string',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'department_id' => 'required|exists:departments,id',
-            'position' => 'required|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'nullable|string',
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'middle_name' => 'nullable|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'department_id' => 'required|exists:departments,id',
+                'position' => 'required|string|max:255',
+            ]);
 
-        $faculty = $this->facultyService->createFaculty($validated);
+            $faculty = $this->facultyService->createFaculty($validated);
 
-        return ApiResponse::success(
-            $faculty,
-            'Faculty member created. Check email for account setup.',
-            201
-        );
+            return ApiResponse::success(
+                $faculty,
+                'Faculty member created. Check email for account setup.',
+                201
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError(
+                $e->errors(),
+                'Validation failed'
+            );
+        } catch (\Exception $e) {
+            return ApiResponse::error(
+                $e->getMessage(),
+                500
+            );
+        }
     }
 
     /**

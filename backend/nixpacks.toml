@@ -11,7 +11,8 @@ nixPkgs = [
     "php82Extensions.bcmath",
     "php82Extensions.gd",
     "php82Extensions.fileinfo",
-    "php82Extensions.tokenizer"
+    "php82Extensions.tokenizer",
+    "php82Packages.composer"
 ]
 
 [phases.install]

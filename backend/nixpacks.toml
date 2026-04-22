@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mysqli", "nodejs_22_x", "npm_11_x"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mysqli", "nodejs_20_x", "npm"]
 
 [phases.install]
 cmds = [

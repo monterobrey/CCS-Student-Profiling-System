@@ -1,0 +1,20 @@
+[phases.setup]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mysqli", "nodejs_18", "npm"]
+
+[phases.install]
+cmds = [
+    "composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs",
+    "rm -rf node_modules package-lock.json",
+    "npm install --omit=dev"
+]
+
+[phases.build]
+cmds = [
+    "npm run build",
+    "php artisan config:cache",
+    "php artisan route:cache",
+    "php artisan view:cache"
+]
+
+[start]
+cmd = "php artisan migrate --force && php-fpm"

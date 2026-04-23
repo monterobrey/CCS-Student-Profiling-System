@@ -9,6 +9,14 @@ export const scheduleService = {
     return httpClient.get(`${API_ENDPOINTS.SCHEDULE.LIST}${query ? `?${query}` : ''}`);
   },
 
+  getStudentSchedules: () => {
+    return httpClient.get(API_ENDPOINTS.STUDENT.SCHEDULE);
+  },
+
+  getFacultySchedules: () => {
+    return httpClient.get(API_ENDPOINTS.FACULTY.MY_SCHEDULE);
+  },
+
   getCurriculumCourses: (sectionId) => {
     return httpClient.get(`${API_ENDPOINTS.SCHEDULE.CURRICULUM_COURSES}?section_id=${sectionId}`);
   },

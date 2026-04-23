@@ -36,6 +36,7 @@ import StudentManagement from "./pages/Shared/StudentManagement";
 import FacultyWorkload from "./pages/Shared/FacultyWorkload";
 import Settings from "./pages/Shared/Settings";
 import ArchiveManagement from "./pages/Dean/ArchiveManagement";
+import UnifiedCalendar from "./pages/Shared/UnifiedCalendar";
 
 // Import Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
@@ -168,6 +169,14 @@ function App() {
               }
             />
             <Route
+              path="/dean/calendar"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
+                  <UnifiedCalendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dean/student-accounts"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.DEAN]}>
@@ -280,6 +289,14 @@ function App() {
               }
             />
             <Route
+              path="/department-chair/calendar"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.CHAIR]}>
+                  <UnifiedCalendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/secretary/dashboard"
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
@@ -340,6 +357,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
                   <AwardsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/secretary/calendar"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.SECRETARY]}>
+                  <UnifiedCalendar />
                 </ProtectedRoute>
               }
             />
@@ -436,6 +461,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
                   <StudentAffiliations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/calendar"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+                  <UnifiedCalendar />
                 </ProtectedRoute>
               }
             />
@@ -598,6 +631,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
                   <FacultyRecommendAward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty/calendar"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.FACULTY]}>
+                  <UnifiedCalendar />
                 </ProtectedRoute>
               }
             />

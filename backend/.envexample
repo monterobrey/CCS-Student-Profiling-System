@@ -47,14 +47,11 @@ REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
 REDIS_PORT=6379
 
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=monterobrey85@gmail.com
-MAIL_PASSWORD=twqhbpfnbhitvdhv
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="monterobrey85@gmail.com"
+MAIL_MAILER=resend
+MAIL_FROM_ADDRESS="onboarding@resend.dev"
 MAIL_FROM_NAME="${APP_NAME}"
+
+RESEND_API_KEY=your-resend-api-key-here
 
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=

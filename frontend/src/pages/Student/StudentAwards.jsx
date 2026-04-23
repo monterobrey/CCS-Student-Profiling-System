@@ -4,16 +4,60 @@ import { useNavigate, useParams } from "react-router-dom";
 import { awardService } from "../../services";
 import "../../styles/Student/StudentAwards.css";
 
-const EMPTY_FORM = { awardName: "", category: "", description: "", academic_year: "" };
+const EMPTY_FORM = { awardName: "", customAwardName: "", category: "", description: "", academic_year: "" };
 
 const today = () => new Date().toISOString().split("T")[0];
 
 const CATEGORIES = [
-  { value: "Academic Honor",      emoji: "🎓", desc: "Latin honors, Dean's list" },
-  { value: "Competition",         emoji: "🏅", desc: "Hackathons, quiz bees, sports" },
-  { value: "Research / Paper",    emoji: "🔬", desc: "Thesis, publications, research" },
-  { value: "Leadership / Service",emoji: "🤝", desc: "Org awards, community service" },
-  { value: "Extra Curricular",    emoji: "🎭", desc: "Arts, culture, campus events" },
+  { value: "Academic Honor",       emoji: "🎓", desc: "Latin honors, Dean's list" },
+  { value: "Competition",          emoji: "🏅", desc: "Hackathons, quiz bees, sports" },
+  { value: "Research / Paper",     emoji: "🔬", desc: "Thesis, publications, research" },
+  { value: "Leadership / Service", emoji: "🤝", desc: "Org awards, community service" },
+  { value: "Extra Curricular",     emoji: "🎭", desc: "Arts, culture, campus events" },
+];
+
+/* ── Preset university awards ── */
+const PRESET_AWARDS = [
+  { group: "Academic Honors",
+    options: [
+      "Summa Cum Laude",
+      "Magna Cum Laude",
+      "Cum Laude",
+      "Dean's List",
+      "President's List",
+      "Academic Excellence Award",
+      "Best in Thesis / Capstone",
+    ]
+  },
+  { group: "Competition Awards",
+    options: [
+      "1st Place — Hackathon",
+      "2nd Place — Hackathon",
+      "3rd Place — Hackathon",
+      "1st Place — Quiz Bee",
+      "2nd Place — Quiz Bee",
+      "3rd Place — Quiz Bee",
+      "Best Presenter — Research Congress",
+      "1st Place — Programming Contest",
+      "1st Place — Sports Competition",
+    ]
+  },
+  { group: "Leadership & Service",
+    options: [
+      "Outstanding Student Leader",
+      "Best Student Organization Officer",
+      "Community Service Award",
+      "Most Outstanding Officer",
+    ]
+  },
+  { group: "Special Recognition",
+    options: [
+      "Most Outstanding Student",
+      "Best in OJT / Internship",
+      "Loyalty Award",
+      "Special Award for Innovation",
+    ]
+  },
 ];
 
 const ACADEMIC_YEARS = [
@@ -48,11 +92,10 @@ const StudentAwards = () => {
   const { id }      = useParams();
 
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm]           = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [toast, setToast]         = useState(null);
 
-  // ── Cached query ──
   const { data: awards = [], isLoading } = useQuery({
     queryKey: ["student-awards"],
     queryFn: async () => {
@@ -61,9 +104,6 @@ const StudentAwards = () => {
     },
   });
 
-  
-
-  // ── Detail view derived from URL param ──
   const viewingAward = id ? awards.find((a) => String(a.id) === String(id)) : null;
 
   const openDetail  = (award) => navigate(`/student/awards/${award.id}`);
@@ -75,26 +115,27 @@ const StudentAwards = () => {
   };
 
   const formatDate = (d) =>
-    d
-      ? new Date(d).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "—";
+    d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+  /* The actual award name to submit — either preset or custom */
+  const resolvedAwardName = form.awardName === "Others"
+    ? form.customAwardName.trim()
+    : form.awardName;
+
+  const isOthers = form.awardName === "Others";
 
   /* ===========================
      APPLY
   =========================== */
   const submitApplication = async () => {
-    if (!form.awardName) {
-      showToast("error", "Award name is required.");
+    if (!resolvedAwardName) {
+      showToast("error", isOthers ? "Please specify your award name." : "Please select an award.");
       return;
     }
     setSubmitting(true);
     try {
       const res = await awardService.apply({
-        awardName:     form.awardName,
+        awardName:     resolvedAwardName,
         category:      form.category      || undefined,
         description:   form.description   || undefined,
         date_received: today(),
@@ -121,9 +162,7 @@ const StudentAwards = () => {
   return (
     <div className="saw-page">
 
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>{toast.message}</div>
-      )}
+      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
       {/* HEADER */}
       <div className="saw-page-header">
@@ -139,25 +178,16 @@ const StudentAwards = () => {
         </button>
       </div>
 
-      
-
       {/* LIST */}
       {isLoading ? (
         <div className="saw-skeleton-list">
-          {[1, 2, 3].map((n) => (
-            <div className="saw-skeleton-row" key={n} />
-          ))}
+          {[1, 2, 3].map((n) => <div className="saw-skeleton-row" key={n} />)}
         </div>
       ) : awards.length === 0 ? (
         <div className="saw-empty-state">
           <div className="saw-empty-icon">
             <svg viewBox="0 0 48 48" fill="none" width="28" height="28">
-              <path
-                d="M24 4l4.5 13.5H43l-11.5 8.5 4.5 13.5L24 31.5l-12 8 4.5-13.5L5 17.5h14.5L24 4z"
-                stroke="#FF6B1A"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
+              <path d="M24 4l4.5 13.5H43l-11.5 8.5 4.5 13.5L24 31.5l-12 8 4.5-13.5L5 17.5h14.5L24 4z" stroke="#FF6B1A" strokeWidth="2" strokeLinejoin="round" />
             </svg>
           </div>
           <h4>No awards yet</h4>
@@ -176,7 +206,6 @@ const StudentAwards = () => {
             {awards.map((award) => {
               const cfg   = STATUS_CONFIG[award.status] ?? { color: "#9ca3af", label: award.status };
               const color = cfg.color;
-
               return (
                 <div className="saw-card" key={award.id} onClick={() => openDetail(award)} style={{ cursor: "pointer" }}>
                   <div className="saw-card-border" style={{ background: color }} />
@@ -205,16 +234,15 @@ const StudentAwards = () => {
         </>
       )}
 
-      {/* APPLY MODAL */}
+      {/* ── APPLY MODAL ── */}
       {showApplyModal && (
         <div
           className="saw-modal-overlay"
-          onClick={(e) => {
-            if (!submitting && e.target === e.currentTarget) setShowApplyModal(false);
-          }}
+          onClick={(e) => { if (!submitting && e.target === e.currentTarget) setShowApplyModal(false); }}
         >
           <div className="saw-modal">
-            {/* HEADER */}
+
+            {/* Header */}
             <div className="saw-modal-header">
               <div className="saw-modal-header-icon">
                 <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#FF6B1A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -226,16 +254,10 @@ const StudentAwards = () => {
                 <h3>Apply for an Award</h3>
                 <p className="saw-modal-sub">Submit your achievement for faculty review and approval.</p>
               </div>
-              <button
-                className="saw-close-btn"
-                onClick={() => setShowApplyModal(false)}
-                disabled={submitting}
-              >
-                ×
-              </button>
+              <button className="saw-close-btn" onClick={() => setShowApplyModal(false)} disabled={submitting}>×</button>
             </div>
 
-            {/* BODY */}
+            {/* Body */}
             <div className="saw-modal-body">
 
               {/* Category pills */}
@@ -256,20 +278,44 @@ const StudentAwards = () => {
                 </div>
               </div>
 
-              {/* Award title */}
+              {/* Award dropdown */}
               <div className="saw-form-group">
                 <label>
-                  Award / Achievement Title <span className="saw-req">*</span>
+                  Award / Achievement <span className="saw-req">*</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Best in Capstone, Cum Laude, 1st Place Hackathon"
-                  maxLength={100}
+                <select
                   value={form.awardName}
-                  onChange={(e) => setForm({ ...form, awardName: e.target.value })}
-                />
-                <span className="saw-char-count">{form.awardName.length}/100</span>
+                  onChange={(e) => setForm({ ...form, awardName: e.target.value, customAwardName: "" })}
+                >
+                  <option value="">Select an award…</option>
+                  {PRESET_AWARDS.map((group) => (
+                    <optgroup key={group.group} label={group.group}>
+                      {group.options.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                  <option value="Others">Others (specify below)</option>
+                </select>
               </div>
+
+              {/* "Others" — reveal custom input */}
+              {isOthers && (
+                <div className="saw-form-group saw-others-reveal">
+                  <label>
+                    Specify Award Name <span className="saw-req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Best in OJT — Company XYZ"
+                    maxLength={100}
+                    autoFocus
+                    value={form.customAwardName}
+                    onChange={(e) => setForm({ ...form, customAwardName: e.target.value })}
+                  />
+                  <span className="saw-char-count">{form.customAwardName.length}/100</span>
+                </div>
+              )}
 
               {/* Academic Year */}
               <div className="saw-form-group">
@@ -304,19 +350,15 @@ const StudentAwards = () => {
 
             </div>
 
-            {/* FOOTER */}
+            {/* Footer */}
             <div className="saw-modal-footer">
-              <button
-                className="saw-ghost-btn"
-                onClick={() => setShowApplyModal(false)}
-                disabled={submitting}
-              >
+              <button className="saw-ghost-btn" onClick={() => setShowApplyModal(false)} disabled={submitting}>
                 Cancel
               </button>
               <button
                 className="saw-primary-btn"
                 onClick={submitApplication}
-                disabled={submitting || !form.awardName}
+                disabled={submitting || !resolvedAwardName}
               >
                 {submitting ? "Submitting..." : (
                   <>
@@ -332,16 +374,15 @@ const StudentAwards = () => {
         </div>
       )}
 
-      {/* DETAIL MODAL */}
+      {/* ── DETAIL MODAL (unchanged) ── */}
       {viewingAward && (() => {
-        const cfg   = STATUS_CONFIG[viewingAward.status] ?? { color: "#9ca3af", label: viewingAward.status };
-        const color = cfg.color;
+        const cfg      = STATUS_CONFIG[viewingAward.status] ?? { color: "#9ca3af", label: viewingAward.status };
+        const color    = cfg.color;
         const catEmoji = CATEGORIES.find(c => c.value === viewingAward.category)?.emoji ?? "🏆";
         return (
           <div className="saw-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeDetail(); }}>
             <div className="saw-modal saw-detail-modal">
 
-              {/* ── HERO BANNER ── */}
               <div className="saw-detail-hero" style={{ background: `linear-gradient(135deg, ${color}22 0%, ${color}08 100%)`, borderBottom: `3px solid ${color}30` }}>
                 <div className="saw-detail-hero-icon" style={{ background: color + "22", border: `2px solid ${color}40` }}>
                   <span style={{ fontSize: 28 }}>{catEmoji}</span>
@@ -352,14 +393,13 @@ const StudentAwards = () => {
                     <span className="saw-award-badge" style={{ background: color + "20", color, fontSize: 11, padding: "3px 10px" }}>
                       {cfg.label}
                     </span>
-                    {viewingAward.category && <span className="saw-detail-chip">{viewingAward.category}</span>}
+                    {viewingAward.category     && <span className="saw-detail-chip">{viewingAward.category}</span>}
                     {viewingAward.academic_year && <span className="saw-detail-chip">{viewingAward.academic_year}</span>}
                   </div>
                 </div>
                 <button className="saw-close-btn" onClick={closeDetail}>×</button>
               </div>
 
-              {/* ── INFO ROWS ── */}
               <div className="saw-detail-body">
                 <div className="saw-detail-row">
                   <span className="saw-detail-row-label">
@@ -368,7 +408,6 @@ const StudentAwards = () => {
                   </span>
                   <span className="saw-detail-row-value">{formatDate(viewingAward.date_received)}</span>
                 </div>
-
                 <div className="saw-detail-row">
                   <span className="saw-detail-row-label">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -376,7 +415,6 @@ const StudentAwards = () => {
                   </span>
                   <span className="saw-detail-row-value">{viewingAward.issued_by || "—"}</span>
                 </div>
-
                 <div className="saw-detail-row">
                   <span className="saw-detail-row-label">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
@@ -384,7 +422,6 @@ const StudentAwards = () => {
                   </span>
                   <span className="saw-detail-row-value">{formatDate(viewingAward.created_at)}</span>
                 </div>
-
                 {viewingAward.description && (
                   <div className="saw-detail-row saw-detail-row--block">
                     <span className="saw-detail-row-label">
@@ -394,7 +431,6 @@ const StudentAwards = () => {
                     <p className="saw-detail-row-desc">{viewingAward.description}</p>
                   </div>
                 )}
-
                 {viewingAward.action_taken && viewingAward.status === "rejected" && (
                   <div className="saw-detail-row saw-detail-row--block saw-detail-row--danger">
                     <span className="saw-detail-row-label">
@@ -406,7 +442,6 @@ const StudentAwards = () => {
                 )}
               </div>
 
-              {/* ── FOOTER ── */}
               <div className="saw-modal-footer">
                 <button className="saw-ghost-btn" onClick={closeDetail}>Close</button>
               </div>

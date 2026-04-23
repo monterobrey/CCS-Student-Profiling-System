@@ -6,10 +6,12 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 1400px;        /* add this */
+  margin: 0 auto;           /* add this */
+  width: 100%;              /* add this */
+  padding: 0 24px;          /* add this */
+  box-sizing: border-box;   /* add this */
 }
 
 .hero-banner {

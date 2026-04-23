@@ -21,5 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Return JSON for unauthenticated API requests instead of redirecting
+        $exceptions->shouldRenderJsonWhen(function ($request, $e) {
+            return $request->is('api/*');
+        });
     })->create();

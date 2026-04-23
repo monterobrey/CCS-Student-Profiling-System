@@ -26,11 +26,12 @@ class StudentService
      */
     public function createStudent($data)
     {
-        return DB::transaction(function () use ($data) {
+        $setupToken = Str::random(60);
+
+        $result = DB::transaction(function () use ($data, $setupToken) {
             // Generate initial password: LastName + last 3 digits of student_number
             $digits = substr(preg_replace('/[^0-9]/', '', $data['student_number']), -3);
             $initialPassword = $data['last_name'] . $digits;
-            $setupToken = Str::random(60);
 
             // Create user account
             $user = User::create([
@@ -53,12 +54,6 @@ class StudentService
                 'middle_name' => $data['middle_name'] ?? null,
             ]);
 
-            // Send setup password notification — skip during bulk import
-            if (empty($data['skip_notification'])) {
-                $user->load('student');
-                $user->notify(new SetupPasswordNotification($setupToken));
-            }
-
             // Create guardian if provided
             if (isset($data['guardian']) && !empty($data['guardian']['first_name'])) {
                 Guardian::create([
@@ -72,6 +67,22 @@ class StudentService
 
             return $student->load('user', 'program', 'section', 'guardian');
         });
+
+        // Send setup password notification AFTER transaction — skip during bulk import
+        // Done outside the transaction so a mail failure doesn't roll back the student record
+        if (empty($data['skip_notification'])) {
+            try {
+                $result->user->load('student');
+                $result->user->notify(new SetupPasswordNotification($setupToken));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send setup email for student: ' . $e->getMessage(), [
+                    'student_id' => $result->id,
+                    'email' => $result->user->email ?? null,
+                ]);
+            }
+        }
+
+        return $result;
     }
 
     /**

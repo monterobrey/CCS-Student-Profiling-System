@@ -31,10 +31,11 @@ class FacultyService
      */
     public function createFaculty($data)
     {
-        return DB::transaction(function () use ($data) {
+        $setupToken = Str::random(60);
+
+        $result = DB::transaction(function () use ($data, $setupToken) {
             // Generate initial password: LastNameCCS
             $initialPassword = $data['last_name'] . 'CCS';
-            $setupToken = Str::random(60);
 
             // Create user account
             $user = User::create([
@@ -56,12 +57,22 @@ class FacultyService
                 'position' => $data['position'],
             ]);
 
-            // Send setup password notification (after profile exists so greeting uses name)
-            $user->load('faculty');
-            $user->notify(new SetupPasswordNotification($setupToken));
-
             return $faculty->load('user', 'department');
         });
+
+        // Send setup password notification AFTER transaction
+        // Done outside so a mail failure doesn't roll back the faculty record
+        try {
+            $result->user->load('faculty');
+            $result->user->notify(new SetupPasswordNotification($setupToken));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send setup email for faculty: ' . $e->getMessage(), [
+                'faculty_id' => $result->id,
+                'email' => $result->user->email ?? null,
+            ]);
+        }
+
+        return $result;
     }
 
     /**

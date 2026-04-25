@@ -42,6 +42,16 @@ class FacultyExpertiseSeeder extends Seeder
                 ['skillName' => 'Thesis Advising',                      'skill_category' => 'Research'],
             ],
 
+            // ── e.magaling — Evangelina's teaching account (BSCS Chair) ──
+            'e.magaling@pnc.edu.ph' => [
+                ['skillName' => 'Java, Python, C++',                    'skill_category' => 'Programming'],
+                ['skillName' => 'Data Structures & Algorithms',         'skill_category' => 'Programming'],
+                ['skillName' => 'Object-Oriented Programming',          'skill_category' => 'Programming'],
+                ['skillName' => 'Discrete Structures',                  'skill_category' => 'Mathematics'],
+                ['skillName' => 'Capstone Project Management',          'skill_category' => 'Research'],
+                ['skillName' => 'System Analysis & Design',             'skill_category' => 'Systems'],
+            ],
+
             // ── Evangelina Magaling — BSCS Chair (admin account, no teaching) ──
             // No expertise entry; she uses a separate teaching account if needed.
 

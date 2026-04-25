@@ -38,8 +38,9 @@ class FacultySeeder extends Seeder
             ['first' => 'Evangelina',  'last' => 'Magaling',     'email' => 'evangelina.magaling@pnc.edu.ph',     'pos' => 'Department Chair',   'program' => 'BSCS', 'role' => 'department_chair'],
 
             // ── Teaching accounts for Chair / Dean (role = faculty, included in auto-scheduling) ──
-            ['first' => 'Arcelito',    'last' => 'Quiatchon',    'email' => 'a.quiatchon@pnc.edu.ph',             'pos' => 'Instructor I',       'program' => 'BSIT', 'role' => 'faculty'],
-            ['first' => 'Gima',        'last' => 'Montecillo',   'email' => 'g.montecillo@pnc.edu.ph',            'pos' => 'Professor',          'program' => null,   'role' => 'faculty'],
+            ['first' => 'Arcelito',   'last' => 'Quiatchon',  'email' => 'a.quiatchon@pnc.edu.ph',          'pos' => 'Instructor I',  'program' => 'BSIT', 'role' => 'faculty'],
+            ['first' => 'Gima',       'last' => 'Montecillo', 'email' => 'g.montecillo@pnc.edu.ph',         'pos' => 'Professor',     'program' => null,   'role' => 'faculty'],
+            ['first' => 'Evangelina', 'last' => 'Magaling',   'email' => 'e.magaling@pnc.edu.ph',           'pos' => 'Instructor I',  'program' => 'BSCS', 'role' => 'faculty'],
 
             // ── Regular faculty ──
             ['first' => 'Luvim',       'last' => 'Eusebio',      'email' => 'luvim.eusebio@pnc.edu.ph',           'pos' => 'Professor',          'program' => null,   'role' => 'faculty'],

@@ -31,7 +31,8 @@ class AnalyticsService
         }
 
         $studentsQuery = Student::query();
-        $facultyQuery  = Faculty::query();
+        $facultyQuery  = Faculty::whereHas('user', fn($q) => $q->where('role', 'faculty'))
+                                ->whereNull('deleted_at');
         $awardsQuery   = AcademicAward::query();
         $violationsQuery = StudentViolation::query();
 
@@ -86,6 +87,8 @@ class AnalyticsService
             });
 
         $facultyWorkload = Faculty::with(['department'])
+            ->whereHas('user', fn($q) => $q->where('role', 'faculty'))
+            ->whereNull('deleted_at')
             ->withCount(['schedules as subjects'])
             ->orderByDesc('subjects')
             ->limit(4)
@@ -468,7 +471,10 @@ class AnalyticsService
             ->limit(5)
             ->get()
             ->map(fn($row) => [
-                'name'    => $row->name,
+                'name'       => $row->name,
+                'short_name' => strlen($row->name) > 25
+                    ? substr($row->name, 0, 23) . '…'
+                    : $row->name,
                 'members' => (int) $row->members,
                 'color'   => '#' . substr(md5($row->name), 0, 6),
             ])->values();

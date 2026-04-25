@@ -153,7 +153,10 @@ class FacultyController extends Controller
             'schedules.section' => function ($q) {
                 $q->withCount('students');
             },
-        ])->get();
+        ])
+        ->whereHas('user', fn($q) => $q->where('role', 'faculty'))
+        ->whereNull('deleted_at')
+        ->get();
         return ApiResponse::success($faculty);
     }
 

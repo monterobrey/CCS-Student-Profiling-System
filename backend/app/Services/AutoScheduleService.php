@@ -213,9 +213,9 @@ class AutoScheduleService
 
         DB::beginTransaction();
         try {
-            Schedule::whereIn('section_id', $sections->pluck('id'))
-                ->where('semester', $semester)
-                ->delete();
+            // Delete ALL existing schedules for these sections (all semesters)
+            // so stale assignments from previous runs don't linger.
+            Schedule::whereIn('section_id', $sections->pluck('id'))->delete();
 
             foreach ($sections as $section) {
                 $vacantDay = $sectionVacantDays[$section->id];
@@ -552,13 +552,18 @@ class AutoScheduleService
         array &$facultySlots,
         array &$facultyLoad
     ): ?Faculty {
-        // Try preferred first (only set for core CCS subjects)
-        if ($preferred && $this->isFacultyFree($preferred->id, $days, $start, $end, $facultySlots)) {
+        // If no preferred faculty (GE/minor subject) — leave unassigned.
+        // The chair will manually assign the correct instructor from another department.
+        if ($preferred === null) {
+            return null;
+        }
+
+        // Try preferred first
+        if ($this->isFacultyFree($preferred->id, $days, $start, $end, $facultySlots)) {
             return $preferred;
         }
 
-        // Fall back to least-loaded available faculty
-        // (covers both: preferred is busy, or this is a GE/minor subject)
+        // Preferred is busy — fall back to least-loaded available faculty
         $best     = null;
         $bestLoad = PHP_INT_MAX;
 

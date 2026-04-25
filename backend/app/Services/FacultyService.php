@@ -217,7 +217,17 @@ class FacultyService
 
         $setupToken = Str::random(60);
         $user->update(['password_setup_token' => $setupToken]);
-        $user->notify(new SetupPasswordNotification($setupToken));
+
+        try {
+            $user->load('faculty');
+            $user->notify(new SetupPasswordNotification($setupToken));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to resend setup email for faculty: ' . $e->getMessage(), [
+                'faculty_id' => $faculty->id,
+                'email' => $user->email ?? null,
+            ]);
+            // Token is already saved — user can still receive email via another resend attempt
+        }
 
         return true;
     }

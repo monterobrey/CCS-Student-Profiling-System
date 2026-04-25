@@ -211,7 +211,17 @@ class StudentService
 
         $setupToken = \Illuminate\Support\Str::random(60);
         $user->update(['password_setup_token' => $setupToken]);
-        $user->notify(new SetupPasswordNotification($setupToken));
+
+        try {
+            $user->load('student');
+            $user->notify(new SetupPasswordNotification($setupToken));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to resend setup email for student: ' . $e->getMessage(), [
+                'student_id' => $student->id,
+                'email' => $user->email ?? null,
+            ]);
+            // Token is already saved — user can still receive email via another resend attempt
+        }
 
         return true;
     }

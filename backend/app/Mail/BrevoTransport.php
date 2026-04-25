@@ -38,7 +38,7 @@ class BrevoTransport extends AbstractTransport
             'textContent' => $email->getTextBody(),
         ];
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(10)->withHeaders([
             'api-key'      => $this->apiKey,
             'Content-Type' => 'application/json',
             'Accept'       => 'application/json',

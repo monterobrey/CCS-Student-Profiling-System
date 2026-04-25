@@ -117,6 +117,14 @@ class AutoScheduleService
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
+     * GE / minor subject categories — these belong to other departments.
+     * Faculty matching for these courses skips the preferred-faculty logic
+     * and just picks the least-loaded available instructor instead of
+     * "stealing" a specialist from core CCS subjects.
+     */
+    private array $minorCategories = ['General Education'];
+
+    /**
      * Generate schedules for a specific program, year level, and semester.
      */
     public function generate(int $programId, string $yearLevel, string $semester)
@@ -140,9 +148,13 @@ class AutoScheduleService
             throw new \Exception("No curriculum found for this program, year, and semester.");
         }
 
-        // 2. Load all active faculty with their expertise (eager-loaded once)
-        $allFaculty = Faculty::with('expertise')
+        // 2. Load only teaching faculty — exclude dean, department_chair, and secretary.
+        //    Those roles may have a faculty row but they are not available for
+        //    auto-scheduling. If a dean/chair also teaches they must use a
+        //    separate faculty account with role = 'faculty'.
+        $allFaculty = Faculty::with(['expertise', 'user'])
             ->whereNull('deleted_at')
+            ->whereHas('user', fn($q) => $q->where('role', 'faculty'))
             ->get();
 
         // 3. Assign unique vacant days to sections
@@ -211,14 +223,25 @@ class AutoScheduleService
                 foreach ($sortedCurriculum as $item) {
                     $course = $item->course;
 
-                    // Determine the best faculty for this course
-                    $matchedFaculty = $this->matchFaculty($course, $allFaculty, $facultyLoad);
+                    // GE / minor subjects belong to other departments — do NOT
+                    // assign a CCS specialist to them. Leave faculty_id null so
+                    // the chair can manually assign the correct instructor later.
+                    $isMinor = in_array(
+                        $this->getCourseCategory($course),
+                        $this->minorCategories,
+                        true
+                    );
+
+                    // For core CCS subjects, find the best-matched specialist.
+                    $matchedFaculty = $isMinor
+                        ? null
+                        : $this->matchFaculty($course, $allFaculty, $facultyLoad);
 
                     if ($course->lab_units > 0) {
                         $placed = $this->placeSubject(
                             $section, $course, 'lab', $course->lab_units,
                             $vacantDay, $generatedSchedules,
-                            $matchedFaculty, $facultyLoad, $facultySlots,
+                            $matchedFaculty, $allFaculty, $facultyLoad, $facultySlots,
                             $semester
                         );
                         if (!$placed) {
@@ -230,7 +253,7 @@ class AutoScheduleService
                         $placed = $this->placeSubject(
                             $section, $course, 'lec', $course->lec_units,
                             $vacantDay, $generatedSchedules,
-                            $matchedFaculty, $facultyLoad, $facultySlots,
+                            $matchedFaculty, $allFaculty, $facultyLoad, $facultySlots,
                             $semester
                         );
                         if (!$placed) {
@@ -346,6 +369,7 @@ class AutoScheduleService
         $section, $course, $type, $units, $vacantDay,
         &$generatedSchedules,
         ?Faculty $preferredFaculty,
+        $allFaculty,
         array &$facultyLoad,
         array &$facultySlots,
         string $semester
@@ -395,7 +419,7 @@ class AutoScheduleService
                 foreach ($group as $day) {
                     $slot = $this->findBestSlotForDay(
                         $section, $day, $pattern['hoursPerMeeting'],
-                        $generatedSchedules, $preferredFaculty, $facultySlots
+                        $generatedSchedules, $preferredFaculty, $allFaculty, $facultySlots, $facultyLoad
                     );
 
                     if ($slot === null) {
@@ -456,7 +480,9 @@ class AutoScheduleService
         float $hoursPerMeeting,
         array &$generatedSchedules,
         ?Faculty $preferredFaculty,
-        array &$facultySlots
+        $allFaculty,
+        array &$facultySlots,
+        array &$facultyLoad
     ): ?array {
         $durationMins = (int) round($hoursPerMeeting * 60);
         $time         = Carbon::createFromFormat('H:i', $this->operatingStart);
@@ -495,7 +521,7 @@ class AutoScheduleService
 
                 // Find available faculty
                 $assignedFaculty = $this->findAvailableFaculty(
-                    $preferredFaculty, [$day], $startTime, $endTime, $facultySlots
+                    $preferredFaculty, $allFaculty, [$day], $startTime, $endTime, $facultySlots, $facultyLoad
                 );
 
                 return [
@@ -511,23 +537,42 @@ class AutoScheduleService
 
     /**
      * Find a faculty member who is free during the given days/time.
-     * Prefers the preferred faculty; falls back to any available faculty.
+     *
+     * - If a preferred faculty is given (core subject), try them first.
+     * - If preferred is busy or null (GE/minor subject), fall back to the
+     *   least-loaded available faculty so the slot is never left unassigned
+     *   unnecessarily. The chair can still reassign manually afterwards.
      */
     private function findAvailableFaculty(
         ?Faculty $preferred,
+        $allFaculty,
         array $days,
         string $start,
         string $end,
-        array &$facultySlots
+        array &$facultySlots,
+        array &$facultyLoad
     ): ?Faculty {
-        // Try preferred first
+        // Try preferred first (only set for core CCS subjects)
         if ($preferred && $this->isFacultyFree($preferred->id, $days, $start, $end, $facultySlots)) {
             return $preferred;
         }
 
-        // Preferred is busy — return null (slot still gets placed, just without faculty)
-        // The chair can manually assign later via the Assign Faculty button
-        return null;
+        // Fall back to least-loaded available faculty
+        // (covers both: preferred is busy, or this is a GE/minor subject)
+        $best     = null;
+        $bestLoad = PHP_INT_MAX;
+
+        foreach ($allFaculty as $faculty) {
+            if ($this->isFacultyFree($faculty->id, $days, $start, $end, $facultySlots)) {
+                $load = $facultyLoad[$faculty->id] ?? 0;
+                if ($load < $bestLoad) {
+                    $bestLoad = $load;
+                    $best     = $faculty;
+                }
+            }
+        }
+
+        return $best;
     }
 
     /**

@@ -33,23 +33,68 @@ class StudentSeeder extends Seeder
         $programs = [$bsit, $bscs];
 
         $firstNames = [
-            'Ethan', 'Althea', 'Joaquin', 'Bianca', 'Miguel', 'Yuan', 'Tala', 'Hiraya', 'Lakan', 'Mayari',
-            'Sari', 'Datu', 'Malaya', 'Kidlat', 'Liwayway', 'Ulan', 'Bituin', 'Araw', 'Sinag', 'Lakambini',
-            'Alon', 'Agos', 'Himig', 'Awit', 'Laya', 'Bagwis', 'Sulyap', 'Ngiti', 'Tawa', 'Yakap',
-            'Halakhak', 'Indak', 'Sayaw', 'Tugtog', 'Kumpas', 'Galaw', 'Likha', 'Obra', 'Sining', 'Diwa',
-            'Marco', 'Sofia', 'Diego', 'Camille', 'Rafael', 'Isabelle', 'Anton', 'Pia', 'Carlo', 'Lea',
+            // Classic Filipino
+            'Jose', 'Maria', 'Juan', 'Ana', 'Pedro', 'Rosa', 'Carlos', 'Luz', 'Ramon', 'Nena',
+            'Eduardo', 'Teresita', 'Roberto', 'Corazon', 'Ernesto', 'Felicidad', 'Rodrigo', 'Milagros', 'Alfredo', 'Remedios',
+            // Modern Filipino
+            'Ethan', 'Althea', 'Joaquin', 'Bianca', 'Miguel', 'Camille', 'Rafael', 'Isabelle', 'Anton', 'Pia',
+            'Marco', 'Sofia', 'Diego', 'Lea', 'Carlo', 'Trisha', 'Lance', 'Kyla', 'Vince', 'Alyssa',
+            'Jericho', 'Katrina', 'Aldrin', 'Maricel', 'Ronnie', 'Sheila', 'Arvin', 'Jennie', 'Rodel', 'Glenda',
+            // Baybayin-inspired / indigenous
+            'Tala', 'Hiraya', 'Lakan', 'Mayari', 'Alon', 'Agos', 'Himig', 'Awit', 'Laya', 'Bagwis',
+            'Sinag', 'Bituin', 'Araw', 'Kidlat', 'Liwayway', 'Ulan', 'Malaya', 'Datu', 'Sari', 'Lakambini',
+            'Diwa', 'Likha', 'Obra', 'Sining', 'Sulyap', 'Ngiti', 'Tawa', 'Yakap', 'Indak', 'Sayaw',
+            // More contemporary
+            'Andrei', 'Janine', 'Kristoffer', 'Pauline', 'Renz', 'Charmaine', 'Jayson', 'Lovely', 'Alvin', 'Mariz',
+            'Noel', 'Hazel', 'Rommel', 'Danica', 'Gian', 'Abigail', 'Jomar', 'Kristine', 'Nico', 'Vanessa',
+            'Brent', 'Czarina', 'Derick', 'Erica', 'Franz', 'Giselle', 'Harold', 'Ivy', 'Jerome', 'Karen',
+            'Louie', 'Mylene', 'Nathan', 'Odessa', 'Patrick', 'Queenie', 'Ricky', 'Stella', 'Tyrone', 'Uma',
+            'Warren', 'Xandra', 'Yvan', 'Zara', 'Aldous', 'Bea', 'Cris', 'Donna', 'Elmo', 'Faith',
         ];
 
         $lastNames = [
+            // Very common Filipino surnames
             'Santos', 'Reyes', 'Cruz', 'Bautista', 'Ocampo', 'Garcia', 'Mendoza', 'Torres', 'Tomas', 'Andrada',
             'Castillo', 'Flores', 'Villanueva', 'Ramos', 'Castro', 'Rivera', 'Aquino', 'Guzman', 'Lucero', 'Dizon',
-            'Mercado', 'Pascual', 'Delos Reyes', 'Santiago', 'Soriano', 'Valencia', 'Navarro', 'Ferrer', 'Corpuz', 'Padilla',
-            'Dela Cruz', 'Espiritu', 'Bernardo', 'Macaraeg', 'Tolentino', 'Legaspi', 'Ibarra', 'Umali', 'Galang', 'Lacson',
+            'Mercado', 'Pascual', 'Santiago', 'Soriano', 'Valencia', 'Navarro', 'Ferrer', 'Corpuz', 'Padilla', 'Lacson',
+            'Dela Cruz', 'Delos Reyes', 'Espiritu', 'Bernardo', 'Macaraeg', 'Tolentino', 'Legaspi', 'Ibarra', 'Umali', 'Galang',
+            // Regional / less common
+            'Abella', 'Acosta', 'Aguilar', 'Alcantara', 'Alegre', 'Alvarado', 'Alvarez', 'Amador', 'Ambrosio', 'Andres',
+            'Angeles', 'Antiporda', 'Antonio', 'Aragon', 'Arellano', 'Arias', 'Arroyo', 'Asuncion', 'Austria', 'Avila',
+            'Bacani', 'Bagasao', 'Balbuena', 'Balderas', 'Baluyot', 'Banzon', 'Barrientos', 'Bartolome', 'Batungbakal', 'Bautista',
+            'Bayani', 'Belen', 'Bellosillo', 'Benedicto', 'Benitez', 'Bernal', 'Borja', 'Briones', 'Buenaventura', 'Bueno',
+            'Caballero', 'Cabrera', 'Caguioa', 'Calanog', 'Camacho', 'Camposano', 'Canlas', 'Capistrano', 'Carandang', 'Carbonell',
+            'Cardenas', 'Carino', 'Carpio', 'Carreon', 'Casimiro', 'Catalan', 'Cayabyab', 'Cayanan', 'Chua', 'Clemente',
+            'Cobarrubias', 'Concepcion', 'Constantino', 'Cordero', 'Coronel', 'Cortez', 'Cosico', 'Crisostomo', 'Cristobal', 'Cuaresma',
+            'Dacanay', 'Dacumos', 'Dagdag', 'Dalisay', 'Dalmacio', 'Damian', 'David', 'De Guzman', 'De Jesus', 'De Leon',
+            'De Villa', 'Del Rosario', 'Delgado', 'Delos Santos', 'Dimaculangan', 'Dimayuga', 'Dionisio', 'Dizon', 'Domingo', 'Donato',
+            'Dulay', 'Dumlao', 'Duque', 'Dy', 'Ebora', 'Echevarria', 'Edralin', 'Ejercito', 'Enriquez', 'Escoto',
+            'Espejo', 'Espinosa', 'Estacio', 'Estrada', 'Evangelista', 'Fajardo', 'Faustino', 'Fernandez', 'Figueroa', 'Fontanilla',
+            'Francisco', 'Fronda', 'Fuentes', 'Gabriel', 'Gallardo', 'Gamboa', 'Garay', 'Gatdula', 'Gatmaitan', 'Genuino',
+            'Gomez', 'Gonzales', 'Guerrero', 'Guevarra', 'Gutierrez', 'Hernandez', 'Herrera', 'Hidalgo', 'Hilario', 'Hontiveros',
+            'Ignacio', 'Ilagan', 'Imperial', 'Infante', 'Isidro', 'Jacinto', 'Javier', 'Jimenez', 'Joaquin', 'Joson',
+            'Juarez', 'Jurado', 'Katigbak', 'Lacuesta', 'Lagman', 'Laguardia', 'Lao', 'Lapid', 'Lara', 'Laurel',
+            'Laxamana', 'Lazaro', 'Ledesma', 'Lim', 'Limjoco', 'Lising', 'Llamas', 'Llorente', 'Lopez', 'Lorenzo',
+            'Lozada', 'Luna', 'Macapagal', 'Maceda', 'Madrigal', 'Magalona', 'Magsaysay', 'Manalang', 'Manalastas', 'Manalo',
+            'Manaois', 'Mangahas', 'Maniego', 'Manlapaz', 'Manrique', 'Manuel', 'Manzano', 'Marasigan', 'Mariano', 'Marquez',
+            'Martin', 'Martinez', 'Mateo', 'Medina', 'Mejia', 'Melgar', 'Mendez', 'Mendiola', 'Molina', 'Montano',
+            'Montemayor', 'Montero', 'Morales', 'Morato', 'Moreno', 'Muñoz', 'Natividad', 'Nepomuceno', 'Nicolas', 'Nieto',
+            'Nolasco', 'Noriega', 'Nuñez', 'Obligacion', 'Obusan', 'Ong', 'Ongpin', 'Ordonez', 'Oreta', 'Ortega',
+            'Ortiz', 'Osorio', 'Pacheco', 'Paglinawan', 'Palma', 'Palo', 'Pangan', 'Panganiban', 'Panlilio', 'Paraiso',
+            'Paredes', 'Pardo', 'Pasia', 'Paterno', 'Pedrosa', 'Peña', 'Peralta', 'Perez', 'Pineda', 'Poblete',
+            'Policarpio', 'Ponce', 'Porciuncula', 'Prado', 'Prieto', 'Principe', 'Prodigalidad', 'Punzalan', 'Quiambao', 'Quizon',
+            'Ramirez', 'Recto', 'Resurreccion', 'Ricafort', 'Rigor', 'Robles', 'Roces', 'Rodrigo', 'Rodriguez', 'Rojas',
+            'Roldan', 'Roman', 'Romero', 'Rosales', 'Roxas', 'Ruiz', 'Sabio', 'Sagun', 'Salazar', 'Salcedo',
+            'Salgado', 'Salonga', 'Samson', 'San Diego', 'San Juan', 'Sanchez', 'Sandoval', 'Sarmiento', 'Serrano', 'Sierra',
+            'Silva', 'Silverio', 'Simbulan', 'Simon', 'Singson', 'Sison', 'Soliman', 'Sotto', 'Suarez', 'Sy',
+            'Tabios', 'Tan', 'Tanada', 'Tañada', 'Tayag', 'Tayao', 'Tiangco', 'Tiongco', 'Tiongson', 'Tobias',
+            'Trinidad', 'Tuazon', 'Tupas', 'Uy', 'Valdez', 'Valenzuela', 'Vargas', 'Vasquez', 'Velasco', 'Velasquez',
+            'Vera', 'Vergara', 'Vibar', 'Vicente', 'Victorino', 'Viernes', 'Villafuerte', 'Villalobos', 'Villalon', 'Villareal',
+            'Villaruel', 'Villaruz', 'Villasis', 'Villena', 'Viray', 'Virtucio', 'Vitug', 'Yap', 'Yaptinchay', 'Yuchengco',
+            'Zabala', 'Zamora', 'Zaragoza', 'Zubiri',
         ];
 
-        // Skills pool: mix of sports, tech, and soft skills
         $skillsPool = [
-            // Sports
             ['name' => 'Basketball',        'category' => 'Sports'],
             ['name' => 'Volleyball',        'category' => 'Sports'],
             ['name' => 'Badminton',         'category' => 'Sports'],
@@ -58,7 +103,6 @@ class StudentSeeder extends Seeder
             ['name' => 'Chess',             'category' => 'Sports'],
             ['name' => 'Futsal',            'category' => 'Sports'],
             ['name' => 'Track and Field',   'category' => 'Sports'],
-            // Programming
             ['name' => 'Java',              'category' => 'Programming'],
             ['name' => 'C++',               'category' => 'Programming'],
             ['name' => 'Python',            'category' => 'Programming'],
@@ -67,31 +111,25 @@ class StudentSeeder extends Seeder
             ['name' => 'Kotlin',            'category' => 'Programming'],
             ['name' => 'Swift',             'category' => 'Programming'],
             ['name' => 'C#',                'category' => 'Programming'],
-            // Web / Design
             ['name' => 'React',             'category' => 'Web Development'],
             ['name' => 'Laravel',           'category' => 'Web Development'],
             ['name' => 'UI/UX Design',      'category' => 'Design'],
             ['name' => 'Figma',             'category' => 'Design'],
             ['name' => 'Graphic Design',    'category' => 'Design'],
-            // Data / Systems
             ['name' => 'MySQL',             'category' => 'Database'],
             ['name' => 'Data Analysis',     'category' => 'Data Science'],
             ['name' => 'Machine Learning',  'category' => 'Data Science'],
             ['name' => 'Networking',        'category' => 'Systems'],
             ['name' => 'Linux',             'category' => 'Systems'],
-            // Soft skills / Arts
             ['name' => 'Public Speaking',   'category' => 'Communication'],
             ['name' => 'Leadership',        'category' => 'Soft Skills'],
             ['name' => 'Photography',       'category' => 'Arts'],
             ['name' => 'Video Editing',     'category' => 'Arts'],
         ];
 
-        $studentCount = 0;
-        $targetTotal  = 500;
-
-        // Distribute 500 students across 4 year levels × 2 programs = 8 groups
-        // ~62-63 students per group, split into sections of ~25 each
-        $studentsPerGroup   = (int) ceil($targetTotal / 8);
+        $studentCount       = 0;
+        $targetTotal        = 1000;
+        $studentsPerGroup   = (int) ceil($targetTotal / 8); // 8 groups: 4 years × 2 programs
         $studentsPerSection = 25;
 
         for ($year = 1; $year <= 4; $year++) {
@@ -101,10 +139,9 @@ class StudentSeeder extends Seeder
                 $groupSize    = min($studentsPerGroup, $targetTotal - $studentCount);
                 $sectionCount = (int) ceil($groupSize / $studentsPerSection);
 
-                // Ensure sections exist
                 $sections = [];
                 for ($s = 0; $s < $sectionCount; $s++) {
-                    $letter = chr(65 + $s); // A, B, C...
+                    $letter     = chr(65 + $s);
                     $sections[] = Section::firstOrCreate([
                         'section_name'  => $program->program_code . " {$year}-{$letter}",
                         'program_id'    => $program->id,
@@ -120,9 +157,9 @@ class StudentSeeder extends Seeder
                     $firstName     = $firstNames[array_rand($firstNames)];
                     $lastName      = $lastNames[array_rand($lastNames)];
                     $studentNumber = "2026" . str_pad($studentCount + 1, 5, '0', STR_PAD_LEFT);
-                    $email         = strtolower($firstName . "." . Str::slug($lastName) . rand(1, 999) . "@gmail.com");
+                    $slug          = strtolower(preg_replace('/\s+/', '', $lastName));
+                    $email         = strtolower($firstName) . '.' . $slug . ($studentCount + 1) . '@pnc.edu.ph';
 
-                    // Assign to section round-robin
                     $section = $sections[$i % count($sections)];
 
                     $user = User::firstOrCreate(
@@ -151,18 +188,12 @@ class StudentSeeder extends Seeder
                         ]
                     );
 
-                    // Assign 1–3 random skills per student
-                    $skillCount     = rand(1, 3);
-                    $shuffled       = $skillsPool;
+                    // Assign 1–3 random skills
+                    $shuffled = $skillsPool;
                     shuffle($shuffled);
-                    $pickedSkills   = array_slice($shuffled, 0, $skillCount);
-
-                    foreach ($pickedSkills as $skill) {
+                    foreach (array_slice($shuffled, 0, rand(1, 3)) as $skill) {
                         StudentSkill::firstOrCreate(
-                            [
-                                'student_id' => $student->id,
-                                'skillName'  => $skill['name'],
-                            ],
+                            ['student_id' => $student->id, 'skillName' => $skill['name']],
                             ['skill_category' => $skill['category']]
                         );
                     }
@@ -171,5 +202,7 @@ class StudentSeeder extends Seeder
                 }
             }
         }
+
+        $this->command->info("Students seeded: {$studentCount}");
     }
 }

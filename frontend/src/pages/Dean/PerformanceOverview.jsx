@@ -20,9 +20,11 @@ const GwaTip = ({ active, payload, label }) => {
 
 const BarTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  // Use full 'name' from data if available (orgs have short_name on axis but full name in data)
+  const fullLabel = payload[0]?.payload?.name ?? label;
   return (
     <div className="chart-tip">
-      <p className="chart-tip-label">{label}</p>
+      <p className="chart-tip-label">{fullLabel}</p>
       {payload.map((p, i) => (
         <p key={i} className="chart-tip-val">{p.name}: <strong>{p.value}</strong></p>
       ))}
@@ -180,7 +182,7 @@ export default function PerformanceOverview() {
               <BarChart data={topOrgs} layout="vertical" margin={{ top: 5, right: 50, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0e8e0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#b89f90" }} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#1a0a00" }} width={120} />
+                <YAxis type="category" dataKey="short_name" tick={{ fontSize: 11, fill: "#1a0a00" }} width={160} />
                 <Tooltip content={<BarTip />} />
                 <Bar dataKey="members" name="Members" radius={[0, 6, 6, 0]} barSize={22}>
                   {topOrgs.map((o, i) => <Cell key={i} fill={o.color} />)}

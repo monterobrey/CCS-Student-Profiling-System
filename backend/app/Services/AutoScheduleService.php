@@ -9,6 +9,7 @@ use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\Program;
 use App\Models\Faculty;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -140,9 +141,18 @@ class AutoScheduleService
             throw new \Exception("No curriculum found for this program, year, and semester.");
         }
 
-        // 2. Load all active faculty with their expertise (eager-loaded once)
-        $allFaculty = Faculty::with('expertise')
-            ->whereNull('deleted_at')
+        // 2. Load all active faculty with their expertise (eager-loaded once).
+        //    Exclude administrative roles (dean, department_chair, secretary) —
+        //    they should not be assigned to teaching slots.
+        $allFaculty = Faculty::with(['expertise', 'user'])
+            ->whereNull('faculty.deleted_at')
+            ->whereHas('user', function ($q) {
+                $q->whereNotIn('role', [
+                    User::ROLE_DEAN,
+                    User::ROLE_CHAIR,
+                    User::ROLE_SECRETARY,
+                ]);
+            })
             ->get();
 
         // 3. Assign unique vacant days to sections

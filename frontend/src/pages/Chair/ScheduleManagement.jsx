@@ -893,7 +893,9 @@ export default function ScheduleManagement() {
                 <label>Faculty Member</label>
                 <select value={assignForm.faculty_id} onChange={(e) => { setAssignForm({ faculty_id: e.target.value }); setAssignError(""); }}>
                   <option value="">Select faculty</option>
-                  {faculty.map((f) => (
+                  {faculty
+                    .filter((f) => f.user?.role === "faculty")
+                    .map((f) => (
                     <option key={f.id} value={f.id}>
                       {f.first_name} {f.last_name}
                     </option>

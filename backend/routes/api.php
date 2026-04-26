@@ -21,6 +21,7 @@ use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
 use App\Http\Controllers\Functions\NotificationController;
+use App\Http\Controllers\Functions\CalendarEventController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
@@ -38,6 +39,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications',           [NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{id}/read',[NotificationController::class, 'markRead']);
+
+    // Calendar events — all authenticated roles can read their own feed
+    Route::get('/calendar-events',         [CalendarEventController::class, 'index']);
+    // Secretary creates / edits / deletes
+    Route::middleware('role:secretary')->group(function () {
+        Route::post('/calendar-events',        [CalendarEventController::class, 'store']);
+        Route::put('/calendar-events/{id}',    [CalendarEventController::class, 'update']);
+        Route::delete('/calendar-events/{id}', [CalendarEventController::class, 'destroy']);
+    });
 
     // Account settings (all roles)
     Route::put('/account/email',       [AccountSettingsController::class, 'updateEmail']);

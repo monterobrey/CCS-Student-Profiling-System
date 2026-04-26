@@ -112,6 +112,12 @@ export const API_ENDPOINTS = {
     STUDENT_LIST:  "/student/awards",
     STUDENT_APPLY: "/student/awards",
   },
+  CALENDAR: {
+    LIST:   "/calendar-events",
+    CREATE: "/calendar-events",
+    UPDATE: (id) => `/calendar-events/${id}`,
+    DELETE: (id) => `/calendar-events/${id}`,
+  },
 };
 
 export default API_ENDPOINTS;

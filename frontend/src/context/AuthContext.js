@@ -64,6 +64,14 @@ export function AuthProvider({ children }) {
     return `${getRoleBasePath(userRole)}/dashboard`;
   }, [getRoleBasePath]);
 
+  const updateUser = useCallback((patch) => {
+    setUser((prev) => {
+      const updated = typeof patch === 'function' ? patch(prev) : { ...prev, ...patch };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -72,6 +80,7 @@ export function AuthProvider({ children }) {
       role: user?.role || null,
       login,
       logout,
+      setUser: updateUser,
       isDean: user?.role === ROLES.DEAN,
       isChair: user?.role === ROLES.CHAIR,
       isSecretary: user?.role === ROLES.SECRETARY,
@@ -85,7 +94,7 @@ export function AuthProvider({ children }) {
         return user.role === roles;
       },
     }),
-    [user, loading, getRoleBasePath, getDefaultRouteForRole]
+    [user, loading, updateUser, getRoleBasePath, getDefaultRouteForRole]
   );
 
   return (

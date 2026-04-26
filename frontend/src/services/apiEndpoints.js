@@ -6,6 +6,9 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
     CURRENT_USER: "/user",
+    UPDATE_EMAIL: "/account/email",
+    CHANGE_PASSWORD: "/account/password",
+    UPDATE_PREFERENCES: "/account/preferences",
   },
   ANALYTICS: {
     SUMMARY: "/analytics/summary",

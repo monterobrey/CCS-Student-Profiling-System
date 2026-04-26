@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\AccountSettingsController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -37,6 +38,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications',           [NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{id}/read',[NotificationController::class, 'markRead']);
+
+    // Account settings (all roles)
+    Route::put('/account/email',       [AccountSettingsController::class, 'updateEmail']);
+    Route::put('/account/password',    [AccountSettingsController::class, 'changePassword']);
+    Route::put('/account/preferences', [AccountSettingsController::class, 'updatePreferences']);
 
     // Profiling Query Engine (Dean, Chair, Secretary)
     Route::get('/profiling/report', [ProfilingController::class, 'report'])->middleware('role:dean,department_chair,secretary');

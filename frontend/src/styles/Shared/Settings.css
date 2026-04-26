@@ -160,14 +160,24 @@
 
 /* Toggle */
 .toggle {
-  width: 38px;
+  width: 40px;
   height: 22px;
   background: #e5e7eb;
   border-radius: 11px;
+  border: none;
+  outline: none;
+  padding: 0;
   position: relative;
   cursor: not-allowed;
   flex-shrink: 0;
-  transition: all 0.2s;
+  transition: background 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.toggle:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .toggle.active {
@@ -182,12 +192,18 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
 }
 
 .toggle.active .toggle-knob {
-  left: 19px;
+  left: 21px;
+}
+
+/* Toggle — interactive */
+.toggle:not(.disabled) {
+  cursor: pointer;
 }
 
 /* Theme options */
@@ -320,4 +336,68 @@
   .settings-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Password input with eye toggle */
+.setting-btn-active {
+  background: #fff5ef;
+  border-color: #ffd5b0;
+  color: #ff6b1a;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.setting-btn-active:hover {
+  background: #ff6b1a;
+  color: #fff;
+  border-color: #ff6b1a;
+}
+
+/* Theme options */
+.input-eye {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-eye input {
+  flex: 1;
+  padding-right: 38px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #b89f90;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.eye-btn:hover {
+  color: #ff6b1a;
+}
+
+/* Field feedback */
+.field-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+}
+
+.field-success {
+  font-size: 12px;
+  color: #16a34a;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
 }

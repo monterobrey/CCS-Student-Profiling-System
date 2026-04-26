@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Sidebar from "./Sidebar";
@@ -45,8 +45,15 @@ const PATH_SECTIONS = {
 
 export default function AppLayout() {
   const { user, role } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => user?.sidebar_collapsed ?? false
+  );
   const location = useLocation();
+
+  // Sync sidebar state when user preference changes (e.g. toggled in Settings)
+  useEffect(() => {
+    setSidebarCollapsed(user?.sidebar_collapsed ?? false);
+  }, [user?.sidebar_collapsed]);
 
   const portalLabel = role === 'dean' ? 'Dean Portal' 
     : role === 'department_chair' ? 'Chair Portal'

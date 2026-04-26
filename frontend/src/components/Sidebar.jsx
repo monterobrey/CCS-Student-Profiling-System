@@ -73,9 +73,6 @@ const { role, logout } = useAuth();
         { name: "Calendar", items: [
           { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
-        ]},
       ],
       [ROLES.CHAIR]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -99,9 +96,6 @@ const { role, logout } = useAuth();
         { name: "Calendar", items: [
           { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
-        ]},
       ],
       [ROLES.FACULTY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -120,9 +114,6 @@ const { role, logout } = useAuth();
         { name: "Calendar", items: [
           { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
-        ]},
       ],
       [ROLES.SECRETARY]: [
         { name: "Overview", items: [{ path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }] },
@@ -136,9 +127,6 @@ const { role, logout } = useAuth();
         ]},
         { name: "Calendar", items: [
           { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
-        ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
         ]},
       ],
        [ROLES.STUDENT]: [
@@ -159,9 +147,6 @@ const { role, logout } = useAuth();
         ]},
         { name: "Calendar", items: [
           { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
-        ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
         ]},
       ],
     };
@@ -230,12 +215,6 @@ const { role, logout } = useAuth();
         ))}
       </nav>
 
-      <div className="sidebar-footer">
-        <button className="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
-          <Icon name="logout" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
-      </div>
       
     </aside>
   );

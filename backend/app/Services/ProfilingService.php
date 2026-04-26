@@ -140,13 +140,26 @@ class ProfilingService
             });
         }
 
+        // Filter by GWA range (uses stored gwa column on students table)
+        if (!empty($filters['gwa_min'])) {
+            $query->where('gwa', '>=', (float) $filters['gwa_min']);
+        }
+        if (!empty($filters['gwa_max'])) {
+            $query->where('gwa', '<=', (float) $filters['gwa_max']);
+        }
+
         $students = $query->get();
 
         return $students->map(function($student) {
-            $completedSubjects = $student->subjects->whereNotNull('finalRating');
-            $gwa = $completedSubjects->count() > 0 
-                ? $completedSubjects->avg('finalRating')
-                : null;
+            // Prefer the stored GWA column; fall back to computing from subject grades
+            if (!is_null($student->gwa) && $student->gwa > 0) {
+                $gwa = number_format((float) $student->gwa, 2);
+            } else {
+                $completedSubjects = $student->subjects->whereNotNull('finalRating');
+                $gwa = $completedSubjects->count() > 0
+                    ? number_format($completedSubjects->avg('finalRating'), 2)
+                    : null;
+            }
 
             return [
                 'id' => $student->id,
@@ -155,7 +168,7 @@ class ProfilingService
                 'year_level' => $student->year_level,
                 'program' => $student->program->program_code ?? 'N/A',
                 'section' => $student->section->section_name ?? 'N/A',
-                'gwa' => $gwa ? number_format($gwa, 2) : 'N/A',
+                'gwa' => $gwa ?? 'N/A',
                 'skills' => $student->skills->map(fn($s) => $s->skillName)->toArray(),
                 'organizations' => $student->organizations->map(fn($o) => $o->organization->organization_name ?? 'N/A')->toArray(),
                 'academic_activities' => $student->academicActivities->count(),

@@ -102,6 +102,11 @@ export const API_ENDPOINTS = {
     DELETE: (id) => `/schedules/${id}`,
     CURRICULUM_COURSES: "/curriculum-courses",
   },
+  EVENTS: {
+    LIST:   '/events',
+    CREATE: '/events',
+    DELETE: (id) => `/events/${id}`,
+  },
   AWARDS: {
     LIST:          "/awards",
     GIVE:          "/awards",

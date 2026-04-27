@@ -21,6 +21,7 @@ use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
 use App\Http\Controllers\Functions\NotificationController;
+use App\Http\Controllers\Functions\EventController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
@@ -33,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user()->load($request->user()->role === 'student' ? 'student' : ($request->user()->isFacultyMember() ? 'faculty' : []));
     });
+
+    // Events — all roles can read; secretary can write
+    Route::get('/events', [EventController::class, 'index']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
 
     // Notifications (all roles)
     Route::get('/notifications',           [NotificationController::class, 'index']);
@@ -112,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Secretary Specific
     Route::middleware('role:secretary')->group(function () {
+        Route::post('/events', [EventController::class, 'store']);
         Route::post('/secretary/students', [StudentController::class, 'store']);
         Route::post('/secretary/students/import', [StudentController::class, 'import']);
         Route::post('/secretary/students/{id}/resend-setup', [StudentController::class, 'resendSetup']);

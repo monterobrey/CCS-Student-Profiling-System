@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import styles from "../../styles/Shared/UnifiedCalendar.module.css";
 import { useAuth, ROLES } from "../../context/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { awardService } from "../../services/awardService";
 import { studentService } from "../../services/studentService";
 import { violationService } from "../../services/violationService";
+import { eventService } from "../../services/eventService";
 
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
@@ -42,15 +43,31 @@ const CalendarBlankIcon = () => (
 const UnifiedCalendar = () => {
   const { role } = useAuth();
   const today = new Date();
+  const queryClient = useQueryClient();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
-  const [localEvents, setLocalEvents] = useState([]);
 
   // ── Data fetching ─────────────────────────────────────────────────────────
+  const { data: calendarEvents = [], isLoading: isLoadingCalendar } = useQuery({
+    queryKey: ["events"],
+    queryFn: async () => {
+      const res = await eventService.getAll();
+      return res.ok ? (res.data ?? []) : [];
+    },
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: (data) => eventService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      closeModal();
+    },
+    onError: () => setFormError("Failed to save event. Please try again."),
+  });
   const { data: awards = [], isLoading: isLoadingAwards } = useQuery({
     queryKey: ["unified-calendar-awards", role],
     queryFn: async () => {
@@ -94,7 +111,17 @@ const UnifiedCalendar = () => {
 
   // ── Event transformation ──────────────────────────────────────────────────
   const events = useMemo(() => {
-    const unified = [...localEvents];
+    // Persisted calendar events from backend
+    const unified = calendarEvents.map((e) => ({
+      id: `cal-${e.id}`,
+      title: e.title,
+      date: new Date(e.date + "T00:00:00"),
+      startTime: e.start_time ?? "",
+      endTime: e.end_time ?? "",
+      type: e.type,
+      location: e.location || "—",
+      description: e.description || "No description provided.",
+    }));
 
     awards.forEach((award) => {
       if (award.created_at || award.date_given) {
@@ -141,7 +168,7 @@ const UnifiedCalendar = () => {
     });
 
     return unified;
-  }, [awards, profile, violations, localEvents, role]);
+  }, [awards, profile, violations, calendarEvents, role]);
 
   // ── Calendar helpers ──────────────────────────────────────────────────────
   const { daysInMonth, startingDayOfWeek } = useMemo(() => {
@@ -197,20 +224,15 @@ const UnifiedCalendar = () => {
     e.preventDefault();
     if (!formData.title.trim()) { setFormError("Title is required."); return; }
     if (!formData.date)         { setFormError("Date is required."); return; }
-    setLocalEvents((prev) => [
-      ...prev,
-      {
-        id: `local-${Date.now()}`,
-        title: formData.title.trim(),
-        date: new Date(formData.date + "T00:00:00"),
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        type: formData.type,
-        location: formData.location.trim() || "—",
-        description: formData.description.trim() || "No description provided.",
-      },
-    ]);
-    closeModal();
+    createEventMutation.mutate({
+      title:       formData.title.trim(),
+      description: formData.description.trim() || null,
+      date:        formData.date,
+      start_time:  formData.startTime || null,
+      end_time:    formData.endTime || null,
+      location:    formData.location.trim() || null,
+      type:        formData.type,
+    });
   };
 
   const canSchedule = role === ROLES.SECRETARY || role === ROLES.ADMIN;
@@ -262,7 +284,7 @@ const UnifiedCalendar = () => {
             ))}
           </div>
 
-          {isLoadingAwards ? (
+          {isLoadingCalendar ? (
             <div className={styles.loadingState}>Loading…</div>
           ) : (
             <div className={styles.daysGrid}>
@@ -462,7 +484,9 @@ const UnifiedCalendar = () => {
 
               <div className={styles.modalActions}>
                 <button type="button" className={styles.cancelBtn} onClick={closeModal}>Cancel</button>
-                <button type="submit" className={styles.saveBtn}>Save</button>
+                <button type="submit" className={styles.saveBtn} disabled={createEventMutation.isPending}>
+                  {createEventMutation.isPending ? "Saving…" : "Save"}
+                </button>
               </div>
             </form>
           </div>

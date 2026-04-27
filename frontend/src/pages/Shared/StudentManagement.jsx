@@ -540,9 +540,7 @@ export default function StudentManagement() {
                 <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M12 15l-5-5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
               <div className={styles['pag-pages']}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button key={p} className={cx('pag-page-btn', currentPage === p ? 'active' : '')} onClick={() => setCurrentPage(p)}>{p}</button>
-                ))}
+                <span className={styles['pag-page-text']}>Page {currentPage} of {totalPages}</span>
               </div>
               <button className={styles['pag-btn']} disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
                 <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>

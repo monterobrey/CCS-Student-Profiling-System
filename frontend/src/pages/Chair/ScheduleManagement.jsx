@@ -38,6 +38,31 @@ const formatSlotTimes = (daySlots) => {
   return unique.join(" / ");
 };
 
+// Render faculty from daySlots:
+// - All assigned → "John Doe" or "John Doe / Jane Smith"
+// - All unassigned → null (will show Assign button only)
+// - Mixed → "John Doe / " (will append Assign button)
+const formatSlotFaculty = (daySlots, schedules) => {
+  const facultyNames = daySlots
+    .map((slot) => {
+      // Find the actual schedule entry for this day to get its faculty
+      const scheduleEntry = schedules.find(
+        (s) => s.dayOfWeek === slot.day && 
+               s.startTime === slot.startTime && 
+               s.endTime === slot.endTime
+      );
+      
+      if (scheduleEntry?.faculty) {
+        return `${scheduleEntry.faculty.first_name} ${scheduleEntry.faculty.last_name}`;
+      }
+      return null; // Unassigned
+    })
+    .filter(Boolean); // Remove nulls
+  
+  const unique = [...new Set(facultyNames)];
+  return unique.length > 0 ? unique.join(" / ") : null;
+};
+
 export default function ScheduleManagement() {
   const queryClient  = useQueryClient();
   const fileInputRef = useRef(null);
@@ -236,10 +261,12 @@ export default function ScheduleManagement() {
           ...item,
           ids: [item.id],
           daySlots: [{ day: item.dayOfWeek, startTime: item.startTime, endTime: item.endTime }],
+          scheduleEntries: [item], // Keep original entries for faculty lookup
         };
       } else {
         grouped[key].ids.push(item.id);
         grouped[key].daySlots.push({ day: item.dayOfWeek, startTime: item.startTime, endTime: item.endTime });
+        grouped[key].scheduleEntries.push(item);
       }
     });
 
@@ -547,19 +574,36 @@ export default function ScheduleManagement() {
                       <td>{formatSlotTimes(item.daySlots)}</td>
                       <td>{item.room}</td>
                       <td>
-                        {item.faculty ? (
-                          <span className="faculty-name">
-                            {item.faculty.first_name} {item.faculty.last_name}
-                          </span>
-                        ) : (
-                          <button className="assign-btn" onClick={() => openAssign(item)}>
-                            Assign
-                          </button>
-                        )}
+                        {(() => {
+                          const facultyDisplay = formatSlotFaculty(item.daySlots, item.scheduleEntries);
+                          const hasUnassigned = item.scheduleEntries.some(s => !s.faculty);
+                          
+                          if (!facultyDisplay && hasUnassigned) {
+                            // All unassigned — show only button
+                            return (
+                              <button className="assign-btn" onClick={() => openAssign(item)}>
+                                Assign
+                              </button>
+                            );
+                          } else if (facultyDisplay && hasUnassigned) {
+                            // Mixed — show names + button
+                            return (
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                <span className="faculty-name">{facultyDisplay} /</span>
+                                <button className="assign-btn" onClick={() => openAssign(item)}>
+                                  Assign
+                                </button>
+                              </div>
+                            );
+                          } else {
+                            // All assigned — show names only
+                            return <span className="faculty-name">{facultyDisplay}</span>;
+                          }
+                        })()}
                       </td>
                       <td>
                         <div className="action-cell">
-                          {item.faculty && (
+                          {item.scheduleEntries.some(s => s.faculty) && (
                             <button className="edit-btn-sm" onClick={() => openReassign(item)} title="Change faculty">
                               <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
                                 <path d="M11.5 2.5l2 2M2 14l2-2 8.5-8.5-2-2-8.5 8.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>

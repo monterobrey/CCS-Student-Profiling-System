@@ -102,10 +102,10 @@ export const API_ENDPOINTS = {
     DELETE: (id) => `/schedules/${id}`,
     CURRICULUM_COURSES: "/curriculum-courses",
   },
-  EVENTS: {
-    LIST:   '/events',
-    CREATE: '/events',
-    DELETE: (id) => `/events/${id}`,
+  CALENDAR: {
+    LIST:   "/calendar-events",
+    CREATE: "/calendar-events",
+    DELETE: (id) => `/calendar-events/${id}`,
   },
   AWARDS: {
     LIST:          "/awards",

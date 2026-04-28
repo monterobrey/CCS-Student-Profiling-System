@@ -2,10 +2,11 @@ import React, { useMemo, useState } from "react";
 import styles from "../../styles/Shared/UnifiedCalendar.module.css";
 import { useAuth, ROLES } from "../../context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { httpClient } from "../../services/httpClient";
+import { API_ENDPOINTS } from "../../services/apiEndpoints";
 import { awardService } from "../../services/awardService";
 import { studentService } from "../../services/studentService";
 import { violationService } from "../../services/violationService";
-import { eventService } from "../../services/eventService";
 
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
@@ -19,18 +20,35 @@ const EVENT_TYPES = {
   meeting:  { label: "Meeting",  color: "#10b981" },
 };
 
+// Audience options the secretary can target
+const AUDIENCE_OPTIONS = [
+  { value: "dean",             label: "Dean" },
+  { value: "department_chair", label: "Department Chair" },
+  { value: "faculty",          label: "Faculty" },
+  { value: "student",          label: "Students" },
+];
+
 const EMPTY_FORM = {
   title: "",
   description: "",
   date: "",
-  startTime: "09:00",
-  endTime: "10:00",
+  start_time: "09:00",
+  end_time: "10:00",
   location: "",
   type: "event",
+  visible_to: [],
+};
+
+// Convert hex color to rgba string
+const hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 };
 
 const CalendarBlankIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
     <rect x="5" y="8" width="30" height="27" rx="3" stroke="#d1d5db" strokeWidth="1.5" fill="none"/>
     <line x1="5" y1="16" x2="35" y2="16" stroke="#d1d5db" strokeWidth="1.5"/>
     <line x1="13" y1="5" x2="13" y2="11" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"/>
@@ -42,8 +60,8 @@ const CalendarBlankIcon = () => (
 
 const UnifiedCalendar = () => {
   const { role } = useAuth();
-  const today = new Date();
   const queryClient = useQueryClient();
+  const today = new Date();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -51,24 +69,19 @@ const UnifiedCalendar = () => {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
-  const { data: calendarEvents = [], isLoading: isLoadingCalendar } = useQuery({
-    queryKey: ["events"],
+  const canSchedule = role === ROLES.SECRETARY;
+
+  // ── Fetch backend calendar events ─────────────────────────────────────────
+  const { data: calendarEvents = [], isLoading: isLoadingEvents } = useQuery({
+    queryKey: ["calendar-events"],
     queryFn: async () => {
-      const res = await eventService.getAll();
+      const res = await httpClient.get(API_ENDPOINTS.CALENDAR.LIST);
       return res.ok ? (res.data ?? []) : [];
     },
   });
 
-  const createEventMutation = useMutation({
-    mutationFn: (data) => eventService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      closeModal();
-    },
-    onError: () => setFormError("Failed to save event. Please try again."),
-  });
-  const { data: awards = [], isLoading: isLoadingAwards } = useQuery({
+  // ── Fetch derived events ──────────────────────────────────────────────────
+  const { data: awards = [] } = useQuery({
     queryKey: ["unified-calendar-awards", role],
     queryFn: async () => {
       if (role === ROLES.STUDENT) {
@@ -109,20 +122,56 @@ const UnifiedCalendar = () => {
     },
   });
 
-  // ── Event transformation ──────────────────────────────────────────────────
+  // ── Mutations ─────────────────────────────────────────────────────────────
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      const res = await httpClient.post(API_ENDPOINTS.CALENDAR.CREATE, data);
+      if (!res.ok) {
+        // Surface the actual backend message (validation errors, 403, etc.)
+        const msg = res.errors
+          ? Object.values(res.errors).flat().join(" ")
+          : res.message || "Failed to save event.";
+        throw new Error(msg);
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+      closeModal();
+    },
+    onError: (err) => setFormError(err.message || "Failed to save event. Please try again."),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await httpClient.delete(API_ENDPOINTS.CALENDAR.DELETE(id));
+      if (!res.ok) throw new Error(res.message || "Failed to delete event.");
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar-events"] });
+      setSelectedEvent(null);
+    },
+  });
+
+  // ── Merge all events ──────────────────────────────────────────────────────
   const events = useMemo(() => {
-    // Persisted calendar events from backend
+    // Backend calendar events (secretary-created, role-targeted)
     const unified = calendarEvents.map((e) => ({
       id: `cal-${e.id}`,
+      _id: e.id,
       title: e.title,
       date: new Date(e.date + "T00:00:00"),
       startTime: e.start_time ?? "",
       endTime: e.end_time ?? "",
       type: e.type,
       location: e.location || "—",
-      description: e.description || "No description provided.",
+      description: e.description || "",
+      visible_to: e.visible_to ?? [],
+      source: "backend",
     }));
 
+    // Awards → type "event"
     awards.forEach((award) => {
       if (award.created_at || award.date_given) {
         unified.push({
@@ -133,10 +182,12 @@ const UnifiedCalendar = () => {
           type: "event",
           location: "CCS Department",
           description: award.description || "Award ceremony or recognition event",
+          source: "award",
         });
       }
     });
 
+    // Affiliations → type "activity"
     if (profile?.organizations && role === ROLES.STUDENT) {
       profile.organizations.forEach((aff) => {
         if (aff.joined_at) {
@@ -148,11 +199,13 @@ const UnifiedCalendar = () => {
             type: "activity",
             location: "Campus",
             description: aff.organization?.description || "Organization affiliation",
+            source: "affiliation",
           });
         }
       });
     }
 
+    // Resolved violations → type "meeting"
     violations.forEach((v) => {
       if (v.created_at && (v.status === "resolved" || v.status === "dismissed")) {
         unified.push({
@@ -163,12 +216,13 @@ const UnifiedCalendar = () => {
           type: "meeting",
           location: "CCS Department",
           description: v.description || "Resolved violation record",
+          source: "violation",
         });
       }
     });
 
     return unified;
-  }, [awards, profile, violations, calendarEvents, role]);
+  }, [calendarEvents, awards, profile, violations, role]);
 
   // ── Calendar helpers ──────────────────────────────────────────────────────
   const { daysInMonth, startingDayOfWeek } = useMemo(() => {
@@ -220,22 +274,33 @@ const UnifiedCalendar = () => {
 
   const closeModal = () => { setIsModalOpen(false); setFormError(""); };
 
+  const toggleAudience = (val) => {
+    setFormData((prev) => ({
+      ...prev,
+      visible_to: prev.visible_to.includes(val)
+        ? prev.visible_to.filter((v) => v !== val)
+        : [...prev.visible_to, val],
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) { setFormError("Title is required."); return; }
-    if (!formData.date)         { setFormError("Date is required."); return; }
-    createEventMutation.mutate({
+    if (!formData.title.trim())           { setFormError("Title is required."); return; }
+    if (!formData.date)                   { setFormError("Date is required."); return; }
+    if (formData.visible_to.length === 0) { setFormError("Select at least one audience."); return; }
+
+    createMutation.mutate({
       title:       formData.title.trim(),
       description: formData.description.trim() || null,
       date:        formData.date,
-      start_time:  formData.startTime || null,
-      end_time:    formData.endTime || null,
+      start_time:  formData.start_time || null,
+      end_time:    formData.end_time || null,
       location:    formData.location.trim() || null,
       type:        formData.type,
+      visible_to:  formData.visible_to,
     });
   };
 
-  const canSchedule = role === ROLES.SECRETARY || role === ROLES.ADMIN;
   const selType = selectedEvent ? EVENT_TYPES[selectedEvent.type] : null;
 
   return (
@@ -266,7 +331,10 @@ const UnifiedCalendar = () => {
 
           {canSchedule && (
             <button className={styles.scheduleBtn} onClick={() => openModal()}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                <line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
               Schedule
             </button>
           )}
@@ -276,7 +344,7 @@ const UnifiedCalendar = () => {
       {/* ── Body ── */}
       <div className={styles.calBody}>
 
-        {/* Calendar */}
+        {/* Calendar panel */}
         <div className={styles.calPanel}>
           <div className={styles.dayNames}>
             {DAY_NAMES.map((d) => (
@@ -284,7 +352,7 @@ const UnifiedCalendar = () => {
             ))}
           </div>
 
-          {isLoadingCalendar ? (
+          {isLoadingEvents ? (
             <div className={styles.loadingState}>Loading…</div>
           ) : (
             <div className={styles.daysGrid}>
@@ -305,17 +373,24 @@ const UnifiedCalendar = () => {
                           {day}
                         </span>
                         <div className={styles.evList}>
-                          {dayEvents.slice(0, 3).map((ev) => (
-                            <div
-                              key={ev.id}
-                              className={`${styles.evChip} ${selectedEvent?.id === ev.id ? styles.evChipActive : ""}`}
-                              style={{ borderLeftColor: EVENT_TYPES[ev.type]?.color }}
-                              onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); }}
-                              title={ev.title}
-                            >
-                              {ev.title}
-                            </div>
-                          ))}
+                          {dayEvents.slice(0, 3).map((ev) => {
+                            const evColor = EVENT_TYPES[ev.type]?.color ?? "#9ca3af";
+                            return (
+                              <div
+                                key={ev.id}
+                                className={`${styles.evChip} ${selectedEvent?.id === ev.id ? styles.evChipActive : ""}`}
+                                style={{
+                                  borderLeftColor: evColor,
+                                  background: hexToRgba(evColor, 0.12),
+                                  color: evColor,
+                                }}
+                                onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); }}
+                                title={ev.title}
+                              >
+                                {ev.title}
+                              </div>
+                            );
+                          })}
                           {dayEvents.length > 3 && (
                             <span className={styles.moreChip}>+{dayEvents.length - 3} more</span>
                           )}
@@ -348,8 +423,8 @@ const UnifiedCalendar = () => {
                     className={styles.detailBadge}
                     style={{
                       color: selType?.color,
-                      background: selType?.color + "15",
-                      borderColor: selType?.color + "40",
+                      background: hexToRgba(selType?.color ?? "#9ca3af", 0.1),
+                      borderColor: hexToRgba(selType?.color ?? "#9ca3af", 0.3),
                     }}
                   >
                     {selType?.label}
@@ -367,15 +442,44 @@ const UnifiedCalendar = () => {
                   </div>
                 )}
 
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Location</span>
-                  <span className={styles.detailValue}>{selectedEvent.location}</span>
-                </div>
+                {selectedEvent.location && selectedEvent.location !== "—" && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Location</span>
+                    <span className={styles.detailValue}>{selectedEvent.location}</span>
+                  </div>
+                )}
 
-                <div className={styles.detailRow}>
-                  <span className={styles.detailLabel}>Description</span>
-                  <span className={styles.detailValue}>{selectedEvent.description}</span>
-                </div>
+                {selectedEvent.description && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Description</span>
+                    <span className={styles.detailValue}>{selectedEvent.description}</span>
+                  </div>
+                )}
+
+                {/* Audience tags — visible to secretary */}
+                {canSchedule && selectedEvent.visible_to?.length > 0 && (
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Visible to</span>
+                    <div className={styles.audienceTags}>
+                      {selectedEvent.visible_to.map((r) => (
+                        <span key={r} className={styles.audienceTag}>
+                          {AUDIENCE_OPTIONS.find((o) => o.value === r)?.label ?? r}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Delete — secretary only, backend events */}
+                {canSchedule && selectedEvent.source === "backend" && (
+                  <button
+                    className={styles.deleteEventBtn}
+                    onClick={() => deleteMutation.mutate(selectedEvent._id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    {deleteMutation.isPending ? "Deleting…" : "Delete Event"}
+                  </button>
+                )}
               </div>
             </>
           ) : (
@@ -388,13 +492,13 @@ const UnifiedCalendar = () => {
         </div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Create Event Modal ── */}
       {isModalOpen && (
         <div className={styles.backdrop} onClick={closeModal}>
           <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
 
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>New Schedule</h2>
+              <h2 className={styles.modalTitle}>New Event</h2>
               <button className={styles.modalClose} onClick={closeModal}>✕</button>
             </div>
 
@@ -406,7 +510,7 @@ const UnifiedCalendar = () => {
                   type="button"
                   className={`${styles.typeTab} ${formData.type === key ? styles.typeTabOn : ""}`}
                   style={formData.type === key
-                    ? { borderColor: color, color, background: color + "12" }
+                    ? { borderColor: color, color, background: hexToRgba(color, 0.08) }
                     : {}}
                   onClick={() => setFormData((p) => ({ ...p, type: key }))}
                 >
@@ -416,14 +520,16 @@ const UnifiedCalendar = () => {
             </div>
 
             <form onSubmit={handleSubmit} className={styles.modalForm}>
+
               <div className={styles.field}>
-                <label className={styles.fieldLabel}>Title</label>
+                <label className={styles.fieldLabel}>Title <span className={styles.req}>*</span></label>
                 <input
                   className={styles.fieldInput}
                   type="text"
                   placeholder={`${EVENT_TYPES[formData.type].label} title`}
                   value={formData.title}
                   onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                  autoFocus
                 />
               </div>
 
@@ -439,7 +545,7 @@ const UnifiedCalendar = () => {
 
               <div className={styles.fieldRow}>
                 <div className={styles.field}>
-                  <label className={styles.fieldLabel}>Date</label>
+                  <label className={styles.fieldLabel}>Date <span className={styles.req}>*</span></label>
                   <input
                     className={styles.fieldInput}
                     type="date"
@@ -465,8 +571,8 @@ const UnifiedCalendar = () => {
                   <input
                     className={styles.fieldInput}
                     type="time"
-                    value={formData.startTime}
-                    onChange={(e) => setFormData((p) => ({ ...p, startTime: e.target.value }))}
+                    value={formData.start_time}
+                    onChange={(e) => setFormData((p) => ({ ...p, start_time: e.target.value }))}
                   />
                 </div>
                 <div className={styles.field}>
@@ -474,18 +580,44 @@ const UnifiedCalendar = () => {
                   <input
                     className={styles.fieldInput}
                     type="time"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData((p) => ({ ...p, endTime: e.target.value }))}
+                    value={formData.end_time}
+                    onChange={(e) => setFormData((p) => ({ ...p, end_time: e.target.value }))}
                   />
                 </div>
+              </div>
+
+              {/* Audience multi-select */}
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>Visible to <span className={styles.req}>*</span></label>
+                <div className={styles.audienceGrid}>
+                  {AUDIENCE_OPTIONS.map(({ value, label }) => {
+                    const checked = formData.visible_to.includes(value);
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`${styles.audienceChip} ${checked ? styles.audienceChipOn : ""}`}
+                        onClick={() => toggleAudience(value)}
+                      >
+                        {checked && (
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className={styles.audienceHint}>Secretary is always included.</p>
               </div>
 
               {formError && <p className={styles.formError}>{formError}</p>}
 
               <div className={styles.modalActions}>
                 <button type="button" className={styles.cancelBtn} onClick={closeModal}>Cancel</button>
-                <button type="submit" className={styles.saveBtn} disabled={createEventMutation.isPending}>
-                  {createEventMutation.isPending ? "Saving…" : "Save"}
+                <button type="submit" className={styles.saveBtn} disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Saving…" : "Save Event"}
                 </button>
               </div>
             </form>

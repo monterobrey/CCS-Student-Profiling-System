@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Event extends Model
 {
@@ -15,14 +16,16 @@ class Event extends Model
         'end_time',
         'location',
         'type',
+        'visible_to',
     ];
 
     protected $casts = [
-        'date' => 'date:Y-m-d',
+        'date'       => 'date:Y-m-d',
+        'visible_to' => 'array',
     ];
 
-    public function creator()
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

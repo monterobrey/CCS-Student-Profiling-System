@@ -35,9 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user()->load($request->user()->role === 'student' ? 'student' : ($request->user()->isFacultyMember() ? 'faculty' : []));
     });
 
-    // Events — all roles can read; secretary can write
-    Route::get('/events', [EventController::class, 'index']);
-    Route::delete('/events/{id}', [EventController::class, 'destroy']);
+    // Calendar events — all authenticated roles read their own feed
+    Route::get('/calendar-events', [EventController::class, 'index']);
 
     // Notifications (all roles)
     Route::get('/notifications',           [NotificationController::class, 'index']);
@@ -117,7 +116,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Secretary Specific
     Route::middleware('role:secretary')->group(function () {
-        Route::post('/events', [EventController::class, 'store']);
+        Route::post('/calendar-events',        [EventController::class, 'store']);
+        Route::delete('/calendar-events/{id}', [EventController::class, 'destroy']);
         Route::post('/secretary/students', [StudentController::class, 'store']);
         Route::post('/secretary/students/import', [StudentController::class, 'import']);
         Route::post('/secretary/students/{id}/resend-setup', [StudentController::class, 'resendSetup']);

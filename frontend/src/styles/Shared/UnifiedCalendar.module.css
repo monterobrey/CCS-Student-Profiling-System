@@ -1,15 +1,14 @@
 /* ─────────────────────────────────────────
    UNIFIED CALENDAR  –  orange / white theme
-   Fills the viewport slot, zero scrollbars
 ───────────────────────────────────────── */
 
 /* ── Page shell ── */
 .calPage {
   display: flex;
   flex-direction: column;
-  height: 100%;          /* fills whatever the layout gives it          */
+  height: 100%;
   min-height: 0;
-  overflow: hidden;      /* hard wall – nothing escapes                  */
+  overflow: hidden;
   font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
   color: #111827;
   background: #ffffff;
@@ -21,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #e9eaec;
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -31,14 +30,6 @@
   display: flex;
   align-items: baseline;
   gap: 12px;
-}
-
-.topTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-  letter-spacing: -0.02em;
 }
 
 .topMonth {
@@ -132,7 +123,7 @@
 .calBody {
   display: flex;
   flex: 1;
-  min-height: 0;         /* lets flex children shrink properly           */
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -143,7 +134,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid #f3f4f6;
+  border-right: 1px solid #e9eaec;
 }
 
 /* day-name row */
@@ -174,14 +165,14 @@
   color: #9ca3af;
 }
 
-/* days grid – fills remaining height exactly */
+/* days grid */
 .daysGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr;   /* rows share available height equally          */
+  grid-auto-rows: 1fr;
   flex: 1;
   min-height: 0;
-  overflow: hidden;      /* no inner scroll                               */
+  overflow: hidden;
 }
 
 .dayCell {
@@ -223,7 +214,7 @@
   font-weight: 700;
 }
 
-/* event chips */
+/* ── Event chips — color driven entirely by inline style ── */
 .evList {
   display: flex;
   flex-direction: column;
@@ -233,23 +224,22 @@
 }
 
 .evChip {
-  border-left: 2.5px solid transparent;
+  border-left: 3px solid transparent; /* color set inline */
   border-radius: 0 3px 3px 0;
   padding: 2px 5px;
   font-size: 0.62rem;
-  font-weight: 500;
-  color: #374151;
-  background: #f9fafb;
+  font-weight: 600;
+  /* background and color set inline via hexToRgba */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
   line-height: 1.4;
-  transition: background 0.12s, transform 0.1s;
+  transition: opacity 0.12s, transform 0.1s;
 }
 
-.evChip:hover   { background: #f3f4f6; transform: translateY(-1px); }
-.evChipActive   { background: #fff7ed; }
+.evChip:hover { opacity: 0.75; transform: translateY(-1px); }
+.evChipActive { box-shadow: 0 0 0 1.5px currentColor; }
 
 .moreChip {
   font-size: 0.6rem;
@@ -267,7 +257,6 @@
   background: #ffffff;
 }
 
-/* placeholder */
 .sidebarEmpty {
   flex: 1;
   display: flex;
@@ -296,7 +285,7 @@
 /* date strip */
 .sidebarStrip {
   padding: 18px 18px 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #e9eaec;
   flex-shrink: 0;
 }
 
@@ -364,7 +353,7 @@
   font-weight: 700;
   color: #111827;
   line-height: 1.35;
-  margin: 0 0 0 0;
+  margin: 0;
 }
 
 .detailDivider {
@@ -392,6 +381,50 @@
   font-size: 0.82rem;
   color: #374151;
   line-height: 1.5;
+}
+
+/* ── Audience tags in sidebar ── */
+.audienceTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.audienceTag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #f97316;
+  border: 1px solid #fed7aa;
+}
+
+/* ── Delete event button ── */
+.deleteEventBtn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  background: #fff1f2;
+  border: 1.5px solid #fecdd3;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ef4444;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.deleteEventBtn:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.deleteEventBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ── Modal ── */
@@ -499,6 +532,8 @@
   letter-spacing: 0.07em;
 }
 
+.req { color: #f97316; }
+
 .fieldInput,
 .fieldTextarea {
   padding: 8px 11px;
@@ -527,6 +562,47 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+/* ── Audience multi-select chips ── */
+.audienceGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.audienceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.audienceChip:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.audienceChipOn {
+  border-color: #f97316;
+  background: #fff7ed;
+  color: #f97316;
+}
+
+.audienceHint {
+  font-size: 0.68rem;
+  color: #d1d5db;
+  margin: 4px 0 0;
 }
 
 .formError {
@@ -572,57 +648,47 @@
 
 .saveBtn:hover  { background: #ea6c00; }
 .saveBtn:active { transform: scale(0.97); }
+.saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Responsive ── */
-
-/* tablet */
 @media (max-width: 900px) {
   .calSidebar { width: 230px; }
   .legends    { display: none; }
 }
 
-/* mobile – stack vertically */
 @media (max-width: 640px) {
-  .calPage  { height: 100dvh; }   /* dynamic viewport height on mobile    */
+  .calPage  { height: 100dvh; }
 
   .topBar   { padding: 10px 14px; flex-wrap: nowrap; gap: 8px; }
   .topLeft  { gap: 8px; }
-  .topTitle { font-size: 0.95rem; }
-  .topMonth { display: none; }
+  .topMonth { font-size: 0.95rem; }
 
   .calBody  { flex-direction: column; }
 
   .calPanel {
     flex: 1;
     border-right: none;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #e9eaec;
     min-height: 0;
   }
 
   .calSidebar {
     width: 100%;
     flex-shrink: 0;
-    height: 160px;        /* fixed strip at bottom on mobile             */
-    border-top: 1px solid #f3f4f6;
+    height: 160px;
+    border-top: 1px solid #e9eaec;
   }
 
   .sidebarStrip { padding: 10px 14px 8px; }
   .stripDate    { font-size: 1.6rem; }
-
-  .detailBody { padding: 10px 14px; }
-
-  .dayNameCell { font-size: 0.6rem; padding: 6px 2px; }
-
-  .dayNum { font-size: 0.68rem; width: 18px; height: 18px; }
-
-  .evChip { font-size: 0.55rem; padding: 1px 4px; }
-
-  .fieldRow { grid-template-columns: 1fr; }
-
-  .scheduleBtn { padding: 6px 11px; font-size: 0.76rem; }
+  .detailBody   { padding: 10px 14px; }
+  .dayNameCell  { font-size: 0.6rem; padding: 6px 2px; }
+  .dayNum       { font-size: 0.68rem; width: 18px; height: 18px; }
+  .evChip       { font-size: 0.55rem; padding: 1px 4px; }
+  .fieldRow     { grid-template-columns: 1fr; }
+  .scheduleBtn  { padding: 6px 11px; font-size: 0.76rem; }
 }
 
-/* very small phones */
 @media (max-width: 380px) {
   .evChip { display: none; }
 }

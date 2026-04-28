@@ -17,43 +17,55 @@ class EventController extends Controller
     }
 
     /**
-     * GET /events — all authenticated users can view.
+     * GET /calendar-events
+     * Returns only events where the authenticated user's role is in visible_to.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $events = $this->eventService->getAll();
+        $events = $this->eventService
+            ->getForRole($request->user()->role)
+            ->map(fn($e) => $this->eventService->format($e));
+
         return ApiResponse::success($events);
     }
 
     /**
-     * POST /events — secretary only.
+     * POST /calendar-events — secretary only.
+     * visible_to: array of roles that can see this event.
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'date'        => 'required|date',
-            'start_time'  => 'nullable|date_format:H:i',
-            'end_time'    => 'nullable|date_format:H:i|after_or_equal:start_time',
-            'location'    => 'nullable|string|max:255',
-            'type'        => 'nullable|in:event,activity,meeting',
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'date'         => 'required|date_format:Y-m-d',
+            'start_time'   => 'nullable|date_format:H:i',
+            'end_time'     => 'nullable|date_format:H:i',
+            'location'     => 'nullable|string|max:255',
+            'type'         => 'required|in:event,activity,meeting',
+            'visible_to'   => 'required|array|min:1',
+            'visible_to.*' => 'in:dean,department_chair,faculty,student,secretary',
         ]);
 
         $event = $this->eventService->create($request->user(), $data);
-        return ApiResponse::success($event, 'Event created successfully.', 201);
+
+        return ApiResponse::success(
+            $this->eventService->format($event),
+            'Event created successfully.',
+            201
+        );
     }
 
     /**
-     * DELETE /events/{id} — creator or dean only.
+     * DELETE /calendar-events/{id} — secretary only, must be creator.
      */
     public function destroy(Request $request, int $id)
     {
         try {
             $this->eventService->delete($request->user(), $id);
             return ApiResponse::success(null, 'Event deleted.');
-        } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 403);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return ApiResponse::error('Event not found or you are not the creator.', 404);
         }
     }
 }

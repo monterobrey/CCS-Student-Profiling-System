@@ -21,7 +21,20 @@ const EMPTY_FORM = {
   role:              "Member",
   dateJoined:        "",
   dateLeft:          "",
+  isCustomOrg:       false, // Track if "Others" is selected
 };
+
+const PREDEFINED_ORGS = [
+  "PnC Pag-Asa",
+  "PnC-Student of Destiny",
+  "PnC's The Herald",
+  "PnC-ALIBATA",
+  "PnC Indak (PnC Arts and Culture)",
+  "PnC Coral (PnC Arts and Culture)",
+  "PnC Sports and Development",
+  "PnC-Red Cross Youth",
+  "University Student Government",
+];
 
 export default function StudentAffiliations() {
   const queryClient = useQueryClient();
@@ -36,11 +49,6 @@ export default function StudentAffiliations() {
   const [saving, setSaving]         = useState(false);
   const [removingId, setRemovingId] = useState(null);
   const [toast, setToast]           = useState(null);
-
-  // autocomplete
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const orgInputRef = useRef(null);
 
   // ── Queries ───────────────────────────────────────────────────────────────
   const { data: profile, isLoading } = useQuery({
@@ -74,49 +82,19 @@ export default function StudentAffiliations() {
     setErrors((e) => ({ ...e, [key]: "" }));
   };
 
-  // ── Autocomplete ──────────────────────────────────────────────────────────
-  const handleOrgInput = (value) => {
-    setField("organization_name", value);
-    if (value.trim().length < 1) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
+  const handleOrgDropdownChange = (value) => {
+    if (value === "Others") {
+      setForm((f) => ({ ...f, organization_name: "", isCustomOrg: true }));
+    } else {
+      setForm((f) => ({ ...f, organization_name: value, isCustomOrg: false }));
     }
-    const filtered = allOrgs.filter((o) =>
-      o.organization_name.toLowerCase().includes(value.toLowerCase())
-    );
-    setSuggestions(filtered);
-    setShowSuggestions(filtered.length > 0);
-  };
-
-  const pickSuggestion = (org) => {
-    setForm((f) => ({
-      ...f,
-      organization_name: org.organization_name,
-      organization_type: org.organization_type ?? f.organization_type,
-    }));
     setErrors((e) => ({ ...e, organization_name: "" }));
-    setSuggestions([]);
-    setShowSuggestions(false);
   };
-
-  // Close suggestions on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (orgInputRef.current && !orgInputRef.current.contains(e.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   // ── Open modals ───────────────────────────────────────────────────────────
   const openAdd = () => {
     setForm(EMPTY_FORM);
     setErrors({});
-    setSuggestions([]);
-    setShowSuggestions(false);
     setModalMode("add");
   };
 
@@ -128,10 +106,9 @@ export default function StudentAffiliations() {
       role:              aff.role ?? "",
       dateJoined:        aff.dateJoined ?? "",
       dateLeft:          aff.dateLeft ?? "",
+      isCustomOrg:       false,
     });
     setErrors({});
-    setSuggestions([]);
-    setShowSuggestions(false);
     setModalMode("edit");
   };
   const closeModal = () => {
@@ -144,8 +121,12 @@ export default function StudentAffiliations() {
   const validate = () => {
     const errs = {};
     if (modalMode === "add") {
-      if (!form.organization_name.trim()) errs.organization_name = "Required";
-      if (!form.dateJoined)               errs.dateJoined        = "Required";
+      if (form.isCustomOrg && !form.organization_name.trim()) {
+        errs.organization_name = "Required";
+      } else if (!form.isCustomOrg && !form.organization_name) {
+        errs.organization_name = "Please select an organization";
+      }
+      if (!form.dateJoined) errs.dateJoined = "Required";
     }
     if (!form.role.trim()) errs.role = "Required";
     return errs;
@@ -456,35 +437,39 @@ export default function StudentAffiliations() {
               ) : (
                 /* ── ADD: full form ── */
                 <>
-                  {/* Org name with autocomplete */}
-                  <div className="aff-field" ref={orgInputRef}>
-                    <label>Organization Name <span className="aff-req">*</span></label>
-                    <div className="aff-autocomplete-wrap">
-                      <input
-                        type="text"
-                        placeholder="e.g. Google Developer Student Club"
-                        value={form.organization_name}
-                        onChange={(e) => handleOrgInput(e.target.value)}
-                        onFocus={() => form.organization_name && setShowSuggestions(suggestions.length > 0)}
-                        className={errors.organization_name ? "aff-error" : ""}
-                        disabled={saving}
-                        autoComplete="off"
-                      />
-                      {showSuggestions && (
-                        <ul className="aff-suggestions">
-                          {suggestions.map((org) => (
-                            <li key={org.id} onMouseDown={() => pickSuggestion(org)}>
-                              <span className="aff-sug-name">{org.organization_name}</span>
-                              {org.organization_type && (
-                                <span className="aff-sug-type">{org.organization_type}</span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                  {/* Org name dropdown */}
+                  <div className="aff-field">
+                    <label>Organization <span className="aff-req">*</span></label>
+                    <select
+                      value={form.isCustomOrg ? "Others" : form.organization_name}
+                      onChange={(e) => handleOrgDropdownChange(e.target.value)}
+                      className={errors.organization_name ? "aff-error" : ""}
+                      disabled={saving}
+                    >
+                      <option value="">Select organization</option>
+                      {PREDEFINED_ORGS.map((org) => (
+                        <option key={org} value={org}>{org}</option>
+                      ))}
+                      <option value="Others">Others</option>
+                    </select>
                     {errors.organization_name && <span className="aff-field-err">{errors.organization_name}</span>}
                   </div>
+
+                  {/* Custom org name field — shown only when "Others" is selected */}
+                  {form.isCustomOrg && (
+                    <div className="aff-field">
+                      <label>Organization Name <span className="aff-req">*</span></label>
+                      <input
+                        type="text"
+                        placeholder="Enter organization name"
+                        value={form.organization_name}
+                        onChange={(e) => setField("organization_name", e.target.value)}
+                        className={errors.organization_name ? "aff-error" : ""}
+                        disabled={saving}
+                      />
+                      {errors.organization_name && <span className="aff-field-err">{errors.organization_name}</span>}
+                    </div>
+                  )}
 
                   <div className="aff-field">
                     <label>Organization Type</label>

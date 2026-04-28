@@ -58,6 +58,8 @@ class User extends Authenticatable
         'password_setup_token',
         'password_set_at',
         'status',
+        'notifications_enabled',
+        'sidebar_collapsed',
     ];
 
     /*
@@ -187,8 +189,10 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'      => 'datetime',
+            'password'               => 'hashed',
+            'notifications_enabled'  => 'boolean',
+            'sidebar_collapsed'      => 'boolean',
         ];
     }
 }

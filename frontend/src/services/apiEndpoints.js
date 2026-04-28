@@ -6,6 +6,9 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
     CURRENT_USER: "/user",
+    UPDATE_EMAIL: "/account/email",
+    CHANGE_PASSWORD: "/account/password",
+    UPDATE_PREFERENCES: "/account/preferences",
   },
   ANALYTICS: {
     SUMMARY: "/analytics/summary",
@@ -98,6 +101,11 @@ export const API_ENDPOINTS = {
     BULK_DELETE: "/schedules/bulk-delete",
     DELETE: (id) => `/schedules/${id}`,
     CURRICULUM_COURSES: "/curriculum-courses",
+  },
+  EVENTS: {
+    LIST:   '/events',
+    CREATE: '/events',
+    DELETE: (id) => `/events/${id}`,
   },
   AWARDS: {
     LIST:          "/awards",

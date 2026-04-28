@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\AccountSettingsController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Functions\ArchiveController;
 use App\Http\Controllers\Functions\AwardController;
 
 use App\Http\Controllers\Functions\NotificationController;
+use App\Http\Controllers\Functions\EventController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/setup-password', [AuthController::class, 'setupPassword']);
@@ -33,10 +35,19 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user()->load($request->user()->role === 'student' ? 'student' : ($request->user()->isFacultyMember() ? 'faculty' : []));
     });
 
+    // Events — all roles can read; secretary can write
+    Route::get('/events', [EventController::class, 'index']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
+
     // Notifications (all roles)
     Route::get('/notifications',           [NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{id}/read',[NotificationController::class, 'markRead']);
+
+    // Account settings (all roles)
+    Route::put('/account/email',       [AccountSettingsController::class, 'updateEmail']);
+    Route::put('/account/password',    [AccountSettingsController::class, 'changePassword']);
+    Route::put('/account/preferences', [AccountSettingsController::class, 'updatePreferences']);
 
     // Profiling Query Engine (Dean, Chair, Secretary)
     Route::get('/profiling/report', [ProfilingController::class, 'report'])->middleware('role:dean,department_chair,secretary');
@@ -106,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Secretary Specific
     Route::middleware('role:secretary')->group(function () {
+        Route::post('/events', [EventController::class, 'store']);
         Route::post('/secretary/students', [StudentController::class, 'store']);
         Route::post('/secretary/students/import', [StudentController::class, 'import']);
         Route::post('/secretary/students/{id}/resend-setup', [StudentController::class, 'resendSetup']);

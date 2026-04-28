@@ -87,18 +87,25 @@ class StudentSeeder extends Seeder
         ];
 
         $studentCount = 0;
-        $targetTotal  = 500;
+        $targetTotal  = 1000;
 
-        // Distribute 500 students across 4 year levels × 2 programs = 8 groups
-        // ~62-63 students per group, split into sections of ~25 each
-        $studentsPerGroup   = (int) ceil($targetTotal / 8);
-        $studentsPerSection = 25;
+        // Distribute 1000 students across 4 year levels × 2 programs = 8 groups
+        // Varied distribution: more students in lower years
+        $yearDistribution = [
+            1 => 0.35,  // 35% first year
+            2 => 0.30,  // 30% second year
+            3 => 0.20,  // 20% third year
+            4 => 0.15,  // 15% fourth year
+        ];
+
+        $studentsPerSection = 30;
 
         for ($year = 1; $year <= 4; $year++) {
             foreach ($programs as $program) {
                 if ($studentCount >= $targetTotal) break 2;
 
-                $groupSize    = min($studentsPerGroup, $targetTotal - $studentCount);
+                // Calculate group size based on year distribution
+                $groupSize = (int) floor(($targetTotal / 2) * $yearDistribution[$year]);
                 $sectionCount = (int) ceil($groupSize / $studentsPerSection);
 
                 // Ensure sections exist
@@ -136,6 +143,30 @@ class StudentSeeder extends Seeder
                         ]
                     );
 
+                    // GWA distribution with realistic spread:
+                    // 5% Dean's List (1.00-1.50)
+                    // 25% Very Good (1.51-2.00)
+                    // 40% Good (2.01-2.50)
+                    // 20% Satisfactory (2.51-3.00)
+                    // 10% At Risk (3.01-5.00)
+                    $rand = rand(1, 100);
+                    if ($rand <= 5) {
+                        // Dean's List
+                        $gwa = 1.00 + (rand(0, 50) / 100);
+                    } elseif ($rand <= 30) {
+                        // Very Good
+                        $gwa = 1.51 + (rand(0, 49) / 100);
+                    } elseif ($rand <= 70) {
+                        // Good
+                        $gwa = 2.01 + (rand(0, 49) / 100);
+                    } elseif ($rand <= 90) {
+                        // Satisfactory
+                        $gwa = 2.51 + (rand(0, 49) / 100);
+                    } else {
+                        // At Risk
+                        $gwa = 3.01 + (rand(0, 199) / 100);
+                    }
+
                     $student = Student::updateOrCreate(
                         ['user_id' => $user->id],
                         [
@@ -147,7 +178,7 @@ class StudentSeeder extends Seeder
                             'gender'         => rand(0, 1) ? 'Male' : 'Female',
                             'contact_number' => '09' . rand(100000000, 999999999),
                             'address'        => 'Cabuyao, Laguna',
-                            'gwa'            => number_format(1.0 + (rand(0, 200) / 100), 2),
+                            'gwa'            => number_format($gwa, 2),
                         ]
                     );
 

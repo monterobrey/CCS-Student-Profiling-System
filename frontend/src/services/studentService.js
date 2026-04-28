@@ -126,13 +126,30 @@ export const studentService = {
   },
 
   /**
-   * Get student's violations
-   * @param {number} studentId - Student ID
-   * @returns {Promise<Array>}
-   */
-  getViolations: async (studentId) => {
-    return httpClient.get(API_ENDPOINTS.STUDENT.VIOLATIONS);
-  },
-};
+    * Get student's violations
+    * @param {number} studentId - Student ID
+    * @returns {Promise<Array>}
+    */
+   getViolations: async (studentId) => {
+     return httpClient.get(API_ENDPOINTS.STUDENT.VIOLATIONS);
+   },
+
+   /**
+    * Get student's organizations/affiliations
+    * @returns {Promise<Array>}
+    */
+   getAffiliations: async () => {
+     return httpClient.get(API_ENDPOINTS.STUDENT.ORGANIZATIONS);
+   },
+
+   /**
+    * Add new affiliation for student
+    * @param {Object} affiliationData - Affiliation data
+    * @returns {Promise<Object>}
+    */
+   addAffiliation: async (affiliationData) => {
+     return httpClient.post(API_ENDPOINTS.STUDENT.ADD_AFFILIATION, affiliationData);
+   },
+ };
 
 export default studentService;

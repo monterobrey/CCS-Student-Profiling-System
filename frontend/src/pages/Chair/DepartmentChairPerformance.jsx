@@ -4,7 +4,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell, LabelList, Legend,
 } from "recharts";
-import { analyticsService } from "../../services";
+import { analyticsService, facultyService } from "../../services";
+import { exportChairReportPdf } from "../../utils/pdfExport";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/Chair/DepartmentChairPerformance.css";
 
 /* ── Tooltips ── */
@@ -54,6 +56,8 @@ const ViolationTooltip = ({ active, payload, label }) => {
 };
 
 export default function DepartmentChairPerformance() {
+  const { user } = useAuth();
+
   const { data, isLoading } = useQuery({
     queryKey: ["academic-performance"],
     queryFn: async () => {
@@ -62,6 +66,23 @@ export default function DepartmentChairPerformance() {
     },
     staleTime: Infinity,
   });
+
+  // Fetch faculty list to find the dean's name
+  const { data: facultyList } = useQuery({
+    queryKey: ["faculty-list-for-report"],
+    queryFn: async () => {
+      const res = await facultyService.getAll();
+      return res.ok ? res.data : [];
+    },
+    staleTime: Infinity,
+  });
+
+  const deanName = useMemo(() => {
+    if (!facultyList?.length) return null;
+    const deanFaculty = facultyList.find((f) => f.user?.role === "dean");
+    if (!deanFaculty) return null;
+    return `${deanFaculty.first_name} ${deanFaculty.last_name}`.trim();
+  }, [facultyList]);
 
   const summary      = useMemo(() => data?.summary             ?? [], [data]);
   const chartData    = useMemo(() => data?.chart_data          ?? [], [data]);
@@ -126,12 +147,14 @@ export default function DepartmentChairPerformance() {
     </p>
   </div>
   <div className="page-header-actions">
-    <button className="print-btn">
+    <button className="print-btn" onClick={() => exportChairReportPdf(data, programName, user, deanName)}>
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-        <rect x="6" y="14" width="12" height="8" rx="1"/>
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <polyline points="9,15 12,18 15,15"/>
       </svg>
-      Print Report
+      Export PDF
     </button>
   </div>
 </div>

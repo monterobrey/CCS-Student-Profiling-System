@@ -70,8 +70,8 @@ const { role, logout } = useAuth();
         { name: "Management", items: [
           { path: "archive", meta: { title: "Archive Management", icon: "archive" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Calendar", items: [
+          { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
       ],
       [ROLES.CHAIR]: [
@@ -93,8 +93,8 @@ const { role, logout } = useAuth();
         { name: "Monitoring", items: [
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Calendar", items: [
+          { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
       ],
       [ROLES.FACULTY]: [
@@ -111,8 +111,8 @@ const { role, logout } = useAuth();
           { path: "violations", meta: { title: "Record Violation", icon: "violations" } },
           { path: "awards", meta: { title: "Recommend Awards", icon: "awards" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Calendar", items: [
+          { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
       ],
       [ROLES.SECRETARY]: [
@@ -125,11 +125,11 @@ const { role, logout } = useAuth();
           { path: "faculty-workload", meta: { title: "Faculty Workload", icon: "faculty" } },
           { path: "awards", meta: { title: "Awards & Recognition", icon: "awards" } }
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Calendar", items: [
+          { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
       ],
-      [ROLES.STUDENT]: [
+       [ROLES.STUDENT]: [
         { name: "Overview", items: [
           { path: "dashboard", meta: { title: "Dashboard", icon: "dashboard" } }
         ]},
@@ -145,8 +145,8 @@ const { role, logout } = useAuth();
           { path: "awards", meta: { title: "My Achievements", icon: "awards" } },
           { path: "affiliations", meta: { title: "Affiliations", icon: "profile" } },
         ]},
-        { name: "Account", items: [
-          { path: "settings", meta: { title: "Account Settings", icon: "settings" } }
+        { name: "Calendar", items: [
+          { path: "calendar", meta: { title: "Calendar", icon: "schedule" } }
         ]},
       ],
     };
@@ -192,16 +192,21 @@ const { role, logout } = useAuth();
           <div key={section.name}>
             {!collapsed && <div className="nav-section-label">{section.name}</div>}
             {section.items.map(item => (
-              <NavLink 
-                key={item.path}
-                to={`/${getBasePath(role)}/${item.path}`} 
-                className="nav-item"
-                onMouseEnter={() => {
-                  if (role === ROLES.STUDENT) {
-                    prefetchStudentPage(queryClient, item.path);
-                  }
-                }}
-              >
+               <NavLink
+                 key={item.path}
+                 to={`/${getBasePath(role)}/${item.path}`}
+                 className="nav-item"
+                 onClick={() => {
+                   console.log(`Navigation clicked: ${role} - ${section.name} - ${item.path}`);
+                   // Add analytics/tracking event here
+                   // e.g., analytics.track('sidebar_click', { role, section: section.name, page: item.path });
+                 }}
+                 onMouseEnter={() => {
+                   if (role === ROLES.STUDENT) {
+                     prefetchStudentPage(queryClient, item.path);
+                   }
+                 }}
+               >
                 <Icon name={item.meta.icon} />
                 {!collapsed && <span>{item.meta.title}</span>}
               </NavLink>
@@ -210,12 +215,6 @@ const { role, logout } = useAuth();
         ))}
       </nav>
 
-      <div className="sidebar-footer">
-        <button className="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
-          <Icon name="logout" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
-      </div>
       
     </aside>
   );

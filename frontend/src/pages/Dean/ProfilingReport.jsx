@@ -103,16 +103,23 @@ export default function ProfilingReport() {
   };
 
   /* ===========================
-     FILTERED BY GWA (client-side range)
-     Backend doesn't support gwa_min/max so we filter here after fetch
+     FILTERED BY GWA (client-side safety net)
+     Backend now handles gwa_min/max via the stored gwa column.
+     This client-side pass catches any edge cases (e.g. computed GWA
+     from subjects when the stored column is null).
   =========================== */
 
+  const appliedFilters = queryClient.getQueryData(["profiling-report-filters"]) ?? EMPTY_FILTERS;
+
   const displayData = reportData.filter(s => {
-    if (!filters.gwa_min && !filters.gwa_max) return true;
+    const min = appliedFilters.gwa_min;
+    const max = appliedFilters.gwa_max;
+    if (!min && !max) return true;
     if (s.gwa === "N/A") return false;
     const val = parseFloat(s.gwa);
-    if (filters.gwa_min && val < parseFloat(filters.gwa_min)) return false;
-    if (filters.gwa_max && val > parseFloat(filters.gwa_max)) return false;
+    if (isNaN(val)) return false;
+    if (min && val < parseFloat(min)) return false;
+    if (max && val > parseFloat(max)) return false;
     return true;
   });
 

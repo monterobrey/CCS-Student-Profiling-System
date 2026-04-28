@@ -71,6 +71,7 @@
 .pagination-info { font-size: 13px; color: #9a8070; }
 .pagination-btns { display: flex; align-items: center; gap: 12px; }
 .pag-pages { display: flex; gap: 6px; }
+.pag-page-text { font-size: 13px; font-weight: 600; color: #1a0a00; padding: 0 8px; }
 .pag-btn, .pag-page-btn { background: #fff; border: 1.5px solid #f0e8e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; }
 .pag-btn { width: 32px; height: 32px; color: #1a0a00; }
 .pag-page-btn { min-width: 32px; height: 32px; padding: 0 8px; font-size: 13px; font-weight: 600; color: #9a8070; }

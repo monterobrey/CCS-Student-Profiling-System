@@ -20,6 +20,33 @@ class NotificationService
         ]);
     }
 
+    // ─── CALENDAR EVENT NOTIFICATIONS ───────────────────────
+
+    /**
+     * New event created by secretary → notify all users whose role is in visible_to.
+     */
+    public function eventCreated(\App\Models\Event $event): void
+    {
+        $typeLabel = ucfirst($event->type); // Event / Activity / Meeting
+        $dateStr   = $event->date->format('F j, Y');
+        $title     = $event->title;
+
+        foreach ($event->visible_to as $role) {
+            // Skip secretary — they created it, no need to notify themselves
+            if ($role === 'secretary') continue;
+
+            User::where('role', $role)->each(function ($user) use ($event, $typeLabel, $title, $dateStr) {
+                $this->create(
+                    $user->id,
+                    'event_created',
+                    "New {$typeLabel}: {$title}",
+                    "A new {$typeLabel} \"{$title}\" has been scheduled on {$dateStr}.",
+                    ['event_id' => $event->id]
+                );
+            });
+        }
+    }
+
     // ─── AWARD EVENTS ────────────────────────────────────────
 
     /**

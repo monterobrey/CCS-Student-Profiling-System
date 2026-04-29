@@ -78,6 +78,7 @@ const UnifiedCalendar = () => {
       const res = await httpClient.get(API_ENDPOINTS.CALENDAR.LIST);
       return res.ok ? (res.data ?? []) : [];
     },
+    staleTime: 5 * 60 * 1000, // treat as fresh for 5 minutes — no refetch on navigation
   });
 
   // ── Fetch derived events ──────────────────────────────────────────────────

@@ -3,12 +3,13 @@ import { notificationService } from "../services";
 import "./NotificationBell.css";
 
 const TYPE_CONFIG = {
-  award_applied:   { icon: "🏆", color: "#f59e0b" },
-  award_approved:  { icon: "✅", color: "#10b981" },
-  award_rejected:  { icon: "❌", color: "#ef4444" },
-  award_pending:   { icon: "⏳", color: "#f59e0b" },
+  award_applied:      { icon: "🏆", color: "#f59e0b" },
+  award_approved:     { icon: "✅", color: "#10b981" },
+  award_rejected:     { icon: "❌", color: "#ef4444" },
+  award_pending:      { icon: "⏳", color: "#f59e0b" },
   violation_reported: { icon: "⚠️", color: "#ef4444" },
   violation_updated:  { icon: "📋", color: "#3b82f6" },
+  event_created:      { icon: "📅", color: "#f97316" },
 };
 
 function timeAgo(dateStr) {

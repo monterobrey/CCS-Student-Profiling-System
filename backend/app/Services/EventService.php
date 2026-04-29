@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Models\Event;
+use App\Services\NotificationService;
 
 class EventService
 {
+    public function __construct(protected NotificationService $notifications) {}
+
     /**
      * Return events visible to the given role.
      * Secretary sees all events she created.
@@ -28,7 +31,7 @@ class EventService
             array_unique(array_merge($data['visible_to'] ?? [], ['secretary']))
         );
 
-        return Event::create([
+        $event = Event::create([
             'created_by'  => $user->id,
             'title'       => $data['title'],
             'description' => $data['description'] ?? null,
@@ -39,6 +42,10 @@ class EventService
             'type'        => $data['type'] ?? 'event',
             'visible_to'  => $visibleTo,
         ]);
+
+        $this->notifications->eventCreated($event);
+
+        return $event;
     }
 
     /**

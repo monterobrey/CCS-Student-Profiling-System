@@ -125,7 +125,8 @@ export const facultyService = {
     const formData = new FormData();
     formData.append('file', csvFile);
 
-    return fetch(`http://localhost:8000/api${API_ENDPOINTS.FACULTY.IMPORT}`, {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+    return fetch(`${API_BASE_URL}${API_ENDPOINTS.FACULTY.IMPORT}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('auth_token')}`,

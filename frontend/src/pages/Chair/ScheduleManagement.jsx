@@ -370,11 +370,12 @@ export default function ScheduleManagement() {
         setAssignForm({ faculty_id: "" });
         setAssignError("");
         // Update cache directly — no refetch needed
-        const assignedFaculty = faculty.find((f) => f.id === assignForm.faculty_id);
+        // faculty_id from <select> is a string; cast to number for the find
+        const assignedFaculty = faculty.find((f) => String(f.id) === String(assignForm.faculty_id));
+        const idsToUpdate = new Set(selectedSchedule.ids);
         queryClient.setQueryData(["schedules"], (old = []) =>
           old.map((s) =>
-            s.section_id === selectedSchedule.section_id &&
-            s.course_id  === selectedSchedule.course_id
+            idsToUpdate.has(s.id)
               ? { ...s, faculty_id: assignedFaculty?.id ?? null, faculty: assignedFaculty ?? null }
               : s
           )
@@ -445,8 +446,6 @@ export default function ScheduleManagement() {
 
   return (
     <div className="schedule-page">
-
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
       {/* HEADER */}
       <div className="page-header">
@@ -967,6 +966,8 @@ export default function ScheduleManagement() {
           </div>
         </div>
       )}
+
+      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
     </div>
   );

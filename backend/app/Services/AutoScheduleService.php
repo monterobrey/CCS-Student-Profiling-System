@@ -287,6 +287,11 @@ class AutoScheduleService
         if ($allFaculty->isEmpty()) return null;
 
         $courseCategory = $this->getCourseCategory($course);
+
+        // GED courses are handled by a different college — leave unassigned for manual assignment
+        if ($courseCategory === 'General Education') {
+            return null;
+        }
         $courseNameLower = strtolower($course->course_name);
 
         $scored = $allFaculty->map(function (Faculty $f) use ($courseCategory, $courseNameLower, $facultyLoad) {

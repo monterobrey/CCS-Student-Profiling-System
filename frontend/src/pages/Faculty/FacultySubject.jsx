@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { facultyService } from '../../services';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -83,6 +83,7 @@ function getAvatarColor(name = '') {
 
 export default function FacultySubjects() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery,   setSearchQuery]   = useState('');
   const [activeSubject, setActiveSubject] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
@@ -111,6 +112,24 @@ export default function FacultySubjects() {
     })),
     [subjects, students]
   );
+
+  /* ── Auto-open roster when navigated from FacultySchedule ── */
+  useEffect(() => {
+    const state = location.state;
+    if (!state?.courseId || !subjectCards.length) return;
+
+    const match = subjectCards.find(
+      (s) =>
+        String(s.subjectId) === String(state.courseId) &&
+        s.sectionName === state.sectionName
+    );
+    if (match) {
+      openRoster(match);
+      // Clear the navigation state so a back-navigation doesn't re-trigger
+      window.history.replaceState({}, '');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectCards]);
 
   /* ── Stats ── */
   const totalLoad      = subjectCards.length;
@@ -167,14 +186,20 @@ export default function FacultySubjects() {
   }, [students, activeSubject]);
 
   const filteredRoster = useMemo(() =>
-    rosterStudents.filter(st => {
-      const fullName = `${st.first_name} ${st.last_name}`.toLowerCase();
-      const studNum  = st.user?.student_number ?? '';
-      return (
-        fullName.includes(studentSearch.toLowerCase()) ||
-        studNum.includes(studentSearch)
-      );
-    }),
+    rosterStudents
+      .filter(st => {
+        const fullName = `${st.first_name} ${st.middle_name ?? ''} ${st.last_name}`.toLowerCase();
+        const studNum  = st.user?.student_number ?? '';
+        return (
+          fullName.includes(studentSearch.toLowerCase()) ||
+          studNum.includes(studentSearch)
+        );
+      })
+      .sort((a, b) => {
+        const nameA = `${a.last_name} ${a.first_name}`.toLowerCase();
+        const nameB = `${b.last_name} ${b.first_name}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+      }),
     [rosterStudents, studentSearch]
   );
 
@@ -336,16 +361,18 @@ export default function FacultySubjects() {
                     </tr>
                   ) : (
                     filteredRoster.map(st => {
-                      const fullName = `${st.first_name} ${st.last_name}`;
-                      const av = getAvatarColor(fullName);
+                      const mi          = st.middle_name ? `${st.middle_name.charAt(0)}.` : '';
+                      const displayName = `${st.last_name}, ${st.first_name}${mi ? ` ${mi}` : ''}`;
+                      const initials    = `${st.last_name.charAt(0)}${st.first_name.charAt(0)}`;
+                      const av          = getAvatarColor(displayName);
                       return (
                         <tr key={st.id}>
                           <td>
                             <div className="name-cell">
                               <span className="avatar" style={{ background: av.bg, color: av.text }}>
-                                {getInitials(fullName)}
+                                {initials}
                               </span>
-                              {fullName}
+                              {displayName}
                             </div>
                           </td>
                           <td className="cell-muted">{st.user?.student_number ?? '—'}</td>

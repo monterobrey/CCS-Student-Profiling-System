@@ -38,31 +38,6 @@ const formatSlotTimes = (daySlots) => {
   return unique.join(" / ");
 };
 
-// Render faculty from daySlots:
-// - All assigned → "John Doe" or "John Doe / Jane Smith"
-// - All unassigned → null (will show Assign button only)
-// - Mixed → "John Doe / " (will append Assign button)
-const formatSlotFaculty = (daySlots, schedules) => {
-  const facultyNames = daySlots
-    .map((slot) => {
-      // Find the actual schedule entry for this day to get its faculty
-      const scheduleEntry = schedules.find(
-        (s) => s.dayOfWeek === slot.day && 
-               s.startTime === slot.startTime && 
-               s.endTime === slot.endTime
-      );
-      
-      if (scheduleEntry?.faculty) {
-        return `${scheduleEntry.faculty.first_name} ${scheduleEntry.faculty.last_name}`;
-      }
-      return null; // Unassigned
-    })
-    .filter(Boolean); // Remove nulls
-  
-  const unique = [...new Set(facultyNames)];
-  return unique.length > 0 ? unique.join(" / ") : null;
-};
-
 export default function ScheduleManagement() {
   const queryClient  = useQueryClient();
   const fileInputRef = useRef(null);
@@ -369,16 +344,23 @@ export default function ScheduleManagement() {
         setShowAssignModal(false);
         setAssignForm({ faculty_id: "" });
         setAssignError("");
-        // Update cache directly — no refetch needed
-        const assignedFaculty = faculty.find((f) => f.id === assignForm.faculty_id);
-        queryClient.setQueryData(["schedules"], (old = []) =>
-          old.map((s) =>
-            s.section_id === selectedSchedule.section_id &&
-            s.course_id  === selectedSchedule.course_id
-              ? { ...s, faculty_id: assignedFaculty?.id ?? null, faculty: assignedFaculty ?? null }
-              : s
-          )
-        );
+
+        const assignedFaculty = faculty.find((f) => String(f.id) === String(assignForm.faculty_id));
+        const pairedAssigned = res.data?.paired_assigned ?? false;
+
+        if (pairedAssigned) {
+          // Backend also updated the paired type — refetch to get the full accurate state
+          queryClient.invalidateQueries({ queryKey: ["schedules"] });
+        } else {
+          // Only the single slot changed — patch cache directly
+          queryClient.setQueryData(["schedules"], (old = []) =>
+            old.map((s) =>
+              s.id === selectedSchedule.id
+                ? { ...s, faculty_id: assignedFaculty?.id ?? null, faculty: assignedFaculty ?? null }
+                : s
+            )
+          );
+        }
       } else {
         setAssignError(res.message || "Failed to assign faculty.");
       }
@@ -427,16 +409,21 @@ export default function ScheduleManagement() {
     }
   };
 
-  const openAssign = (item) => {
-    setSelectedSchedule(item);
+  const openAssign = (item, specificEntry = null) => {
+    // If a specific unassigned entry is provided (mixed state), use it.
+    // Otherwise fall back to the first unassigned entry in the group.
+    const entry = specificEntry ?? item.scheduleEntries.find(s => !s.faculty) ?? item;
+    setSelectedSchedule({ ...entry, course: item.course, section: item.section });
     setAssignForm({ faculty_id: "" });
     setAssignError("");
     setShowAssignModal(true);
   };
 
   const openReassign = (item) => {
-    setSelectedSchedule(item);
-    setAssignForm({ faculty_id: item.faculty_id?.toString() ?? "" });
+    // For reassign, use the first entry that has a faculty assigned
+    const entry = item.scheduleEntries.find(s => s.faculty) ?? item;
+    setSelectedSchedule({ ...entry, course: item.course, section: item.section });
+    setAssignForm({ faculty_id: entry.faculty_id?.toString() ?? "" });
     setAssignError("");
     setShowAssignModal(true);
   };
@@ -445,8 +432,6 @@ export default function ScheduleManagement() {
 
   return (
     <div className="schedule-page">
-
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
       {/* HEADER */}
       <div className="page-header">
@@ -575,30 +560,61 @@ export default function ScheduleManagement() {
                       <td>{item.room}</td>
                       <td>
                         {(() => {
-                          const facultyDisplay = formatSlotFaculty(item.daySlots, item.scheduleEntries);
-                          const hasUnassigned = item.scheduleEntries.some(s => !s.faculty);
-                          
-                          if (!facultyDisplay && hasUnassigned) {
-                            // All unassigned — show only button
+                          // Render each slot in day order: prof name or Assign button
+                          const parts = item.daySlots.map((slot) => {
+                            const entry = item.scheduleEntries.find(
+                              (s) =>
+                                s.dayOfWeek === slot.day &&
+                                s.startTime === slot.startTime &&
+                                s.endTime === slot.endTime
+                            );
+                            if (entry?.faculty) {
+                              return {
+                                type: "name",
+                                label: `${entry.faculty.first_name} ${entry.faculty.last_name}`,
+                                entry,
+                              };
+                            }
+                            return { type: "assign", entry };
+                          });
+
+                          // If every slot has the same prof, just show the name once
+                          const allSamePro = parts.every(
+                            (p) => p.type === "name" && p.label === parts[0].label
+                          );
+                          if (allSamePro) {
+                            return <span className="faculty-name">{parts[0].label}</span>;
+                          }
+
+                          // All unassigned — single Assign button
+                          if (parts.every((p) => p.type === "assign")) {
                             return (
-                              <button className="assign-btn" onClick={() => openAssign(item)}>
+                              <button className="assign-btn" onClick={() => openAssign(item, parts[0].entry)}>
                                 Assign
                               </button>
                             );
-                          } else if (facultyDisplay && hasUnassigned) {
-                            // Mixed — show names + button
-                            return (
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                                <span className="faculty-name">{facultyDisplay} /</span>
-                                <button className="assign-btn" onClick={() => openAssign(item)}>
-                                  Assign
-                                </button>
-                              </div>
-                            );
-                          } else {
-                            // All assigned — show names only
-                            return <span className="faculty-name">{facultyDisplay}</span>;
                           }
+
+                          // Mixed — render positionally
+                          return (
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                              {parts.map((part, i) => (
+                                <span key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  {i > 0 && <span style={{ color: "#b89f90" }}>/</span>}
+                                  {part.type === "name" ? (
+                                    <span className="faculty-name">{part.label}</span>
+                                  ) : (
+                                    <button
+                                      className="assign-btn"
+                                      onClick={() => openAssign(item, part.entry)}
+                                    >
+                                      Assign
+                                    </button>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          );
                         })()}
                       </td>
                       <td>
@@ -967,6 +983,8 @@ export default function ScheduleManagement() {
           </div>
         </div>
       )}
+
+      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
 
     </div>
   );

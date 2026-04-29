@@ -120,7 +120,9 @@ class StudentImportService
      */
     protected function createStudentFromCsvRow($data)
     {
-        DB::transaction(function () use ($data) {
+        // Resolve department/program/section inside a transaction, then create the student
+        // (and send the setup email) outside it — so a mail failure won't roll back the record.
+        $studentData = DB::transaction(function () use ($data) {
             // Get or create department
             $department = Department::firstOrCreate(
                 ['department_name' => $data['department_name']]
@@ -149,19 +151,20 @@ class StudentImportService
                 ]
             );
 
-            // Create student using StudentService — skip email during bulk import
-            $this->studentService->createStudent([
-                'student_number'    => $data['student_number'],
-                'first_name'        => $data['first_name'],
-                'last_name'         => $data['last_name'],
-                'middle_name'       => $data['middle_name'],
-                'email'             => $data['email'],
-                'program_id'        => $program->id,
-                'section_id'        => $section->id,
-                'year_level'        => $data['year_level'],
-                'skip_notification' => true,
-            ]);
+            return [
+                'student_number' => $data['student_number'],
+                'first_name'     => $data['first_name'],
+                'last_name'      => $data['last_name'],
+                'middle_name'    => $data['middle_name'],
+                'email'          => $data['email'],
+                'program_id'     => $program->id,
+                'section_id'     => $section->id,
+                'year_level'     => $data['year_level'],
+            ];
         });
+
+        // Create student and send setup password email outside the outer transaction
+        $this->studentService->createStudent($studentData);
     }
 
     /**

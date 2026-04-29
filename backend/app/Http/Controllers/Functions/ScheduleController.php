@@ -75,15 +75,20 @@ class ScheduleController extends Controller
     }
 
     /**
-     * Assign faculty to an existing schedule (updates all instances of this course in this section).
+     * Assign faculty to a schedule slot, mirroring to the paired type (LAB↔LEC) if conflict-free.
      */
     public function assignFaculty(Request $request, $id)
     {
         $facultyId = $request->validate(['faculty_id' => 'required|exists:faculty,id'])['faculty_id'];
 
         try {
-            $count = $this->scheduleService->assignFacultyToSchedules($id, $facultyId);
-            return ApiResponse::success(null, "Faculty assigned to all $count sessions successfully.");
+            $result = $this->scheduleService->assignFacultyToSchedules($id, $facultyId);
+
+            $message = $result['paired_assigned']
+                ? "Faculty assigned to this slot and also mirrored to the {$result['paired_type']} session."
+                : "Faculty assigned successfully.";
+
+            return ApiResponse::success(['paired_assigned' => $result['paired_assigned'], 'paired_type' => $result['paired_type']], $message);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 422);
         }

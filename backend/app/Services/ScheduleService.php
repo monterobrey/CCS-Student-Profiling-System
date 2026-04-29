@@ -90,46 +90,82 @@ class ScheduleService
     }
 
     /**
-     * Assign faculty to all instances of a course in a section.
+     * Assign faculty to a specific schedule slot.
+     * Also attempts to assign the same faculty to all slots of the paired
+     * type (LAB↔LEC) for the same course+section, skipping any slot where
+     * the faculty has a conflict.
+     *
+     * Returns an array with how many slots were updated and whether the
+     * paired type was also fully assigned.
      */
     public function assignFacultyToSchedules($scheduleId, $facultyId)
     {
         $targetSchedule = Schedule::findOrFail($scheduleId);
-        
-        $relatedSchedules = Schedule::where('section_id', $targetSchedule->section_id)
+
+        // Check for faculty conflict on this specific timeslot
+        $conflict = Schedule::where('faculty_id', $facultyId)
+            ->where('dayOfWeek', $targetSchedule->dayOfWeek)
+            ->where('id', '!=', $targetSchedule->id)
+            ->where(function ($q) use ($targetSchedule) {
+                $q->where('startTime', '<', $targetSchedule->endTime)
+                  ->where('endTime', '>', $targetSchedule->startTime);
+            })
+            ->exists();
+
+        if ($conflict) {
+            throw new \Exception(
+                "Faculty has a schedule conflict on {$targetSchedule->dayOfWeek} at " .
+                date('h:i A', strtotime($targetSchedule->startTime)) . '.'
+            );
+        }
+
+        $targetSchedule->update(['faculty_id' => $facultyId]);
+        $assigned = 1;
+        $pairedAssigned = false;
+
+        // Try to mirror the assignment to the paired type (LAB↔LEC) of the same course+section
+        $pairedType = $targetSchedule->class_type === 'lec' ? 'lab' : 'lec';
+
+        $pairedSlots = Schedule::where('section_id', $targetSchedule->section_id)
             ->where('course_id', $targetSchedule->course_id)
+            ->where('class_type', $pairedType)
+            ->whereNull('faculty_id')   // only touch unassigned slots
             ->get();
 
-        $conflicts = [];
+        if ($pairedSlots->isNotEmpty()) {
+            $allPairedFit = true;
 
-        foreach ($relatedSchedules as $sched) {
-            $conflict = Schedule::where('faculty_id', $facultyId)
-                ->where('dayOfWeek', $sched->dayOfWeek)
-                ->where('id', '!=', $sched->id)
-                ->where(function($q) use ($sched) {
-                    $q->whereBetween('startTime', [$sched->startTime, $sched->endTime])
-                      ->orWhereBetween('endTime', [$sched->startTime, $sched->endTime])
-                      ->orWhere(function($sq) use ($sched) {
-                          $sq->where('startTime', '<=', $sched->startTime)
-                             ->where('endTime', '>=', $sched->endTime);
-                      });
-                })
-                ->exists();
+            foreach ($pairedSlots as $slot) {
+                $pairedConflict = Schedule::where('faculty_id', $facultyId)
+                    ->where('dayOfWeek', $slot->dayOfWeek)
+                    ->where('id', '!=', $slot->id)
+                    ->where(function ($q) use ($slot) {
+                        $q->where('startTime', '<', $slot->endTime)
+                          ->where('endTime', '>', $slot->startTime);
+                    })
+                    ->exists();
 
-            if ($conflict) {
-                $conflicts[] = "{$sched->dayOfWeek} at " . date('h:i A', strtotime($sched->startTime));
+                if ($pairedConflict) {
+                    $allPairedFit = false;
+                    break;
+                }
+            }
+
+            // Only mirror if the faculty is free on ALL paired slots
+            if ($allPairedFit) {
+                foreach ($pairedSlots as $slot) {
+                    $slot->update(['faculty_id' => $facultyId]);
+                    $assigned++;
+                }
+                $pairedAssigned = true;
             }
         }
 
-        if (!empty($conflicts)) {
-            throw new \Exception('Faculty has schedule conflicts at these times: ' . implode(', ', $conflicts));
-        }
-
-        Schedule::where('section_id', $targetSchedule->section_id)
-            ->where('course_id', $targetSchedule->course_id)
-            ->update(['faculty_id' => $facultyId]);
-
-        return $relatedSchedules->count();
+        return [
+            'assigned'       => $assigned,
+            'paired_assigned' => $pairedAssigned,
+            'paired_type'    => $pairedType,
+        ];
     }
 
     /**

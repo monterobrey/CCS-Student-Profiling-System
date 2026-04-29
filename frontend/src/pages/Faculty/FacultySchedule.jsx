@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../../styles/Faculty/FacultySchedule.module.css";
-import { useFacultySchedule, useSectionStudents } from "../../hooks/useFacultySchedule";
+import { useFacultySchedule } from "../../hooks/useFacultySchedule";
 
 const FacultySchedule = () => {
+  const navigate = useNavigate();
   const cx = (...classKeys) =>
     classKeys
       .filter(Boolean)
@@ -10,9 +12,7 @@ const FacultySchedule = () => {
       .filter(Boolean)
       .join(" ");
 
-  const [selectedSection, setSelectedSection] = useState(null);
   const { data: schedules = [] } = useFacultySchedule();
-  const { data: students = [], isLoading: loadingStudents } = useSectionStudents(selectedSection?.section_id);
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -232,7 +232,17 @@ const FacultySchedule = () => {
                       key={`sched-${sched.id}-${slotIdx}`}
                       className={styles["day-sched-cell"]}
                       style={{ gridRow: `span ${span}` }}
-                      onClick={() => setSelectedSection(sched)}
+                      onClick={() =>
+                        navigate("/faculty/subjects", {
+                          state: {
+                            openSubjectKey: `${sched.course?.id}-${sched.section_id}`,
+                            courseId:       sched.course?.id,
+                            sectionId:      sched.section_id,
+                            sectionName:    sched.section?.section_name,
+                            courseCode:     sched.course?.course_code,
+                          },
+                        })
+                      }
                       title={`${sched.course?.course_code || ""} | ${getSubjectName(sched)} | ${sched.section?.section_name || ""} | ${sched.room || "TBA"}`}
                     >
                       <div
@@ -278,71 +288,6 @@ const FacultySchedule = () => {
         </div>
       </div>
  
-      {/* Modal */}
-      {selectedSection && (
-        <div className={styles["modal-overlay"]} onClick={() => setSelectedSection(null)}>
-          <div className={styles["modal-content"]} onClick={(e) => e.stopPropagation()}>
-            <div className={styles["modal-header-styled"]}>
-              <div className={styles["modal-title-info"]}>
-                <div className={styles["modal-course-badge"]}>Course</div>
-                <h3>{selectedSection?.course?.course_code || ""}</h3>
-                <p className={styles["modal-subtitle"]}>{selectedSection?.section?.section_name || ""}</p>
-              </div>
-              <button className={styles["close-btn"]} onClick={() => setSelectedSection(null)}>
-                &times;
-              </button>
-            </div>
-
-            <div className={styles["modal-student-count"]}>{students.length} enrolled students</div>
-
-            <div className={styles["modal-body-styled"]}>
-              <table className={styles["students-table"]}>
-                <thead>
-                  <tr>
-                    <th>Student Number</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingStudents ? (
-                    <tr>
-                      <td colSpan={3}>Loading students...</td>
-                    </tr>
-                  ) : students.length === 0 ? (
-                    <tr>
-                      <td colSpan={3}>No students found.</td>
-                    </tr>
-                  ) : (
-                    students.map((student) => (
-                      <tr key={student.id}>
-                        <td className={styles["student-num"]}>{student.user?.student_number || student.student_number || "N/A"}</td>
-                        <td>{student.user?.name || `${student.user?.first_name || ""} ${student.user?.last_name || ""}`.trim() || "N/A"}</td>
-                        <td>
-                          <span className={cx(
-                            "status-badge",
-                            student.status === "Inactive" ? "status-inactive" : "status-active"
-                          )}>
-                            <span className={styles.dot} />
-                            {student.status || "Active"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className={styles["modal-footer"]}>
-              <button className={styles["modal-close-footer-btn"]} onClick={() => setSelectedSection(null)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };
